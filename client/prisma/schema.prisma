@@ -9,3 +9,37 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                   Int       @id @default(autoincrement())
+  name                 String?
+  discordUsername      String?
+  discordDiscriminator Int?
+  walletAddress        String?   @unique
+  projects             Project[]
+  isCreator            Boolean   @default(false)
+
+  @@unique([discordUsername, discordDiscriminator])
+  @@map("users")
+}
+
+model Project {
+  id      Int     @id @default(autoincrement())
+  userId  Int
+  owner   User    @relation(fields: [userId], references: [id])
+  address String?
+
+  NFT NFT[]
+  @@map("projects")
+}
+
+model NFT {
+  id          Int     @id @default(autoincrement())
+  projectId   Int
+  project     Project @relation(fields: [projectId], references: [id])
+  metadataUri String?
+  signature   String?
+  tokenId     Int?
+
+  @@map("nfts")
+}
