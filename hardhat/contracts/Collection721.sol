@@ -14,137 +14,87 @@ contract Collection721 is Ownable, ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private nextTokenId;
     using ECDSA for bytes32;
-    enum Sale {
-        PRIVATE_SALE,
-        PUBLIC_SALE,
-        NO_SALE
-    }
     struct SaleConfig {
-        string saleName;
-        Sale saleType;
-        uint256 mintCharge;
+        bool status;
         uint256 startTime;
         uint256 endTime;
-        bytes32 whitelistRoot;
     }
 
-    SaleConfig[] public saleWaves;
+    uint256 public privateMintCharge;
+    uint256 public publicMintCharge;
+
+    bytes32 public whitelistRoot;
+
     address public feeDestination;
+
+    SaleConfig public privateSale1;
+    SaleConfig public privateSale2;
+    SaleConfig public publicSale;
 
     mapping(bytes => bool) public isSignatureRedeemed;
 
     constructor(
         address _feeDestination,
-        string[] memory saleNames,
-        uint8[] memory saleTypes,
-        uint256[] memory mintCharges,
-        uint256[] memory startTimes,
-        uint256[] memory endTimes,
-        bytes32[] memory whitelistRoots
+        bytes32 _whitelistRoot,
+        uint256 _privateMintCharge,
+        uint256 _publicMintCharge
     ) ERC721("", "") {
-        require(saleNames.length == saleTypes.length, "Array Size mismatch 1");
-        require(
-            saleNames.length == mintCharges.length,
-            "Array Size mismatch 2"
-        );
-        require(saleNames.length == startTimes.length, "Array Size mismatch 3");
-        require(saleNames.length == endTimes.length, "Array Size mismatch 4");
-        require(
-            saleNames.length == whitelistRoots.length,
-            "Array Size mismatch 5"
-        );
-        for (uint256 i = 0; i < saleNames.length; ++i) {
-            require(saleTypes[i] <= 2, "Invalid Saletype");
-            SaleConfig memory config;
-            config.saleName = saleNames[i];
-            config.saleType = Sale(saleTypes[i]);
-            config.mintCharge = mintCharges[i];
-            config.startTime = startTimes[i];
-            config.endTime = endTimes[i];
-            config.whitelistRoot = whitelistRoots[i];
-            saleWaves.push(config);
-        }
+        feeDestination = _feeDestination;
+        whitelistRoot = _whitelistRoot;
+        privateMintCharge = _privateMintCharge;
+        publicMintCharge = _publicMintCharge;
+    }
+
+    function updatePrivateSale1(uint256 _startTime, uint256 _endTime)
+        public
+        onlyOwner
+    {
+        privateSale1.startTime = _startTime;
+        privateSale1.endTime = _endTime;
+        privateSale1.status = true;
+    }
+
+    function updatePrivateSale2(uint256 _startTime, uint256 _endTime)
+        public
+        onlyOwner
+    {
+        privateSale2.startTime = _startTime;
+        privateSale2.endTime = _endTime;
+        privateSale2.status = true;
+    }
+
+    function updatePublicSale(uint256 _startTime, uint256 _endTime)
+        public
+        onlyOwner
+    {
+        publicSale.startTime = _startTime;
+        publicSale.endTime = _endTime;
+        publicSale.status = true;
+    }
+
+    function updateWhitelist(bytes32 _root) public onlyOwner {
+        whitelistRoot = _root;
+    }
+
+    function updateFeeToAddress(address _feeDestination) public onlyOwner {
         feeDestination = _feeDestination;
     }
 
-    function updateSalewaves(
-        string[] memory saleNames,
-        uint8[] memory saleTypes,
-        uint256[] memory mintCharges,
-        uint256[] memory startTimes,
-        uint256[] memory endTimes,
-        bytes32[] memory whitelistRoots
-    ) public onlyOwner {
-        require(saleNames.length == saleTypes.length, "Array Size mismatch 1");
-        require(
-            saleNames.length == mintCharges.length,
-            "Array Size mismatch 2"
-        );
-        require(saleNames.length == startTimes.length, "Array Size mismatch 3");
-        require(saleNames.length == endTimes.length, "Array Size mismatch 4");
-        require(
-            saleNames.length == whitelistRoots.length,
-            "Array Size mismatch 5"
-        );
-        for (uint256 i = 0; i < saleNames.length; ++i) {
-            require(saleTypes[i] <= 2, "Invalid Saletype");
-            SaleConfig memory config;
-            config.saleName = saleNames[i];
-            config.saleType = Sale(saleTypes[i]);
-            config.mintCharge = mintCharges[i];
-            config.startTime = startTimes[i];
-            config.endTime = endTimes[i];
-            config.whitelistRoot = whitelistRoots[i];
-            if (saleWaves.length <= i) {
-                saleWaves.push(config);
-            } else {
-                saleWaves[i] = config;
-            }
-        }
+    function updateTokenUri(uint256 tokenId, string memory _tokenURI)
+        public
+        onlyOwner
+    {
+        _setTokenURI(tokenId, _tokenURI);
     }
 
-    function totalWaves() public view returns (uint256 length) {
-        length = saleWaves.length;
+    modifier privateFeeProvided() {
+        require(msg.value >= privateMintCharge, "Fee not provided");
+        payable(feeDestination).transfer(msg.value);
+        _;
     }
 
-    function addWave(
-        string memory _saleName,
-        uint8 _saleType,
-        uint256 _mintCharge,
-        uint256 _startTime,
-        uint256 _endTime,
-        bytes32 _whitelistRoot
-    ) public onlyOwner {
-        require(_saleType <= 2, "Invalid Saletype");
-        SaleConfig memory config;
-        config.saleName = _saleName;
-        config.saleType = Sale(_saleType);
-        config.mintCharge = _mintCharge;
-        config.startTime = _startTime;
-        config.endTime = _endTime;
-        config.whitelistRoot = _whitelistRoot;
-        saleWaves.push(config);
-    }
-
-    function currentSale() public view returns (SaleConfig memory saleWave) {
-        uint256 time = block.timestamp;
-        bool found = false;
-        for (uint256 i = 0; i < saleWaves.length; ++i) {
-            if (
-                (saleWaves[i].startTime <= time &&
-                    saleWaves[i].endTime >= time) ||
-                (saleWaves[i].startTime <= time && saleWaves[i].endTime == 0)
-            ) {
-                saleWave = saleWaves[i];
-                found = true;
-                break;
-            }
-        }
-        // require(found, "No Sale found");
-    }
-
-    modifier feeProvided() {
-        require(msg.value >= currentSale().mintCharge, "Fee not provided");
+    modifier publicFeeProvided() {
+        require(msg.value >= publicMintCharge, "Fee not provided");
         payable(feeDestination).transfer(msg.value);
         _;
     }
@@ -153,7 +103,7 @@ contract Collection721 is Ownable, ERC721URIStorage {
         require(
             MerkleProof.verify(
                 proof,
-                currentSale().whitelistRoot,
+                whitelistRoot,
                 keccak256(abi.encodePacked(msg.sender))
             ),
             "Not whitelisted"
@@ -162,14 +112,27 @@ contract Collection721 is Ownable, ERC721URIStorage {
     }
 
     modifier onlyPrivateSale() {
-        SaleConfig memory saleWave = currentSale();
-        require(saleWave.saleType == Sale(1), "Not a private sale");
+        uint256 time = block.timestamp;
+        require(
+            (privateSale1.status &&
+                time > privateSale1.startTime &&
+                (privateSale1.endTime > time || privateSale1.endTime == 0)) ||
+                (privateSale2.status &&
+                    time > privateSale2.startTime &&
+                    (privateSale2.endTime > time || privateSale2.endTime == 0)),
+            "Not a private sale"
+        );
         _;
     }
 
     modifier onlyPublicSale() {
-        SaleConfig memory saleWave = currentSale();
-        require(saleWave.saleType == Sale(2), "Not a public sale");
+        uint256 time = block.timestamp;
+        require(
+            publicSale.status &&
+                time > publicSale.startTime &&
+                (publicSale.endTime > time || publicSale.endTime == 0),
+            "Not a public sale"
+        );
         _;
     }
 
@@ -198,7 +161,7 @@ contract Collection721 is Ownable, ERC721URIStorage {
         onlyPrivateSale
         onlyWhitelisted(proof)
         onlyValidTokenUri(_tokenURI, signature)
-        feeProvided
+        privateFeeProvided
     {
         _mint(to, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
@@ -216,7 +179,7 @@ contract Collection721 is Ownable, ERC721URIStorage {
         onlyPrivateSale
         onlyWhitelisted(proof)
         onlyValidTokenUri(_tokenURI, signature)
-        feeProvided
+        privateFeeProvided
     {
         _mint(msg.sender, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
@@ -233,18 +196,11 @@ contract Collection721 is Ownable, ERC721URIStorage {
         payable
         onlyPublicSale
         onlyValidTokenUri(_tokenURI, signature)
-        feeProvided
+        publicFeeProvided
     {
         _mint(to, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
         nextTokenId.increment();
         isSignatureRedeemed[signature] = true;
-    }
-
-    function updateTokenUri(uint256 tokenId, string memory _tokenURI)
-        public
-        onlyOwner
-    {
-        _setTokenURI(tokenId, _tokenURI);
     }
 }

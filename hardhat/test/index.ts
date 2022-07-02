@@ -11,7 +11,79 @@ import MerkleTree from "merkletreejs";
 
 const buf2hex = (buf: Buffer) => `0x${buf.toString("hex")}`;
 
-describe("Greeter", function () {
+describe.only("721 new", function () {
+  it("Should mint", async function () {
+    const startDate = new Date(2022, 6, 2).getTime() / 1000;
+    const endDate = new Date(2022, 6, 30).getTime() / 1000;
+
+    const accounts = await ethers.getSigners();
+    const leaves = accounts
+      .filter((_, i) => i > 5)
+      .map((a) => keccak256(a.address));
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+    const root = buf2hex(tree.getRoot());
+    const hash = keccak256(accounts[0].address);
+    const Coll721 = await ethers.getContractFactory("Collection721");
+    const coll721 = await Coll721.deploy(accounts[0].address, root, 3, 4);
+    await coll721.deployed();
+
+    await (await coll721.updatePrivateSale1(startDate - 86400, endDate)).wait();
+
+    const validLeaf = keccak256(accounts[7].address);
+    const invalidLeaf = keccak256(accounts[4].address);
+
+    const validProof = tree.getProof(validLeaf).map((p) => buf2hex(p.data));
+    const invalidProof = tree.getProof(invalidLeaf).map((p) => buf2hex(p.data));
+
+    const signature1 = await accounts[0].signMessage(
+      arrayify(solidityKeccak256(["string"], ["Hello1"]))
+    );
+    const signature2 = await accounts[0].signMessage(
+      arrayify(solidityKeccak256(["string"], ["Hello2"]))
+    );
+    const signature3 = await accounts[0].signMessage(
+      arrayify(solidityKeccak256(["string"], ["Hello3"]))
+    );
+    const signature4 = await accounts[0].signMessage(
+      arrayify(solidityKeccak256(["string"], ["Hello4"]))
+    );
+
+    const validPrivateMintTx = await coll721
+      .connect(accounts[7])
+      .mintPrivateTo(accounts[7].address, "Hello1", validProof, signature1, {
+        value: "3",
+      });
+    await validPrivateMintTx.wait();
+
+    const validPrivateMintTx2 = await coll721
+      .connect(accounts[7])
+      .mintPrivate("Hello2", validProof, signature2, {
+        value: "3",
+      });
+    await validPrivateMintTx2.wait();
+
+    await (await coll721.updatePublicSale(startDate - 86400, endDate)).wait();
+
+    const validPublicMintTx = await coll721
+      .connect(accounts[7])
+      .mint(accounts[7].address, "Hello3", signature3, {
+        value: "4",
+      });
+    await validPublicMintTx.wait();
+
+    console.log(
+      "Balance : ",
+      (await coll721.balanceOf(accounts[7].address)).toString()
+    );
+
+    const invalidPrivateMintTx = await coll721
+      .connect(accounts[4])
+      .mintPrivate("Hello4", invalidProof, signature4);
+    await invalidPrivateMintTx.wait();
+  });
+});
+
+describe("721 Previous", function () {
   it("Should return the new greeting once it's changed", async function () {
     const startDate = new Date(2022, 6, 3).getTime() / 1000;
     const endDate = new Date(2022, 6, 30).getTime() / 1000;

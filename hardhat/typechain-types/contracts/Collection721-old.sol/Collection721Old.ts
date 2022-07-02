@@ -26,12 +26,41 @@ import type {
   TypedListener,
   OnEvent,
   PromiseOrValue,
-} from "../common";
+} from "../../common";
 
-export interface Collection721Interface extends utils.Interface {
+export declare namespace Collection721Old {
+  export type SaleConfigStruct = {
+    saleName: PromiseOrValue<string>;
+    saleType: PromiseOrValue<BigNumberish>;
+    mintCharge: PromiseOrValue<BigNumberish>;
+    startTime: PromiseOrValue<BigNumberish>;
+    endTime: PromiseOrValue<BigNumberish>;
+    whitelistRoot: PromiseOrValue<BytesLike>;
+  };
+
+  export type SaleConfigStructOutput = [
+    string,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    string
+  ] & {
+    saleName: string;
+    saleType: number;
+    mintCharge: BigNumber;
+    startTime: BigNumber;
+    endTime: BigNumber;
+    whitelistRoot: string;
+  };
+}
+
+export interface Collection721OldInterface extends utils.Interface {
   functions: {
+    "addWave(string,uint8,uint256,uint256,uint256,bytes32)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "currentSale()": FunctionFragment;
     "feeDestination()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
@@ -42,33 +71,27 @@ export interface Collection721Interface extends utils.Interface {
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "privateMintCharge()": FunctionFragment;
-    "privateSale1()": FunctionFragment;
-    "privateSale2()": FunctionFragment;
-    "publicMintCharge()": FunctionFragment;
-    "publicSale()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
+    "saleWaves(uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
+    "totalWaves()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "updateFeeToAddress(address)": FunctionFragment;
-    "updatePrivateSale1(uint256,uint256)": FunctionFragment;
-    "updatePrivateSale2(uint256,uint256)": FunctionFragment;
-    "updatePublicSale(uint256,uint256)": FunctionFragment;
+    "updateSalewaves(string[],uint8[],uint256[],uint256[],uint256[],bytes32[])": FunctionFragment;
     "updateTokenUri(uint256,string)": FunctionFragment;
-    "updateWhitelist(bytes32)": FunctionFragment;
-    "whitelistRoot()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "addWave"
       | "approve"
       | "balanceOf"
+      | "currentSale"
       | "feeDestination"
       | "getApproved"
       | "isApprovedForAll"
@@ -79,29 +102,32 @@ export interface Collection721Interface extends utils.Interface {
       | "name"
       | "owner"
       | "ownerOf"
-      | "privateMintCharge"
-      | "privateSale1"
-      | "privateSale2"
-      | "publicMintCharge"
-      | "publicSale"
       | "renounceOwnership"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
+      | "saleWaves"
       | "setApprovalForAll"
       | "supportsInterface"
       | "symbol"
       | "tokenURI"
+      | "totalWaves"
       | "transferFrom"
       | "transferOwnership"
-      | "updateFeeToAddress"
-      | "updatePrivateSale1"
-      | "updatePrivateSale2"
-      | "updatePublicSale"
+      | "updateSalewaves"
       | "updateTokenUri"
-      | "updateWhitelist"
-      | "whitelistRoot"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "addWave",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
@@ -109,6 +135,10 @@ export interface Collection721Interface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "currentSale",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "feeDestination",
@@ -158,26 +188,6 @@ export interface Collection721Interface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "privateMintCharge",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "privateSale1",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "privateSale2",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "publicMintCharge",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "publicSale",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -199,6 +209,10 @@ export interface Collection721Interface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "saleWaves",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
@@ -210,6 +224,10 @@ export interface Collection721Interface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalWaves",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferFrom",
@@ -224,36 +242,28 @@ export interface Collection721Interface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "updateFeeToAddress",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updatePrivateSale1",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updatePrivateSale2",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "updatePublicSale",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    functionFragment: "updateSalewaves",
+    values: [
+      PromiseOrValue<string>[],
+      PromiseOrValue<BigNumberish>[],
+      PromiseOrValue<BigNumberish>[],
+      PromiseOrValue<BigNumberish>[],
+      PromiseOrValue<BigNumberish>[],
+      PromiseOrValue<BytesLike>[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "updateTokenUri",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "updateWhitelist",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "whitelistRoot",
-    values?: undefined
-  ): string;
 
+  decodeFunctionResult(functionFragment: "addWave", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "currentSale",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "feeDestination",
     data: BytesLike
@@ -283,23 +293,6 @@ export interface Collection721Interface extends utils.Interface {
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "privateMintCharge",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "privateSale1",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "privateSale2",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "publicMintCharge",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "publicSale", data: BytesLike): Result;
-  decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
@@ -311,6 +304,7 @@ export interface Collection721Interface extends utils.Interface {
     functionFragment: "safeTransferFrom(address,address,uint256,bytes)",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "saleWaves", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
@@ -321,6 +315,7 @@ export interface Collection721Interface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "totalWaves", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
     data: BytesLike
@@ -330,31 +325,11 @@ export interface Collection721Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateFeeToAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updatePrivateSale1",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updatePrivateSale2",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updatePublicSale",
+    functionFragment: "updateSalewaves",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "updateTokenUri",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "updateWhitelist",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "whitelistRoot",
     data: BytesLike
   ): Result;
 
@@ -419,12 +394,12 @@ export type TransferEvent = TypedEvent<
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
 
-export interface Collection721 extends BaseContract {
+export interface Collection721Old extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: Collection721Interface;
+  interface: Collection721OldInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -446,6 +421,16 @@ export interface Collection721 extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    addWave(
+      _saleName: PromiseOrValue<string>,
+      _saleType: PromiseOrValue<BigNumberish>,
+      _mintCharge: PromiseOrValue<BigNumberish>,
+      _startTime: PromiseOrValue<BigNumberish>,
+      _endTime: PromiseOrValue<BigNumberish>,
+      _whitelistRoot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -456,6 +441,14 @@ export interface Collection721 extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    currentSale(
+      overrides?: CallOverrides
+    ): Promise<
+      [Collection721Old.SaleConfigStructOutput] & {
+        saleWave: Collection721Old.SaleConfigStructOutput;
+      }
+    >;
 
     feeDestination(overrides?: CallOverrides): Promise<[string]>;
 
@@ -506,40 +499,6 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    privateMintCharge(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    privateSale1(
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber] & {
-        status: boolean;
-        startTime: BigNumber;
-        endTime: BigNumber;
-      }
-    >;
-
-    privateSale2(
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber] & {
-        status: boolean;
-        startTime: BigNumber;
-        endTime: BigNumber;
-      }
-    >;
-
-    publicMintCharge(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    publicSale(
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber] & {
-        status: boolean;
-        startTime: BigNumber;
-        endTime: BigNumber;
-      }
-    >;
-
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -559,6 +518,20 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    saleWaves(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, number, BigNumber, BigNumber, BigNumber, string] & {
+        saleName: string;
+        saleType: number;
+        mintCharge: BigNumber;
+        startTime: BigNumber;
+        endTime: BigNumber;
+        whitelistRoot: string;
+      }
+    >;
+
     setApprovalForAll(
       operator: PromiseOrValue<string>,
       approved: PromiseOrValue<boolean>,
@@ -577,6 +550,10 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    totalWaves(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { length: BigNumber }>;
+
     transferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
@@ -589,26 +566,13 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    updateFeeToAddress(
-      _feeDestination: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    updatePrivateSale1(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    updatePrivateSale2(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    updatePublicSale(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
+    updateSalewaves(
+      saleNames: PromiseOrValue<string>[],
+      saleTypes: PromiseOrValue<BigNumberish>[],
+      mintCharges: PromiseOrValue<BigNumberish>[],
+      startTimes: PromiseOrValue<BigNumberish>[],
+      endTimes: PromiseOrValue<BigNumberish>[],
+      whitelistRoots: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -617,14 +581,17 @@ export interface Collection721 extends BaseContract {
       _tokenURI: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    updateWhitelist(
-      _root: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    whitelistRoot(overrides?: CallOverrides): Promise<[string]>;
   };
+
+  addWave(
+    _saleName: PromiseOrValue<string>,
+    _saleType: PromiseOrValue<BigNumberish>,
+    _mintCharge: PromiseOrValue<BigNumberish>,
+    _startTime: PromiseOrValue<BigNumberish>,
+    _endTime: PromiseOrValue<BigNumberish>,
+    _whitelistRoot: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   approve(
     to: PromiseOrValue<string>,
@@ -636,6 +603,10 @@ export interface Collection721 extends BaseContract {
     owner: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  currentSale(
+    overrides?: CallOverrides
+  ): Promise<Collection721Old.SaleConfigStructOutput>;
 
   feeDestination(overrides?: CallOverrides): Promise<string>;
 
@@ -686,40 +657,6 @@ export interface Collection721 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  privateMintCharge(overrides?: CallOverrides): Promise<BigNumber>;
-
-  privateSale1(
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber] & {
-      status: boolean;
-      startTime: BigNumber;
-      endTime: BigNumber;
-    }
-  >;
-
-  privateSale2(
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber] & {
-      status: boolean;
-      startTime: BigNumber;
-      endTime: BigNumber;
-    }
-  >;
-
-  publicMintCharge(overrides?: CallOverrides): Promise<BigNumber>;
-
-  publicSale(
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, BigNumber, BigNumber] & {
-      status: boolean;
-      startTime: BigNumber;
-      endTime: BigNumber;
-    }
-  >;
-
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -739,6 +676,20 @@ export interface Collection721 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  saleWaves(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, number, BigNumber, BigNumber, BigNumber, string] & {
+      saleName: string;
+      saleType: number;
+      mintCharge: BigNumber;
+      startTime: BigNumber;
+      endTime: BigNumber;
+      whitelistRoot: string;
+    }
+  >;
+
   setApprovalForAll(
     operator: PromiseOrValue<string>,
     approved: PromiseOrValue<boolean>,
@@ -757,6 +708,8 @@ export interface Collection721 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  totalWaves(overrides?: CallOverrides): Promise<BigNumber>;
+
   transferFrom(
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
@@ -769,26 +722,13 @@ export interface Collection721 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  updateFeeToAddress(
-    _feeDestination: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  updatePrivateSale1(
-    _startTime: PromiseOrValue<BigNumberish>,
-    _endTime: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  updatePrivateSale2(
-    _startTime: PromiseOrValue<BigNumberish>,
-    _endTime: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  updatePublicSale(
-    _startTime: PromiseOrValue<BigNumberish>,
-    _endTime: PromiseOrValue<BigNumberish>,
+  updateSalewaves(
+    saleNames: PromiseOrValue<string>[],
+    saleTypes: PromiseOrValue<BigNumberish>[],
+    mintCharges: PromiseOrValue<BigNumberish>[],
+    startTimes: PromiseOrValue<BigNumberish>[],
+    endTimes: PromiseOrValue<BigNumberish>[],
+    whitelistRoots: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -798,14 +738,17 @@ export interface Collection721 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  updateWhitelist(
-    _root: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  whitelistRoot(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
+    addWave(
+      _saleName: PromiseOrValue<string>,
+      _saleType: PromiseOrValue<BigNumberish>,
+      _mintCharge: PromiseOrValue<BigNumberish>,
+      _startTime: PromiseOrValue<BigNumberish>,
+      _endTime: PromiseOrValue<BigNumberish>,
+      _whitelistRoot: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -816,6 +759,10 @@ export interface Collection721 extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    currentSale(
+      overrides?: CallOverrides
+    ): Promise<Collection721Old.SaleConfigStructOutput>;
 
     feeDestination(overrides?: CallOverrides): Promise<string>;
 
@@ -866,40 +813,6 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    privateMintCharge(overrides?: CallOverrides): Promise<BigNumber>;
-
-    privateSale1(
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber] & {
-        status: boolean;
-        startTime: BigNumber;
-        endTime: BigNumber;
-      }
-    >;
-
-    privateSale2(
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber] & {
-        status: boolean;
-        startTime: BigNumber;
-        endTime: BigNumber;
-      }
-    >;
-
-    publicMintCharge(overrides?: CallOverrides): Promise<BigNumber>;
-
-    publicSale(
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, BigNumber, BigNumber] & {
-        status: boolean;
-        startTime: BigNumber;
-        endTime: BigNumber;
-      }
-    >;
-
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -916,6 +829,20 @@ export interface Collection721 extends BaseContract {
       _data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    saleWaves(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, number, BigNumber, BigNumber, BigNumber, string] & {
+        saleName: string;
+        saleType: number;
+        mintCharge: BigNumber;
+        startTime: BigNumber;
+        endTime: BigNumber;
+        whitelistRoot: string;
+      }
+    >;
 
     setApprovalForAll(
       operator: PromiseOrValue<string>,
@@ -935,6 +862,8 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    totalWaves(overrides?: CallOverrides): Promise<BigNumber>;
+
     transferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
@@ -947,26 +876,13 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    updateFeeToAddress(
-      _feeDestination: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    updatePrivateSale1(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    updatePrivateSale2(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    updatePublicSale(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
+    updateSalewaves(
+      saleNames: PromiseOrValue<string>[],
+      saleTypes: PromiseOrValue<BigNumberish>[],
+      mintCharges: PromiseOrValue<BigNumberish>[],
+      startTimes: PromiseOrValue<BigNumberish>[],
+      endTimes: PromiseOrValue<BigNumberish>[],
+      whitelistRoots: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -975,13 +891,6 @@ export interface Collection721 extends BaseContract {
       _tokenURI: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    updateWhitelist(
-      _root: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    whitelistRoot(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -1029,6 +938,16 @@ export interface Collection721 extends BaseContract {
   };
 
   estimateGas: {
+    addWave(
+      _saleName: PromiseOrValue<string>,
+      _saleType: PromiseOrValue<BigNumberish>,
+      _mintCharge: PromiseOrValue<BigNumberish>,
+      _startTime: PromiseOrValue<BigNumberish>,
+      _endTime: PromiseOrValue<BigNumberish>,
+      _whitelistRoot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1039,6 +958,8 @@ export interface Collection721 extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    currentSale(overrides?: CallOverrides): Promise<BigNumber>;
 
     feeDestination(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1089,16 +1010,6 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    privateMintCharge(overrides?: CallOverrides): Promise<BigNumber>;
-
-    privateSale1(overrides?: CallOverrides): Promise<BigNumber>;
-
-    privateSale2(overrides?: CallOverrides): Promise<BigNumber>;
-
-    publicMintCharge(overrides?: CallOverrides): Promise<BigNumber>;
-
-    publicSale(overrides?: CallOverrides): Promise<BigNumber>;
-
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -1116,6 +1027,11 @@ export interface Collection721 extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    saleWaves(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     setApprovalForAll(
@@ -1136,6 +1052,8 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    totalWaves(overrides?: CallOverrides): Promise<BigNumber>;
+
     transferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
@@ -1148,26 +1066,13 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    updateFeeToAddress(
-      _feeDestination: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    updatePrivateSale1(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    updatePrivateSale2(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    updatePublicSale(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
+    updateSalewaves(
+      saleNames: PromiseOrValue<string>[],
+      saleTypes: PromiseOrValue<BigNumberish>[],
+      mintCharges: PromiseOrValue<BigNumberish>[],
+      startTimes: PromiseOrValue<BigNumberish>[],
+      endTimes: PromiseOrValue<BigNumberish>[],
+      whitelistRoots: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1176,16 +1081,19 @@ export interface Collection721 extends BaseContract {
       _tokenURI: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    updateWhitelist(
-      _root: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    whitelistRoot(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    addWave(
+      _saleName: PromiseOrValue<string>,
+      _saleType: PromiseOrValue<BigNumberish>,
+      _mintCharge: PromiseOrValue<BigNumberish>,
+      _startTime: PromiseOrValue<BigNumberish>,
+      _endTime: PromiseOrValue<BigNumberish>,
+      _whitelistRoot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1196,6 +1104,8 @@ export interface Collection721 extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    currentSale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     feeDestination(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1246,16 +1156,6 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    privateMintCharge(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    privateSale1(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    privateSale2(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    publicMintCharge(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    publicSale(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -1273,6 +1173,11 @@ export interface Collection721 extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    saleWaves(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
@@ -1293,6 +1198,8 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    totalWaves(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     transferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
@@ -1305,26 +1212,13 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    updateFeeToAddress(
-      _feeDestination: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    updatePrivateSale1(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    updatePrivateSale2(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    updatePublicSale(
-      _startTime: PromiseOrValue<BigNumberish>,
-      _endTime: PromiseOrValue<BigNumberish>,
+    updateSalewaves(
+      saleNames: PromiseOrValue<string>[],
+      saleTypes: PromiseOrValue<BigNumberish>[],
+      mintCharges: PromiseOrValue<BigNumberish>[],
+      startTimes: PromiseOrValue<BigNumberish>[],
+      endTimes: PromiseOrValue<BigNumberish>[],
+      whitelistRoots: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1333,12 +1227,5 @@ export interface Collection721 extends BaseContract {
       _tokenURI: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
-
-    updateWhitelist(
-      _root: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    whitelistRoot(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

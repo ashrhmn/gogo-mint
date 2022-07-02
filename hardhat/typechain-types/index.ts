@@ -22,5 +22,7 @@ export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC16
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";
 export { IERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/IERC165__factory";
+export type { Collection721Old } from "./contracts/Collection721-old.sol/Collection721Old";
+export { Collection721Old__factory } from "./factories/contracts/Collection721-old.sol/Collection721Old__factory";
 export type { Collection721 } from "./contracts/Collection721";
 export { Collection721__factory } from "./factories/contracts/Collection721__factory";
