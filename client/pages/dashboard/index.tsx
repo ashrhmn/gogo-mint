@@ -1,5 +1,8 @@
+import { getNetwork } from "@ethersproject/networks";
 import { Project } from "@prisma/client";
+import { shortenIfAddress } from "@usedapp/core";
 import { GetServerSideProps, NextApiRequest, NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { getUserByAccessToken } from "../../services/discord.service";
@@ -12,7 +15,6 @@ interface Props {
 
 const Dashboard: NextPage<Props> = ({ projects }) => {
   const router = useRouter();
-  console.log(projects);
   return (
     <div>
       <button onClick={() => router.push(`/dashboard/new-project`)}>
@@ -20,8 +22,44 @@ const Dashboard: NextPage<Props> = ({ projects }) => {
       </button>
       <h1>Projects</h1>
       <div>{!projects && <>Error Loading Projects</>}</div>
-      <div>
-        {projects && projects.map((p) => <div key={p.id}>{p.name}</div>)}
+      <div className="w-full overflow-x-auto border-2 border-gray-400 rounded">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b-2 border-gray-400">
+              <th className="p-4 text-center min-w-[100px]">Name</th>
+              <th className="p-4 text-center min-w-[100px]">Collection Type</th>
+              <th className="p-4 text-center min-w-[100px]">Network</th>
+              <th className="p-4 text-center min-w-[100px]">
+                Contract Address
+              </th>
+              <th className="p-4 text-center min-w-[100px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects &&
+              projects.map((p) => (
+                <Link
+                  href={`/dashboard/project?contract=${p.address}&network=${p.chainId}`}
+                  passHref
+                  key={p.id}
+                >
+                  <tr className="cursor-pointer hover:bg-gray-200 transition-colors">
+                    <td className="p-4 text-center min-w-[100px]">{p.name}</td>
+                    <td className="p-4 text-center min-w-[100px]">721</td>
+                    <td className="p-4 text-center min-w-[100px]">
+                      {p.chainId}
+                    </td>
+                    <td className="p-4 text-center min-w-[100px]">
+                      {shortenIfAddress(p.address)}
+                    </td>
+                    <td className="p-4 text-center min-w-[100px] ">
+                      <button>Delete</button>
+                    </td>
+                  </tr>
+                </Link>
+              ))}
+          </tbody>
+        </table>
       </div>
       <div>{projects && projects.length == 0 && <>No project to show</>}</div>
     </div>

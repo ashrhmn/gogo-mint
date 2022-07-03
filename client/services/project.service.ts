@@ -15,6 +15,13 @@ export const getAllProjectsByDiscordId = async (
     },
   });
 
+export const getProjectByChainAddress = async (
+  address: string,
+  chainId: number
+) => {
+  return await prisma.project.findFirst({ where: { address, chainId } });
+};
+
 export const addNewProject = async (
   name: string,
   address: string,
