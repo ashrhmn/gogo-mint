@@ -23,13 +23,14 @@ model User {
 }
 
 model Project {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   userId      Int
   name        String
   description String?
   imageUrl    String?
-  owner       User    @relation(fields: [userId], references: [id])
+  owner       User     @relation(fields: [userId], references: [id])
   address     String?
+  whitelist   String[]
 
   NFT NFT[]
   @@map("projects")

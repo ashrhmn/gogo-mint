@@ -1,3 +1,6 @@
+import { IncomingMessage, ServerResponse } from "http";
+import { NextApiRequest, NextApiResponse } from "next";
+
 export interface DiscordAccessTokenResponse {
   access_token: string;
   expires_in: number;
@@ -19,4 +22,65 @@ export interface DiscordUserResponse {
   accent_color: number;
   locale: string;
   mfa_enabled: boolean;
+}
+
+export type NextOrIncomingMessage =
+  | NextApiRequest
+  | (IncomingMessage & { cookies: Partial<{ [key: string]: string }> });
+
+export type NextOrServerResponse = NextApiResponse | ServerResponse;
+
+export interface IDeployConfigSet {
+  logo: File | null;
+  name: string;
+  symbol: string;
+  description: string;
+  feeToAddress: string;
+  whitelistAddresses: string[];
+  privateMintCharge: number;
+  publicMintCharge: number;
+}
+
+export type ContractFile = {
+  abi: string | readonly any[];
+  devdoc: any;
+  evm: {
+    assembly: string;
+    bytecode: {
+      generatedSources: any[];
+      object: string;
+      opcodes: string;
+      sourceMap: string;
+    };
+    deployesBytecode: {};
+    gasEstimates: {};
+    legacyAssembly: {};
+    methodIdentifiers: {
+      [identifier: string]: string;
+    };
+  };
+  ewasm: any;
+  metadata: string;
+  storageLayout: {
+    storage: any[];
+    types: any;
+  };
+  userdoc: {
+    kind: string;
+    methods: {};
+    version: number;
+  };
+};
+
+export interface CompileError {
+  component: string;
+  formattedMessage: string;
+  message: string;
+  severity: "error" | "warning";
+  type: "CompileError";
+  sourceLocation: {
+    end: number;
+    file: string;
+    start: number;
+  };
 }

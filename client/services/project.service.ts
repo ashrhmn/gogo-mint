@@ -1,4 +1,4 @@
-import { prisma } from "../prisma/db";
+import { prisma } from "../lib/db";
 import { getUserByAccessToken } from "./discord.service";
 
 export const getAllProjectsByDiscordId = async (

@@ -2,7 +2,7 @@ import { User } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { GetServerSideProps, NextApiRequest, NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { service } from "../service";
 import { getLoggedInUser } from "../services/user.service";
 import { DiscordUserResponse } from "../types";
@@ -10,17 +10,23 @@ import { randomIntFromInterval } from "../utils/Number.utils";
 import Image from "next/image";
 import Link from "next/link";
 import { DISCORD_AUTH_URL } from "../constants/configuration";
+import { getHttpCookie } from "../utils/Request";
+import toast from "react-hot-toast";
 
 interface Props {
   user?: DiscordUserResponse;
+  msg: string | null;
 }
 
-const AuthenticatePage: NextPage<Props> = ({ user }) => {
+const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
   const { account, deactivate, activateBrowserWallet } = useEthers();
   const [connectedUser, setConnectedUser] = useState<User | null>();
   const [connectedWallet, setConnectedWallet] = useState<string | null>("");
   const [bgProcesses, setBgProcesses] = useState(0);
   const [refetcher, setRefetcher] = useState(false);
+  useEffect(() => {
+    if (msg) toast.error(msg, { id: "page_msg" });
+  }, [msg]);
   const router = useRouter();
   useEffect(() => {
     if (user) {
@@ -75,13 +81,21 @@ const AuthenticatePage: NextPage<Props> = ({ user }) => {
     if (!user || !account) {
       return;
     }
-    const { data: response } = await service.post("/auth/discord/link", {
-      username: user.username,
-      discriminator: user.discriminator,
-      address: account,
-    });
-    // console.log("Linked account update : ", response);
+    setBgProcesses((v) => v + 1);
+    const { data: response } = await toast.promise(
+      service.post("/auth/discord/link", {
+        username: user.username,
+        discriminator: user.discriminator,
+        address: account,
+      }),
+      {
+        loading: "Linking account...",
+        success: "Account linked successfully!",
+        error: "Error linking account!",
+      }
+    );
     setRefetcher((v) => !v);
+    setBgProcesses((v) => v - 1);
     if (!response.error) {
     } else {
       alert(response.error);
@@ -214,10 +228,16 @@ const AuthenticatePage: NextPage<Props> = ({ user }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const response = await getLoggedInUser(context.req as NextApiRequest);
+  const cookie = getHttpCookie(context.req, context.res);
+  const msg = cookie.get("auth_page_message");
+  console.log("Msg : ", msg);
+
+  cookie.set("auth_page_message", "", { expires: new Date(0) });
+  const response = await getLoggedInUser(context.req);
   return {
     props: {
       user: response.data,
+      msg: msg ? msg : null,
     },
   };
 };

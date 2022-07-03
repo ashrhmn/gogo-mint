@@ -1,12 +1,16 @@
 import { NextApiRequest } from "next";
 import { ACCESS_TOKEN_COOKIE_KEY } from "../constants/configuration";
-import { prisma } from "../prisma/db";
+import { prisma } from "../lib/db";
 import { decryptAccessToken } from "../utils/String.utils";
 import { getUserByAccessToken } from "./discord.service";
 import { errorResponse, successResponse } from "../utils/Response.utils";
-import { DiscordAccessTokenResponse, DiscordUserResponse } from "../types";
+import {
+  DiscordAccessTokenResponse,
+  DiscordUserResponse,
+  NextOrIncomingMessage,
+} from "../types";
 
-export const getLoggedInUser = async (req: NextApiRequest) => {
+export const getLoggedInUser = async (req: NextOrIncomingMessage) => {
   try {
     const encryptedAccessToken = req.cookies[ACCESS_TOKEN_COOKIE_KEY];
     if (!encryptedAccessToken || typeof encryptedAccessToken !== "string")

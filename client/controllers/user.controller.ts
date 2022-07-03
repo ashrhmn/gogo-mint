@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from "../prisma/db";
+import { prisma } from "../lib/db";
 import * as UserService from "../services/user.service";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import { User } from "@prisma/client";

@@ -22,6 +22,8 @@ describe.only("721 new", function () {
       .map((a) => keccak256(a.address));
     const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
     const root = buf2hex(tree.getRoot());
+    console.log("Root : ", root);
+
     const hash = keccak256(accounts[0].address);
     const Coll721 = await ethers.getContractFactory("Collection721");
     const coll721 = await Coll721.deploy(accounts[0].address, root, 3, 4);
@@ -76,10 +78,10 @@ describe.only("721 new", function () {
       (await coll721.balanceOf(accounts[7].address)).toString()
     );
 
-    const invalidPrivateMintTx = await coll721
-      .connect(accounts[4])
-      .mintPrivate("Hello4", invalidProof, signature4);
-    await invalidPrivateMintTx.wait();
+    // const invalidPrivateMintTx = await coll721
+    //   .connect(accounts[4])
+    //   .mintPrivate("Hello4", invalidProof, signature4);
+    // await invalidPrivateMintTx.wait();
   });
 });
 

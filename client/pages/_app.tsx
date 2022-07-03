@@ -1,14 +1,10 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import {
-  DAppProvider,
-  DAppProviderProps,
-  Mainnet,
-  Rinkeby,
-} from "@usedapp/core";
+import { DAppProvider, DAppProviderProps } from "@usedapp/core";
 import { RPC_URLS } from "../constants/RPC_URL";
 import LayoutMain from "../components/Laouts/LayoutMain";
 import Head from "next/head";
+import { Toaster } from "react-hot-toast";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const config: DAppProviderProps["config"] = {
@@ -22,6 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <LayoutMain>
         <Component {...pageProps} />
       </LayoutMain>
+      <Toaster position="top-right" />
     </DAppProvider>
   );
 }
