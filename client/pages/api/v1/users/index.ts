@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
-import { logoutDiscord } from "../../../../../controllers/discord.controller";
+import { getUserByIdentifiers } from "../../../../controllers/user.controller";
 
 export default nextConnect<NextApiRequest, NextApiResponse>().get(
-  logoutDiscord
+  getUserByIdentifiers
 );

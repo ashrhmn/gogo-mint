@@ -8,6 +8,7 @@ import {
 } from "@usedapp/core";
 import { RPC_URLS } from "../constants/RPC_URL";
 import LayoutMain from "../components/Laouts/LayoutMain";
+import Head from "next/head";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const config: DAppProviderProps["config"] = {
@@ -15,6 +16,9 @@ function MyApp({ Component, pageProps }: AppProps) {
   };
   return (
     <DAppProvider config={config}>
+      <Head>
+        <title>GOGO-MINT</title>
+      </Head>
       <LayoutMain>
         <Component {...pageProps} />
       </LayoutMain>

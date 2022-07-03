@@ -4,18 +4,18 @@ import { GetServerSideProps, NextApiRequest, NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { service } from "../service";
-import { getLoggedInUser } from "../services/User";
+import { getLoggedInUser } from "../services/user.service";
 import { DiscordUserResponse } from "../types";
-import { randomIntFromInterval } from "../utils/Number";
+import { randomIntFromInterval } from "../utils/Number.utils";
 import Image from "next/image";
 import Link from "next/link";
+import { DISCORD_AUTH_URL } from "../constants/configuration";
 
 interface Props {
   user?: DiscordUserResponse;
-  isProduction: boolean;
 }
 
-const AuthenticatePage: NextPage<Props> = ({ user, isProduction }) => {
+const AuthenticatePage: NextPage<Props> = ({ user }) => {
   const { account, deactivate, activateBrowserWallet } = useEthers();
   const [connectedUser, setConnectedUser] = useState<User | null>();
   const [connectedWallet, setConnectedWallet] = useState<string | null>("");
@@ -27,7 +27,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, isProduction }) => {
       setBgProcesses((v) => v + 1);
       service
         .get(
-          `/user?username=${user.username}&discriminator=${user.discriminator}`
+          `/users?username=${user.username}&discriminator=${user.discriminator}`
         )
         .then(({ data: { data: user } }: { data: { data: User } }) => {
           // console.log(user);
@@ -51,7 +51,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, isProduction }) => {
     if (account) {
       setBgProcesses((v) => v + 1);
       service
-        .get(`/user?address=${account}`)
+        .get(`/users?address=${account}`)
         .then(
           ({
             data: { data: user, error },
@@ -82,7 +82,6 @@ const AuthenticatePage: NextPage<Props> = ({ user, isProduction }) => {
     });
     // console.log("Linked account update : ", response);
     setRefetcher((v) => !v);
-    // router.reload();
     if (!response.error) {
     } else {
       alert(response.error);
@@ -109,7 +108,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, isProduction }) => {
                 {connectedUser ? (
                   <div className="text-center">
                     Your wallet is linked to the user{" "}
-                    {connectedUser.discordUsername} #$
+                    {connectedUser.discordUsername} #
                     {connectedUser.discordDiscriminator}
                   </div>
                 ) : (
@@ -185,14 +184,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, isProduction }) => {
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
             <h1>Discord not connected</h1>
-            <Link
-              href={
-                isProduction
-                  ? `https://discord.com/api/oauth2/authorize?client_id=992820231242268723&redirect_uri=https%3A%2F%2Fgogo-mint.ashrhmn.com%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect&response_type=code&scope=identify`
-                  : `https://discord.com/oauth2/authorize?client_id=992820231242268723&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect&response_type=code&scope=identify`
-              }
-              passHref
-            >
+            <Link href={DISCORD_AUTH_URL} passHref>
               <a className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors">
                 Login with Discord
               </a>
@@ -226,7 +218,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       user: response.data,
-      isProduction: process.env.NODE_ENV == "production",
     },
   };
 };

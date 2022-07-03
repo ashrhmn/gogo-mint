@@ -1,16 +1,10 @@
-import Cookies from "cookies";
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  ACCESS_TOKEN_COOKIE_KEY,
-  CRYPTO_SECRET,
-} from "../constants/configuration";
 import { prisma } from "../prisma/db";
-import CryptoJS from "crypto-js";
-import axios from "axios";
-import { DiscordUserResponse } from "../types";
-import * as UserService from "../services/User";
-import { errorResponse, successResponse } from "../utils/Response";
+import * as UserService from "../services/user.service";
+import { errorResponse, successResponse } from "../utils/Response.utils";
 import { User } from "@prisma/client";
+import { getUserByAccessToken } from "../services/discord.service";
+import { getAccessTokenFromCookie } from "../utils/Request";
 
 export const getAllUser = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.json(await prisma.user.findMany());
@@ -20,21 +14,11 @@ export const getLoggedInUser = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
-  const encryptedAccessToken =
-    req.query[ACCESS_TOKEN_COOKIE_KEY] || req.headers.token;
-  if (!encryptedAccessToken || typeof encryptedAccessToken !== "string")
-    return res.json({ message: "Access Token Not Found" });
-  const accessToken = CryptoJS.AES.decrypt(
-    encryptedAccessToken,
-    CRYPTO_SECRET
-  ).toString(CryptoJS.enc.Utf8);
-  const { data: user }: { data: DiscordUserResponse } = await axios.get(
-    `https://discord.com/api/v8/users/@me`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
-  return res.json(user);
+  const accessToken = getAccessTokenFromCookie(req);
+  if (!accessToken) return res.json({ message: "Access Token Not Found" });
+  const user = await getUserByAccessToken(accessToken);
+  if (!user) return res.json(errorResponse("Unauthorized"));
+  return res.json(successResponse(user));
 };
 
 export const getUserByDiscordIdentifiers = async (
