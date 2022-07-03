@@ -31,7 +31,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
       : "overview";
   return (
     <div>
-      <div className="flex justify-between">
+      <div className="flex justify-between my-4">
         <div>
           <h1 className="text-5xl font-bold">{project.name}</h1>
           <h2 className="text-2xl font-medium">

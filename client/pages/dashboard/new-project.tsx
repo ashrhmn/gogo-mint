@@ -3,6 +3,7 @@ import { ContractFactory } from "ethers";
 import { isAddress, parseEther } from "ethers/lib/utils";
 import { NextPage } from "next";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { uploadFileToFirebase } from "../../lib/firebase";
@@ -14,17 +15,14 @@ const NewProject: NextPage = () => {
   const { account, library, chainId } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
+  const router = useRouter();
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
-    name: "My Collection",
+    name: "",
     description: "",
     feeToAddress: "",
     logo: null,
-    symbol: "MCN",
-    whitelistAddresses: [
-      "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-      "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2",
-      "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db",
-    ],
+    symbol: "",
+    whitelistAddresses: [],
     privateMintCharge: 0,
     publicMintCharge: 0,
   });
@@ -170,10 +168,13 @@ const NewProject: NextPage = () => {
         toast.error("Error saving project");
         return;
       }
-      console.log(newProject.data);
-
+      //   console.log(newProject.data);
       //   console.log(contract);
       setBgProcessRunning((v) => v - 1);
+
+      router.push(
+        `/dashboard/project?contract=${contract.address}&network=${chainId}`
+      );
     } catch (error) {
       console.log(error);
       if ((error as any).message) toast.error((error as any).message);
@@ -264,6 +265,7 @@ const NewProject: NextPage = () => {
             <input
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="number"
+              min={0}
               value={configSet.privateMintCharge}
               step={0.01}
               onChange={(e) =>
@@ -282,6 +284,7 @@ const NewProject: NextPage = () => {
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="number"
               step={0.01}
+              min={0}
               value={configSet.publicMintCharge}
               onChange={(e) =>
                 setConfigSet((c) => ({
