@@ -20,7 +20,9 @@ const Dashboard: NextPage<Props> = ({ projects }) => {
       </button>
       <h1>Projects</h1>
       <div>{!projects && <>Error Loading Projects</>}</div>
-      <div>{projects && projects.map((p) => <tr key={p.id}>{p.name}</tr>)}</div>
+      <div>
+        {projects && projects.map((p) => <div key={p.id}>{p.name}</div>)}
+      </div>
       <div>{projects && projects.length == 0 && <>No project to show</>}</div>
     </div>
   );

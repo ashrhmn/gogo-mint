@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { IDeployConfigSet } from "../../types";
+import { normalizeString } from "../../utils/String.utils";
 
 const NewProject: NextPage = () => {
   const { account, library } = useEthers();
@@ -73,6 +74,14 @@ const NewProject: NextPage = () => {
       toast.error("Name is required");
       return;
     }
+    if (!/^[A-Za-z0-9 -_]+$/.test(configSet.name)) {
+      toast.error("Name must be alphanumeric");
+      return;
+    }
+    if (!/^[A-Za-z0-9 -_]+$/.test(configSet.symbol)) {
+      toast.error("Symbol must be alphanumeric");
+      return;
+    }
     if (!configSet.feeToAddress) {
       toast.error("Please enter a fee recipient address");
       return;
@@ -87,11 +96,12 @@ const NewProject: NextPage = () => {
     }
     setBgProcessRunning((v) => v + 1);
     try {
+      const whitelist = configSet.whitelistAddresses.includes(account)
+        ? configSet.whitelistAddresses
+        : [...configSet.whitelistAddresses, account];
       const uploadImagePromise = uploadFileToFirebase(configSet.logo);
       const getWhitelistPromise = service.post(`merkletree`, {
-        addresses: configSet.whitelistAddresses.includes(account)
-          ? configSet.whitelistAddresses
-          : [...configSet.whitelistAddresses, account],
+        addresses: whitelist,
       });
       const getContractFilePromise = service.get(
         `contract/collection721?name=${configSet.name}`
@@ -138,12 +148,22 @@ const NewProject: NextPage = () => {
           loading: "Sending transaction...",
         }
       );
-      await toast.promise(contract.deployed(), {
-        success: "Contract deployed successfully",
-        error: "Error deploying contract",
-        loading: "Deploying contract...",
+      const saveProjectToDbPromise = service.post(`/projects`, {
+        name: configSet.name,
+        address: contract.address,
+        description: configSet.description,
+        imageUrl,
+        whitelist,
       });
-      console.log(contract);
+      await toast.promise(
+        Promise.all([saveProjectToDbPromise, contract.deployed()]),
+        {
+          success: "Contract deployed successfully",
+          error: "Error deploying contract",
+          loading: "Deploying contract...",
+        }
+      );
+      //   console.log(contract);
       setBgProcessRunning((v) => v - 1);
     } catch (error) {
       console.log(error);

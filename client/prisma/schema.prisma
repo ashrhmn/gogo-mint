@@ -31,8 +31,8 @@ model Project {
   owner       User     @relation(fields: [userId], references: [id])
   address     String?
   whitelist   String[]
+  nfts        NFT[]
 
-  NFT NFT[]
   @@map("projects")
 }
 

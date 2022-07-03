@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
-import { getAllProjectsByDiscordId } from "../../../../controllers/project.controller";
+import {
+  addNewProject,
+  getAllProjectsByDiscordId,
+} from "../../../../controllers/project.controller";
 
-export default nextConnect<NextApiRequest, NextApiResponse>().get(
-  getAllProjectsByDiscordId
-);
+export default nextConnect<NextApiRequest, NextApiResponse>()
+  .get(getAllProjectsByDiscordId)
+  .post(addNewProject);

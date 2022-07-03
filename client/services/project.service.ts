@@ -1,5 +1,6 @@
 import { prisma } from "../lib/db";
 import { getUserByAccessToken } from "./discord.service";
+import { getUserByDiscordIdentifiers } from "./user.service";
 
 export const getAllProjectsByDiscordId = async (
   username: string,
@@ -13,6 +14,45 @@ export const getAllProjectsByDiscordId = async (
       },
     },
   });
+
+export const addNewProject = async (
+  name: string,
+  address: string,
+  description: string,
+  imageUrl: string,
+  userId: number,
+  whitelist: string[]
+) => {
+  return await prisma.project.create({
+    data: { name, userId, address, description, imageUrl, whitelist },
+  });
+};
+
+export const createProjectForLoggedInUser = async (
+  name: string,
+  address: string,
+  description: string,
+  imageUrl: string,
+  whitelist: string[],
+  accessToken: string
+) => {
+  const user = await getUserByAccessToken(accessToken);
+  if (!user) throw "User not logged in";
+  const dbUser = await getUserByDiscordIdentifiers(
+    user.username,
+    user.discriminator
+  );
+  if (!dbUser) throw "User not found in db";
+  const newProject = await addNewProject(
+    name,
+    address,
+    description,
+    imageUrl,
+    dbUser.id,
+    whitelist
+  );
+  return newProject;
+};
 
 export const getAllProjectsOfLoggedInDiscordUser = async (
   accessToken: string

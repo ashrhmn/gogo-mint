@@ -26,7 +26,23 @@ export function capitalize(input: string) {
 }
 
 export function normalizeString(input: string) {
-  return capitalize(input).replace(/\W+/, "_");
+  const res = input
+    .split(" ")
+    .map((w) => capitalize(w))
+    .join("")
+    .split("-")
+    .map((w) => capitalize(w))
+    .join("_");
+  console.log(input, " is nzd to ", res);
+
+  return input
+    .split(" ")
+    .map((w) => capitalize(w))
+    .join("")
+    .split("-")
+    .map((w) => capitalize(w))
+    .join("");
+  //   return capitalize(input).replace(" ", "_").replace("-", "_");
 }
 
 export const bufferTohex = (buf: Buffer) => `0x${buf.toString("hex")}`;
