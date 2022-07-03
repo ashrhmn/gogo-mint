@@ -47,7 +47,7 @@ export const discordRedirectGet = async (
       const cookie = new Cookies(req, res);
       cookie.set(ACCESS_TOKEN_COOKIE_KEY, encryptedToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        // secure: process.env.NODE_ENV === "production",
       });
       const upsert = await prisma.user.upsert({
         where: {
