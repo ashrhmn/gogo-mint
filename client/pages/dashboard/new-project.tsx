@@ -11,7 +11,7 @@ import { IDeployConfigSet } from "../../types";
 import { normalizeString } from "../../utils/String.utils";
 
 const NewProject: NextPage = () => {
-  const { account, library } = useEthers();
+  const { account, library, chainId } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
@@ -119,9 +119,9 @@ const NewProject: NextPage = () => {
             loading: "Compiling contract...",
           }
         );
-      console.log(imageUrl);
-      console.log(whitelistRoot);
-      console.log(initCode);
+      //   console.log(imageUrl);
+      //   console.log(whitelistRoot);
+      //   console.log(initCode);
       if (whitelistRoot.error) {
         toast.error("Error getting whitelist root");
         return;
@@ -154,8 +154,9 @@ const NewProject: NextPage = () => {
         description: configSet.description,
         imageUrl,
         whitelist,
+        chainId,
       });
-      await toast.promise(
+      const [newProject] = await toast.promise(
         Promise.all([saveProjectToDbPromise, contract.deployed()]),
         {
           success: "Contract deployed successfully",
@@ -163,6 +164,14 @@ const NewProject: NextPage = () => {
           loading: "Deploying contract...",
         }
       );
+      if (newProject.data.error) {
+        console.log(newProject.data.error);
+
+        toast.error("Error saving project");
+        return;
+      }
+      console.log(newProject.data);
+
       //   console.log(contract);
       setBgProcessRunning((v) => v - 1);
     } catch (error) {

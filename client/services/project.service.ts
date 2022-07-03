@@ -21,10 +21,11 @@ export const addNewProject = async (
   description: string,
   imageUrl: string,
   userId: number,
-  whitelist: string[]
+  whitelist: string[],
+  chainId: number
 ) => {
   return await prisma.project.create({
-    data: { name, userId, address, description, imageUrl, whitelist },
+    data: { name, userId, address, description, imageUrl, whitelist, chainId },
   });
 };
 
@@ -34,7 +35,8 @@ export const createProjectForLoggedInUser = async (
   description: string,
   imageUrl: string,
   whitelist: string[],
-  accessToken: string
+  accessToken: string,
+  chainId: number
 ) => {
   const user = await getUserByAccessToken(accessToken);
   if (!user) throw "User not logged in";
@@ -49,7 +51,8 @@ export const createProjectForLoggedInUser = async (
     description,
     imageUrl,
     dbUser.id,
-    whitelist
+    whitelist,
+    chainId
   );
   return newProject;
 };
