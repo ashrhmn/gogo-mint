@@ -19,7 +19,10 @@ export const getProjectByChainAddress = async (
   address: string,
   chainId: number
 ) => {
-  return await prisma.project.findFirst({ where: { address, chainId } });
+  return await prisma.project.findFirst({
+    where: { address, chainId },
+    include: { nfts: { include: { properties: true } } },
+  });
 };
 
 export const addNewProject = async (

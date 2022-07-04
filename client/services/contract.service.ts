@@ -1755,8 +1755,10 @@ contract ${normalizeString(contractName)} is Ownable, ERC721URIStorage {
         address _feeDestination,
         bytes32 _whitelistRoot,
         uint256 _privateMintCharge,
-        uint256 _publicMintCharge
-    ) ERC721("", "") {
+        uint256 _publicMintCharge,
+        string memory _name,
+        string memory _symbol
+    ) ERC721(_name, _symbol) {
         feeDestination = _feeDestination;
         whitelistRoot = _whitelistRoot;
         privateMintCharge = _privateMintCharge;

@@ -1,18 +1,19 @@
-import { Project } from "@prisma/client";
+import { NFT, NFTMetadataProperties, Project } from "@prisma/client";
 import { shortenIfAddress } from "@usedapp/core";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-import ClaimsSection from "../../../components/ProjectDashboard/Claims";
-import CreateModal from "../../../components/ProjectDashboard/CreateModal";
-import OverviewSection from "../../../components/ProjectDashboard/Overview";
-import PermissionsSection from "../../../components/ProjectDashboard/Permissions";
-import SettingsSection from "../../../components/ProjectDashboard/Settings";
-import { authorizeProject } from "../../../services/auth.service";
+import ClaimsSection from "../../components/ProjectDashboard/Claims";
+import CreateModal from "../../components/ProjectDashboard/CreateModal";
+import OverviewSection from "../../components/ProjectDashboard/Overview";
+import PermissionsSection from "../../components/ProjectDashboard/Permissions";
+import SettingsSection from "../../components/ProjectDashboard/Settings";
+import { authorizeProject } from "../../services/auth.service";
+import { ProjectExtended } from "../../types";
 
 interface Props {
-  project: Project;
+  project: ProjectExtended;
 }
 
 const ProjectPage: NextPage<Props> = ({ project }) => {
@@ -84,7 +85,9 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
             Settings
           </button>
         </div>
-        <div>{currentTab == "overview" && <OverviewSection />}</div>
+        <div>
+          {currentTab == "overview" && <OverviewSection nfts={project.nfts} />}
+        </div>
         <div>{currentTab == "permissions" && <PermissionsSection />}</div>
         <div>{currentTab == "claims" && <ClaimsSection />}</div>
         <div>{currentTab == "settings" && <SettingsSection />}</div>
@@ -121,6 +124,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       redirect: (project as any).redirect,
     };
   }
+
   return { props: { project } };
 };
 

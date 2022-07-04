@@ -116,7 +116,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
         {account ? (
           <div className="flex flex-col gap-6 items-center w-full">
             <h1>You are logged in as</h1>
-            <div className="bg-gray-700 text-white p-8 rounded-xl flex items-center gap-6">
+            <div className="bg-gray-700 text-white p-8 rounded-xl flex flex-col sm:flex-row items-center gap-6 max-w-md sm:w-full">
               <h1>{shortenIfAddress(account)}</h1>
               <button
                 className="bg-red-500 text-white rounded text-2xl p-2 w-40 hover:bg-red-700 transition-colors"
@@ -158,7 +158,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
         {user ? (
           <div className="flex flex-col items-center w-full">
             <h1>Logged in as</h1>
-            <div className="flex justify-between m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md">
+            <div className="flex flex-col gap-4 sm:w-full sm:flex-row justify-between m-6 bg-gray-700 p-4 rounded-xl max-w-md">
               <div className="flex gap-8">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden ring-4 ring-indigo-500">
                   <Image

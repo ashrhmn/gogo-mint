@@ -1,4 +1,5 @@
 import { shortenAddress, useEthers } from "@usedapp/core";
+import axios from "axios";
 import { ContractFactory } from "ethers";
 import { isAddress, parseEther } from "ethers/lib/utils";
 import { NextPage } from "next";
@@ -119,7 +120,7 @@ const NewProject: NextPage = () => {
         );
       //   console.log(imageUrl);
       //   console.log(whitelistRoot);
-      //   console.log(initCode);
+
       if (whitelistRoot.error) {
         toast.error("Error getting whitelist root");
         return;
@@ -133,12 +134,15 @@ const NewProject: NextPage = () => {
         initCode.data.bytecode,
         library.getSigner(account)
       );
+      console.log(initCode);
       const contract = await toast.promise(
         factory.deploy(
           configSet.feeToAddress,
           whitelistRoot.data,
           parseEther(configSet.privateMintCharge.toString()),
-          parseEther(configSet.publicMintCharge.toString())
+          parseEther(configSet.publicMintCharge.toString()),
+          normalizeString(configSet.name),
+          normalizeString(configSet.symbol)
         ),
         {
           success: "Transaction sent",
@@ -146,6 +150,7 @@ const NewProject: NextPage = () => {
           loading: "Sending transaction...",
         }
       );
+
       const saveProjectToDbPromise = service.post(`/projects`, {
         name: configSet.name,
         address: contract.address,

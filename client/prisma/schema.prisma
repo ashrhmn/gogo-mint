@@ -40,12 +40,27 @@ model Project {
 }
 
 model NFT {
-  id          Int     @id @default(autoincrement())
-  projectId   Int
-  project     Project @relation(fields: [projectId], references: [id])
-  metadataUri String?
-  signature   String?
-  tokenId     Int?
+  id              Int                     @id @default(autoincrement())
+  projectId       Int
+  project         Project                 @relation(fields: [projectId], references: [id])
+  signature       String?
+  tokenId         Int?
+  name            String
+  description     String?
+  imageUrl        String?
+  backgroundColor String?
+  externalUrl     String?
+  properties      NFTMetadataProperties[]
 
   @@map("nfts")
+}
+
+model NFTMetadataProperties {
+  id    Int    @id @default(autoincrement())
+  type  String
+  value String
+  NFT   NFT?   @relation(fields: [nFTId], references: [id])
+  nFTId Int?
+
+  @@map("nft_metadata_properties")
 }

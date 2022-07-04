@@ -1,3 +1,4 @@
+import { NFT, NFTMetadataProperties, Project } from "@prisma/client";
 import { IncomingMessage, ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -98,4 +99,11 @@ export interface INftMetadata {
   traits: INftTrait[];
   openSeaBgColor: string;
   openSeaExternalUrl: string;
+}
+
+export interface NftExtended extends NFT {
+  properties: NFTMetadataProperties[];
+}
+export interface ProjectExtended extends Project {
+  nfts: NftExtended[];
 }

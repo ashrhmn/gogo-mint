@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { INftMetadata } from "../../types";
 import { v4 as uuidv4, v4 } from "uuid";
+import { service } from "../../service";
+import { uploadFileToFirebase } from "../../lib/firebase";
+import Image from "next/image";
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 
 const CreateModal = ({
   projectId,
@@ -11,6 +16,7 @@ const CreateModal = ({
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
 }) => {
+  const router = useRouter();
   const [configSet, setConfigSet] = useState<INftMetadata>({
     file: null,
     name: "",
@@ -19,6 +25,56 @@ const CreateModal = ({
     traits: [{ trait_type: "", value: "", uuid: v4() }],
     description: "",
   });
+  const [imageBase64, setImageBase64] = useState("");
+  const imgInputRef = useRef<HTMLInputElement | null>(null);
+  const onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.addEventListener("load", (ev) => {
+      if (ev.target && typeof ev.target.result === "string")
+        setImageBase64(ev.target.result);
+    });
+    reader.readAsDataURL(file);
+    setConfigSet((c) => ({ ...c, file }));
+  };
+  const handleAddNft = async () => {
+    try {
+      const url = !configSet.file
+        ? null
+        : await toast.promise(uploadFileToFirebase(configSet.file), {
+            error: "Image uploading error",
+            loading: "Uploading image",
+            success: "Image uploaded successfully",
+          });
+      const { data: nft } = await toast.promise(
+        service.post(`nft`, {
+          projectId,
+          name: configSet.name,
+          description: configSet.description,
+          properties: configSet.traits.map((t) => ({
+            type: t.trait_type,
+            value: t.value,
+          })),
+          backgroundColor: configSet.openSeaBgColor,
+          externalUrl: configSet.openSeaExternalUrl,
+          imageUrl: url,
+        }),
+        {
+          error: "Error saving NFT",
+          loading: "Saving NFT data",
+          success: "NFT saved successfully",
+        }
+      );
+      if (!nft.error) router.reload();
+      if (typeof nft.error == "string") toast.error(nft.error);
+    } catch (error) {
+      if (typeof error == "string") toast.error(error);
+      if (typeof (error as any).message == "string")
+        toast.error((error as any).message);
+      console.log(error);
+    }
+  };
   return (
     <div
       className={`fixed inset-0 md:left-auto shadow-xl bg-white transition-transform duration-300 p-6 overflow-y-auto md:min-w-[500px] ${
@@ -46,6 +102,26 @@ const CreateModal = ({
             setConfigSet((c) => ({ ...c, name: e.target.value }))
           }
         />
+      </div>
+      <div className="mt-4">
+        <div
+          onClick={() => {
+            if (imgInputRef && imgInputRef.current) imgInputRef.current.click();
+          }}
+          className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+        >
+          <input
+            ref={imgInputRef}
+            onChange={onSelectImage}
+            type="file"
+            hidden
+          />
+          {!!imageBase64 ? (
+            <Image src={imageBase64} alt="" layout="fill" />
+          ) : (
+            <span className="text-2xl">+</span>
+          )}
+        </div>
       </div>
       <div className="mt-4 space-y-2">
         <label className="font-bold">Description</label>
@@ -156,7 +232,10 @@ const CreateModal = ({
         <button className="border-2 border-gray-400 rounded p-2 w-32 hover:bg-gray-200">
           Cancel
         </button>
-        <button className="rounded p-2 w-32 bg-sky-500 text-white hover:bg-sky-700 transition-colors">
+        <button
+          onClick={handleAddNft}
+          className="rounded p-2 w-32 bg-sky-500 text-white hover:bg-sky-700 transition-colors"
+        >
           Create NFT
         </button>
       </div>
