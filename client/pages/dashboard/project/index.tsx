@@ -3,15 +3,13 @@ import { shortenIfAddress } from "@usedapp/core";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
-import ClaimsSection from "../../components/ProjectDashboard/Claims";
-import OverviewSection from "../../components/ProjectDashboard/Overview";
-import PermissionsSection from "../../components/ProjectDashboard/Permissions";
-import SettingsSection from "../../components/ProjectDashboard/Settings";
-import { getUserByAccessToken } from "../../services/discord.service";
-import { getProjectByChainAddress } from "../../services/project.service";
-import { getUserByDiscordIdentifiers } from "../../services/user.service";
-import { getAccessTokenFromCookie, getHttpCookie } from "../../utils/Request";
+import React, { useState } from "react";
+import ClaimsSection from "../../../components/ProjectDashboard/Claims";
+import CreateModal from "../../../components/ProjectDashboard/CreateModal";
+import OverviewSection from "../../../components/ProjectDashboard/Overview";
+import PermissionsSection from "../../../components/ProjectDashboard/Permissions";
+import SettingsSection from "../../../components/ProjectDashboard/Settings";
+import { authorizeProject } from "../../../services/auth.service";
 
 interface Props {
   project: Project;
@@ -19,6 +17,7 @@ interface Props {
 
 const ProjectPage: NextPage<Props> = ({ project }) => {
   const router = useRouter();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const setTab = (val: string) => {
     const r = router;
     r.query.tab = val;
@@ -39,7 +38,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
           </h2>
         </div>
         <div>
-          <button>Create NFT</button>
+          <button onClick={() => setIsCreateModalOpen(true)}>+ Create</button>
         </div>
       </div>
       <div>
@@ -90,6 +89,17 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
         <div>{currentTab == "claims" && <ClaimsSection />}</div>
         <div>{currentTab == "settings" && <SettingsSection />}</div>
       </div>
+      <div
+        onClick={() => setIsCreateModalOpen(false)}
+        className={`${
+          isCreateModalOpen ? "" : "opacity-0 translate-x-full"
+        } fixed inset-0 z-50 bg-[rgba(0,0,0,0.5)] transition-opacity`}
+      />
+      <CreateModal
+        isCreateModalOpen={isCreateModalOpen}
+        setIsCreateModalOpen={setIsCreateModalOpen}
+        projectId={project.id}
+      />
     </div>
   );
 };
@@ -104,33 +114,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     typeof network != "string"
   )
     return { props: {}, redirect: { destination: `/404` } };
-  const accessToken = getAccessTokenFromCookie(context.req);
-  const cookie = getHttpCookie(context.req, context.res);
-  if (!accessToken) {
-    cookie.set("auth_page_message", "You must login to continue");
-    return { props: {}, redirect: { destination: "/authenticate" } };
-  }
-  const user = await getUserByAccessToken(accessToken);
-  if (!user) {
-    cookie.set("auth_page_message", "You must login to continue");
-    return { props: {}, redirect: { destination: "/authenticate" } };
-  }
-  const dbUser = await getUserByDiscordIdentifiers(
-    user.username,
-    user.discriminator
-  );
-  if (!dbUser) {
-    cookie.set("auth_page_message", "You must login to continue");
-    return { props: {}, redirect: { destination: "/authenticate" } };
-  }
-  const project = await getProjectByChainAddress(contract, +network);
-  if (!project) return { props: {}, redirect: { destination: `/404` } };
-  if (project.userId !== dbUser.id) {
-    cookie.set(
-      "auth_page_message",
-      "You are not allowed to view this page. Are you logged in to the correct user?"
-    );
-    return { props: {}, redirect: { destination: "/authenticate" } };
+  const project = await authorizeProject(context, contract, +network);
+  if (!!(project as any).redirect) {
+    return {
+      props: (project as any).props,
+      redirect: (project as any).redirect,
+    };
   }
   return { props: { project } };
 };

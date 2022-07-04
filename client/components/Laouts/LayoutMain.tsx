@@ -6,10 +6,10 @@ const LayoutMain = ({ children }: { children: React.ReactNode }) => {
   const { activateBrowserWallet, account, deactivate } = useEthers();
   return (
     <>
-      <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-50 bg-white">
-        <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 z-50 bg-white h-16">
-          <div>Logo</div>
-          <div className="flex">
+      <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-40 bg-white">
+        <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-16">
+          <div className="w-0 sm:w-auto overflow-hidden">Logo</div>
+          <div className="flex overflow-auto">
             <Link href={`/`}>
               <a className="p-2 font-bold text-gray-800 hover:text-black">
                 Home
@@ -25,7 +25,7 @@ const LayoutMain = ({ children }: { children: React.ReactNode }) => {
                 Authenticate
               </a>
             </Link>
-            <div className="flex items-center justify-center group p-2 font-bold text-gray-800 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
+            <div className="sm:flex hidden items-center justify-center group p-2 font-bold text-gray-800 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
               {account ? (
                 <>
                   <span className="group-hover:hidden">

@@ -84,3 +84,18 @@ export interface CompileError {
     start: number;
   };
 }
+
+export interface INftTrait {
+  uuid: string;
+  trait_type: string;
+  value: string;
+}
+
+export interface INftMetadata {
+  name: string;
+  description: string;
+  file: File | null;
+  traits: INftTrait[];
+  openSeaBgColor: string;
+  openSeaExternalUrl: string;
+}

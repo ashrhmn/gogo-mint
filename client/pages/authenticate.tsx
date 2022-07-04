@@ -24,10 +24,18 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
   const [connectedWallet, setConnectedWallet] = useState<string | null>("");
   const [bgProcesses, setBgProcesses] = useState(0);
   const [refetcher, setRefetcher] = useState(false);
-  useEffect(() => {
-    if (msg) toast.error(msg, { id: "page_msg" });
-  }, [msg]);
   const router = useRouter();
+  useEffect(() => {
+    let id: string | number | NodeJS.Timeout | undefined;
+    if (msg) {
+      id = setTimeout(() => {
+        toast.error(msg, { id: "page_msg" });
+      }, 1000);
+      console.log(id);
+    }
+    if (id) return () => clearTimeout(id);
+  }, [msg, router.query.msg]);
+
   useEffect(() => {
     if (user) {
       setBgProcesses((v) => v + 1);
@@ -230,7 +238,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookie = getHttpCookie(context.req, context.res);
   const msg = cookie.get("auth_page_message");
-  console.log("Msg : ", msg);
+  // console.log("Msg : ", msg);
 
   cookie.set("auth_page_message", "", { expires: new Date(0) });
   const response = await getLoggedInUser(context.req);
