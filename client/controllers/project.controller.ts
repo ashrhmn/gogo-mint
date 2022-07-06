@@ -32,8 +32,15 @@ export const addNewProject = async (
     const accessToken = getAccessTokenFromCookie(req);
     if (!accessToken)
       return res.json(errorResponse("Access token not provided"));
-    const { name, address, description, imageUrl, whitelist, chainId } =
-      req.body;
+    const {
+      name,
+      address,
+      description,
+      imageUrl,
+      whitelist,
+      chainId,
+      collectionType,
+    } = req.body;
     if (!name || typeof name !== "string")
       return res.json(errorResponse("Name is required"));
 
@@ -44,7 +51,8 @@ export const addNewProject = async (
       imageUrl,
       whitelist,
       accessToken,
-      chainId
+      chainId,
+      collectionType
     );
     return res.json(successResponse(project));
   } catch (error) {

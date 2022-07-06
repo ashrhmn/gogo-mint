@@ -1,8 +1,82 @@
+import { shortenIfAddress, useEthers } from "@usedapp/core";
+import { Contract, getDefaultProvider } from "ethers";
+import { arrayify, isAddress, solidityKeccak256 } from "ethers/lib/utils";
 import Image from "next/image";
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
+import toast from "react-hot-toast";
+import { ABI1155, ABI721 } from "../../constants/abis";
+import { RPC_URLS } from "../../constants/RPC_URL";
+import { getTokenUri } from "../../constants/tokenUri";
+import { service } from "../../service";
 import { NftExtended } from "../../types";
 
-const OverviewSection = ({ nfts }: { nfts: NftExtended[] }) => {
+const OverviewSection = ({
+  nfts,
+  address,
+  projectChainId,
+  collectionType,
+}: {
+  nfts: NftExtended[];
+  address: string | null;
+  projectChainId: number | null;
+  collectionType: string | null;
+}) => {
+  const { account, library } = useEthers();
+  const router = useRouter();
+  useEffect(() => {
+    if (
+      !!address &&
+      !!projectChainId &&
+      isAddress(address) &&
+      !!RPC_URLS[projectChainId]
+    ) {
+      const contract = new Contract(
+        address,
+        collectionType === "721" ? ABI721 : ABI1155,
+        getDefaultProvider(RPC_URLS[projectChainId])
+      );
+      const promises = nfts
+        .filter((n) => !!n.tokenId)
+        .map((n) => contract.ownerOf(n.tokenId));
+      if (promises.length > 0) {
+        toast
+          .promise(Promise.all(promises), {
+            success: "NFT Owners fetched successfully",
+            error: "Error fetching Owners",
+            loading: "Fetching NFT Owners",
+          })
+          .then((res) => {
+            console.log(res);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    }
+  }, [address, collectionType, nfts, projectChainId]);
+  const handleSignClick = async (nftId: number) => {
+    if (!account || !library) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+    const signature = await library
+      .getSigner(account)
+      .signMessage(
+        arrayify(solidityKeccak256(["string"], [getTokenUri(nftId)]))
+      );
+    const result = await toast.promise(
+      service.put(`nft/signature`, { id: nftId, signature }),
+      {
+        error: "Error saving signature",
+        loading: "Storing signature...",
+        success: "Signature stored successfully",
+      }
+    );
+    if ((result as any).error && typeof (result as any).error == "string")
+      toast.error((result as any).error);
+    router.reload();
+  };
   return (
     <div>
       <div className="flex justify-start w-full gap-4 p-4 overflow-x-auto">
@@ -33,40 +107,51 @@ const OverviewSection = ({ nfts }: { nfts: NftExtended[] }) => {
             </tr>
           </thead>
           <tbody>
-            {nfts.map((nft) => (
-              <tr key={nft.id}>
-                <td className="p-4 text-center min-w-[100px]">{nft.tokenId}</td>
-                <td className="p-4 text-center min-w-[100px]">
-                  {nft.imageUrl && (
-                    <div className="h-20 w-20 relative">
-                      <Image layout="fill" src={nft.imageUrl} alt="" />
-                    </div>
-                  )}
-                </td>
-                <td className="p-4 text-center min-w-[100px]">{nft.name}</td>
-                <td className="p-4 text-center min-w-[100px]">
-                  {nft.description}
-                </td>
-                <td className="p-4 min-w-[100px]">
-                  <pre className="bg-gray-300 p-2 rounded">
-                    {JSON.stringify(
-                      nft.properties.map((p) => ({
-                        trait_type: p.type,
-                        value: p.value,
-                      })),
-                      null,
-                      2
+            {nfts
+              .sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0))
+              .map((nft) => (
+                <tr key={nft.id}>
+                  <td className="p-4 text-center min-w-[100px]">
+                    {nft.tokenId}
+                  </td>
+                  <td className="p-4 text-center min-w-[100px]">
+                    {nft.imageUrl && (
+                      <div className="h-20 w-20 relative">
+                        <Image layout="fill" src={nft.imageUrl} alt="" />
+                      </div>
                     )}
-                  </pre>
-                </td>
-                <td className="p-4 text-center min-w-[100px]">
-                  {!!nft.tokenId ? "0xabc" : "0x000"}
-                </td>
-                <td className="p-4 text-center min-w-[100px]">
-                  {!nft.tokenId && <button>Delete</button>}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="p-4 text-center min-w-[100px]">{nft.name}</td>
+                  <td className="p-4 text-center min-w-[100px]">
+                    {nft.description}
+                  </td>
+                  <td className="p-4 min-w-[100px]">
+                    <pre className="bg-gray-300 p-2 rounded">
+                      {JSON.stringify(
+                        nft.properties.map((p) => ({
+                          trait_type: p.type,
+                          value: p.value,
+                        })),
+                        null,
+                        2
+                      )}
+                    </pre>
+                  </td>
+                  <td className="p-4 text-center min-w-[100px]">
+                    {!!nft.tokenId ? "0xabc" : "0x0000.....0000"}
+                  </td>
+                  <td className="p-4 text-center min-w-[100px]">
+                    <div>
+                      {!nft.tokenId && <button>Delete</button>}
+                      {!nft.signature && (
+                        <button onClick={() => handleSignClick(nft.id)}>
+                          Sign
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

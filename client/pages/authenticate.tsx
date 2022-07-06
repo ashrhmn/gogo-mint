@@ -39,9 +39,17 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
   useEffect(() => {
     if (user) {
       setBgProcesses((v) => v + 1);
-      service
-        .get(
-          `/users?username=${user.username}&discriminator=${user.discriminator}`
+      toast
+        .promise(
+          service.get(
+            `/users?username=${user.username}&discriminator=${user.discriminator}`
+          ),
+          {
+            error: "Error fetching discord user data",
+            loading: "Fetching discord user data...",
+            success: "Discord user data fetched successfully",
+          },
+          { id: "fetch_discord_data" }
         )
         .then(({ data: { data: user } }: { data: { data: User } }) => {
           // console.log(user);
@@ -64,8 +72,16 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
   useEffect(() => {
     if (account) {
       setBgProcesses((v) => v + 1);
-      service
-        .get(`/users?address=${account}`)
+      toast
+        .promise(
+          service.get(`/users?address=${account}`),
+          {
+            error: "Error fetching wallet data",
+            loading: "Fetching wallet data...",
+            success: "Wallet data fetched successfully",
+          },
+          { id: "fetch_wallet_data" }
+        )
         .then(
           ({
             data: { data: user, error },

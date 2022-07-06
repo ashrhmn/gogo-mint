@@ -25,6 +25,7 @@ export const uploadFileToFirebase = async (
     const url = await getDownloadURL(snapshot.ref);
     return url;
   } catch (error) {
+    console.log("Error uploading file : ", error);
     return null;
   }
 };

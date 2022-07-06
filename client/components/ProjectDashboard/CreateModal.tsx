@@ -6,6 +6,10 @@ import { uploadFileToFirebase } from "../../lib/firebase";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
+import { useEthers } from "@usedapp/core";
+import { arrayify, solidityKeccak256 } from "ethers/lib/utils";
+import { solc } from "types-solc";
+import { getTokenUri } from "../../constants/tokenUri";
 
 const CreateModal = ({
   projectId,
@@ -16,6 +20,7 @@ const CreateModal = ({
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
 }) => {
+  const { library, account } = useEthers();
   const router = useRouter();
   const [configSet, setConfigSet] = useState<INftMetadata>({
     file: null,
@@ -66,6 +71,25 @@ const CreateModal = ({
           success: "NFT saved successfully",
         }
       );
+
+      if (nft.data && nft.data.id && account && library) {
+        const signature = await library
+          .getSigner(account)
+          .signMessage(
+            arrayify(solidityKeccak256(["string"], [getTokenUri(nft.data.id)]))
+          );
+        const result = await toast.promise(
+          service.put(`nft/signature`, { id: nft.data.id, signature }),
+          {
+            error: "Error saving signature",
+            loading: "Storing signature...",
+            success: "Signature stored successfully",
+          }
+        );
+        if ((result as any).error && typeof (result as any).error == "string")
+          toast.error((result as any).error);
+      }
+
       if (!nft.error) router.reload();
       if (typeof nft.error == "string") toast.error(nft.error);
     } catch (error) {

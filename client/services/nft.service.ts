@@ -23,10 +23,12 @@ export const addNftToProject = async (
       imageUrl,
       properties: {
         createMany: {
-          data: properties.map((p) => ({
-            type: p.type,
-            value: p.value,
-          })),
+          data: properties
+            ? properties.map((p) => ({
+                type: p.type,
+                value: p.value,
+              }))
+            : [],
           skipDuplicates: true,
         },
       },
@@ -39,4 +41,30 @@ export const getNftsByProjectId = async (projectId: number) => {
     include: { properties: true },
     where: { projectId },
   });
+};
+
+export const updateNftCreationSignature = async (
+  id: number,
+  signature: string
+) => {
+  return await prisma.nFT.update({ where: { id }, data: { signature } });
+};
+
+export const getMetadata = async (nftId: number) => {
+  const nft = await prisma.nFT.findFirstOrThrow({
+    where: { id: nftId },
+    include: { properties: true },
+  });
+  return {
+    name: nft.name,
+    description: nft.description,
+    external_link: nft.externalUrl,
+    traits: nft.properties.map((p) => ({ trait_type: p.type, value: p.value })),
+    attributes: nft.properties.map((p) => ({
+      trait_type: p.type,
+      value: p.value,
+    })),
+    image: nft.imageUrl,
+    background_color: nft.backgroundColor,
+  };
 };

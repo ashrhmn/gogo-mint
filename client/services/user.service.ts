@@ -9,13 +9,13 @@ import {
   DiscordUserResponse,
   NextOrIncomingMessage,
 } from "../types";
+import { getAccessTokenFromCookie } from "../utils/Request";
 
 export const getLoggedInUser = async (req: NextOrIncomingMessage) => {
   try {
-    const encryptedAccessToken = req.cookies[ACCESS_TOKEN_COOKIE_KEY];
-    if (!encryptedAccessToken || typeof encryptedAccessToken !== "string")
+    const accessToken = getAccessTokenFromCookie(req);
+    if (!accessToken || typeof accessToken !== "string")
       return { data: null, error: "Access Token Not Found" };
-    const accessToken = decryptAccessToken(encryptedAccessToken);
     const user = await getUserByAccessToken(accessToken);
     if (user) return successResponse(user);
     return errorResponse("Error fetching user");

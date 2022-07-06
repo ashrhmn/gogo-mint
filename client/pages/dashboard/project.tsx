@@ -9,6 +9,7 @@ import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
 import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
+import { ENV_PROTOCOL } from "../../constants/configuration";
 import { authorizeProject } from "../../services/auth.service";
 import { ProjectExtended } from "../../types";
 
@@ -86,7 +87,14 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
           </button>
         </div>
         <div>
-          {currentTab == "overview" && <OverviewSection nfts={project.nfts} />}
+          {currentTab == "overview" && (
+            <OverviewSection
+              address={project.address}
+              projectChainId={project.chainId}
+              nfts={project.nfts}
+              collectionType={project.collectionType}
+            />
+          )}
         </div>
         <div>{currentTab == "permissions" && <PermissionsSection />}</div>
         <div>{currentTab == "claims" && <ClaimsSection />}</div>

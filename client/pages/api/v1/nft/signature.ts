@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
-import { get721CompiledContract } from "../../../../controllers/codegen.controller";
+import { updateNftCreationSignature } from "../../../../controllers/nft.controller";
 import onlyValidUser from "../../../../middlewares/user";
 
 export default nextConnect<NextApiRequest, NextApiResponse>()
   .use(onlyValidUser)
-  .get(get721CompiledContract);
+  .put(updateNftCreationSignature);

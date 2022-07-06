@@ -43,7 +43,8 @@ const NewProject: NextPage = () => {
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, logo: file }));
   };
-  const handleAddWhiteListButton = () => {
+  const handleAddWhiteListButton = (e: any) => {
+    e.preventDefault();
     if (!isAddress(tempWhitelistAddress)) {
       toast.error("Invalid address");
       return;
@@ -98,19 +99,15 @@ const NewProject: NextPage = () => {
       const whitelist = configSet.whitelistAddresses.includes(account)
         ? configSet.whitelistAddresses
         : [...configSet.whitelistAddresses, account];
-      const uploadImagePromise = uploadFileToFirebase(configSet.logo);
-      const getWhitelistPromise = service.post(`merkletree`, {
-        addresses: whitelist,
-      });
-      const getContractFilePromise = service.get(
-        `contract/collection721?name=${configSet.name}`
-      );
+
       const [imageUrl, { data: whitelistRoot }, { data: initCode }] =
         await toast.promise(
           Promise.all([
-            uploadImagePromise,
-            getWhitelistPromise,
-            getContractFilePromise,
+            uploadFileToFirebase(configSet.logo),
+            service.post(`merkletree`, {
+              addresses: whitelist,
+            }),
+            service.get(`contract/collection721?name=${configSet.name}`),
           ]),
           {
             success: "Contract Compiled Successfully",
@@ -150,17 +147,19 @@ const NewProject: NextPage = () => {
           loading: "Sending transaction...",
         }
       );
-
-      const saveProjectToDbPromise = service.post(`/projects`, {
-        name: configSet.name,
-        address: contract.address,
-        description: configSet.description,
-        imageUrl,
-        whitelist,
-        chainId,
-      });
       const [newProject] = await toast.promise(
-        Promise.all([saveProjectToDbPromise, contract.deployed()]),
+        Promise.all([
+          service.post(`/projects`, {
+            name: configSet.name,
+            address: contract.address,
+            description: configSet.description,
+            imageUrl,
+            whitelist,
+            chainId,
+            collectionType: "721",
+          }),
+          contract.deployed(),
+        ]),
         {
           success: "Contract deployed successfully",
           error: "Error deploying contract",

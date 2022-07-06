@@ -23,16 +23,17 @@ model User {
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  name        String
-  description String?
-  imageUrl    String?
-  owner       User     @relation(fields: [userId], references: [id])
-  address     String?
-  whitelist   String[]
-  nfts        NFT[]
-  chainId     Int?
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  name           String
+  description    String?
+  imageUrl       String?
+  owner          User     @relation(fields: [userId], references: [id])
+  address        String?
+  whitelist      String[]
+  nfts           NFT[]
+  chainId        Int?
+  collectionType String?
 
 
   @@unique([address, chainId])
