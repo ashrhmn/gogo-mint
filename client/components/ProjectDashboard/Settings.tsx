@@ -1,4 +1,5 @@
 import { useEthers } from "@usedapp/core";
+import { getChainById } from "@usedapp/core/dist/esm/src/helpers";
 import { Contract, getDefaultProvider } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
@@ -16,16 +17,20 @@ const SettingsSection = ({
   projectAddress,
   projectChainId,
   collectionype,
+  whitelist,
 }: {
   projectId: number;
   projectChainId: number | null;
   projectAddress: string | null;
   collectionype: string | null;
+  whitelist: string[];
 }) => {
-  const { account, library } = useEthers();
+  const { account, library, chainId } = useEthers();
   const router = useRouter();
   const [basicDataBgProc, setBasicDataBgProc] = useState(0);
   const [feeAddressBgProc, setFeeAddressBgProc] = useState(0);
+  const [whitelistBgProc, setWhitelistBgProc] = useState(0);
+  const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
 
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
     name: "",
@@ -33,7 +38,7 @@ const SettingsSection = ({
     feeToAddress: "",
     logo: null,
     symbol: "",
-    whitelistAddresses: [],
+    whitelistAddresses: whitelist,
     privateMintCharge: 0,
     publicMintCharge: 0,
   });
@@ -76,6 +81,7 @@ const SettingsSection = ({
       (async () => {
         if (projectId) {
           setBasicDataBgProc((v) => v + 1);
+          setWhitelistBgProc((v) => v + 1);
           const { data: project } = await service.get(`/projects/${projectId}`);
           console.log(project);
           if (project.error) {
@@ -90,10 +96,12 @@ const SettingsSection = ({
             whitelistAddresses: project.data.whitelist,
           }));
           setBasicDataBgProc((v) => v - 1);
+          setWhitelistBgProc((v) => v - 1);
         }
       })();
     } catch (error) {
       setBasicDataBgProc((v) => v - 1);
+      setWhitelistBgProc((v) => v - 1);
       console.log("Error fetching basic data : ", error);
       toast.error("Error fetching data");
     }
@@ -129,16 +137,20 @@ const SettingsSection = ({
     }
   };
   const handleFeetoAddressUpdate = async () => {
-    if (!account || !library) {
+    if (!account || !library || !chainId) {
       toast.error("Please connect your wallet");
-      return;
-    }
-    if (!isAddress(configSet.feeToAddress)) {
-      toast.error("Invalid address");
       return;
     }
     if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
       toast.error("Error loading project");
+      return;
+    }
+    if (chainId !== projectChainId) {
+      toast.error(`Please switch to network id ${projectChainId}`);
+      return;
+    }
+    if (!isAddress(configSet.feeToAddress)) {
+      toast.error("Invalid address");
       return;
     }
     const contract = new Contract(
@@ -156,7 +168,7 @@ const SettingsSection = ({
           success: "Transaction sent",
         }
       );
-      const rec = await toast.promise((tx as any).wait(), {
+      await toast.promise((tx as any).wait(), {
         error: "Mining failed",
         loading: "Mining transaction...",
         success: "Transaction Completed",
@@ -166,6 +178,84 @@ const SettingsSection = ({
       setFeeAddressBgProc((v) => v - 1);
       console.log("Error updating fee destination : ", error);
       toast.error("Error updating fee destination");
+    }
+  };
+  const handleAddWhiteListButton = (e: any) => {
+    e.preventDefault();
+    if (!isAddress(tempWhitelistAddress)) {
+      toast.error("Invalid address");
+      return;
+    }
+    if (configSet.whitelistAddresses.includes(tempWhitelistAddress)) {
+      toast.error("Address already in whitelist");
+      return;
+    }
+    setConfigSet((c) => ({
+      ...c,
+      whitelistAddresses: [...c.whitelistAddresses, tempWhitelistAddress],
+    }));
+  };
+  const handleWhitelistAddressDelete = (address: string) => {
+    setConfigSet((c) => ({
+      ...c,
+      whitelistAddresses: c.whitelistAddresses.filter((a) => a !== address),
+    }));
+  };
+  const handleUpdateWhitelist = async () => {
+    try {
+      if (!account || !library || !chainId) {
+        toast.error("Please connect your wallet");
+        return;
+      }
+      if (!projectAddress || !projectChainId) {
+        toast.error("Error loading project");
+        return;
+      }
+      const whitelist = configSet.whitelistAddresses.includes(account)
+        ? configSet.whitelistAddresses
+        : [...configSet.whitelistAddresses, account];
+      const { data: whitelistRoot } = await toast.promise(
+        service.post(`merkletree`, {
+          addresses: whitelist,
+        }),
+        {
+          error: "Error generating whitelist hash",
+          loading: "Generating whitelist hash",
+          success: "Hash generated successfully",
+        }
+      );
+      setWhitelistBgProc((v) => v + 1);
+      const contract = new Contract(
+        projectAddress,
+        collectionype === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+      const tx = await toast.promise(
+        contract.updateWhitelist(whitelistRoot.data),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      const project = await toast.promise(
+        service.put(`/projects/${projectId}`, { whitelist }),
+        {
+          error: "Error updating whitelist data",
+          loading: "Updating whitelist data",
+          success: "Whitelist updated successfully",
+        }
+      );
+      setWhitelistBgProc((v) => v - 1);
+    } catch (error) {
+      setWhitelistBgProc((v) => v - 1);
+      toast.error("Error updating whitelist");
+      console.log("Error updating whitelist : ", error);
     }
   };
   return (
@@ -229,7 +319,7 @@ const SettingsSection = ({
           <button
             onClick={handleUpdateBasic}
             disabled={!!basicDataBgProc}
-            className="bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
           >
             Update
           </button>
@@ -256,8 +346,59 @@ const SettingsSection = ({
         <div>
           <button
             disabled={!!feeAddressBgProc}
-            className="bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
             onClick={handleFeetoAddressUpdate}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="bg-gray-200 p-4 rounded relative">
+        {!!whitelistBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">Add Whitelist addresses</label>
+          <div className="flex items-center gap-3">
+            <input
+              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+              type="text"
+              value={tempWhitelistAddress}
+              onChange={(e) => setTempWhitelistAddress(e.target.value)}
+            />
+            <button
+              onClick={handleAddWhiteListButton}
+              className="bg-blue-600 text-white h-14 w-28 rounded"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+        <div className="my-4">
+          {configSet.whitelistAddresses.map((address) => (
+            <div className="flex gap-4 relative my-2" key={address}>
+              <div className="w-full overflow-hidden group">
+                <div className="overflow-hidden w-full">{address}</div>
+                <div className="absolute -top-6 hidden group-hover:block text-sm rounded shdaow-xl bg-gray-500 p-1 text-white z-10">
+                  {address}
+                </div>
+              </div>
+              <button
+                onClick={() => handleWhitelistAddressDelete(address)}
+                className="hover:bg-gray-500 rounded-full overflow-hidden h-8 w-8 hover:text-white transition-colors flex justify-center items-center"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div>
+          <button
+            disabled={!!whitelistBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
+            onClick={handleUpdateWhitelist}
           >
             Update
           </button>
@@ -266,5 +407,20 @@ const SettingsSection = ({
     </div>
   );
 };
+
+const CloseIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
 
 export default SettingsSection;

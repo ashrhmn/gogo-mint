@@ -122,6 +122,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
               projectAddress={project.address}
               projectChainId={project.chainId}
               collectionype={project.collectionType}
+              whitelist={project.whitelist}
             />
           )}
         </div>

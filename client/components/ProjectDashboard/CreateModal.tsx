@@ -101,7 +101,7 @@ const CreateModal = ({
   };
   return (
     <div
-      className={`fixed inset-0 md:left-auto shadow-xl bg-white transition-transform duration-300 p-6 overflow-y-auto md:min-w-[500px] ${
+      className={`fixed inset-0 sm:left-auto shadow-xl bg-white transition-transform duration-300 p-6 overflow-y-auto sm:min-w-[500px] ${
         isCreateModalOpen ? "z-50" : "translate-x-full"
       }`}
     >
@@ -132,7 +132,7 @@ const CreateModal = ({
           onClick={() => {
             if (imgInputRef && imgInputRef.current) imgInputRef.current.click();
           }}
-          className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+          className="relative aspect-square sm:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
         >
           <input
             ref={imgInputRef}
