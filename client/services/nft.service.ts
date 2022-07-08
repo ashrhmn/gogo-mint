@@ -24,10 +24,12 @@ export const addNftToProject = async (
       properties: {
         createMany: {
           data: properties
-            ? properties.map((p) => ({
-                type: p.type,
-                value: p.value,
-              }))
+            ? properties
+                .filter((p) => !!p.value)
+                .map((p) => ({
+                  type: p.type,
+                  value: p.value,
+                }))
             : [],
           skipDuplicates: true,
         },

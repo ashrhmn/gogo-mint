@@ -1,6 +1,7 @@
 import { NFT, NFTMetadataProperties, Project } from "@prisma/client";
 import { shortenIfAddress } from "@usedapp/core";
 import { GetServerSideProps, NextPage } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -20,11 +21,8 @@ interface Props {
 const ProjectPage: NextPage<Props> = ({ project }) => {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const setTab = (val: string) => {
-    const r = router;
-    r.query.tab = val;
-    router.push(r);
-  };
+  const setTab = (tab: string) =>
+    router.push({ ...router, query: { ...router.query, tab } });
   const currentTab =
     typeof router.query.tab == "string" &&
     ["permissions", "claims", "settings"].includes(router.query.tab)
@@ -32,15 +30,27 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
       : "overview";
   return (
     <div>
-      <div className="flex justify-between my-4">
-        <div>
-          <h1 className="text-5xl font-bold">{project.name}</h1>
-          <h2 className="text-2xl font-medium">
-            {shortenIfAddress(project.address)}
-          </h2>
+      <div className="flex flex-col sm:flex-row justify-between my-4">
+        <div className="flex gap-4">
+          {project.imageUrl && (
+            <div className="h-20 w-20 relative hidden sm:block">
+              <Image src={project.imageUrl} alt={""} layout="fill" />
+            </div>
+          )}
+          <div>
+            <h1 className="text-4xl font-bold">{project.name}</h1>
+            <h2 className="text-2xl font-medium">
+              {shortenIfAddress(project.address)}
+            </h2>
+          </div>
         </div>
         <div>
-          <button onClick={() => setIsCreateModalOpen(true)}>+ Create</button>
+          <button
+            className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            + Create
+          </button>
         </div>
       </div>
       <div>
@@ -55,7 +65,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
           >
             Overview
           </button>
-          <button
+          {/* <button
             className={`${
               currentTab == "permissions"
                 ? "text-indigo-600 border-b-2 border-indigo-600 font-medium"
@@ -64,7 +74,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
             onClick={() => setTab("permissions")}
           >
             Permissions
-          </button>
+          </button> */}
           <button
             className={`${
               currentTab == "claims"
@@ -96,9 +106,25 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
             />
           )}
         </div>
-        <div>{currentTab == "permissions" && <PermissionsSection />}</div>
+        <div>
+          {currentTab == "permissions" && (
+            <PermissionsSection
+              projectAddress={project.address}
+              projectChainId={project.chainId}
+            />
+          )}
+        </div>
         <div>{currentTab == "claims" && <ClaimsSection />}</div>
-        <div>{currentTab == "settings" && <SettingsSection />}</div>
+        <div>
+          {currentTab == "settings" && (
+            <SettingsSection
+              projectId={project.id}
+              projectAddress={project.address}
+              projectChainId={project.chainId}
+              collectionype={project.collectionType}
+            />
+          )}
+        </div>
       </div>
       <div
         onClick={() => setIsCreateModalOpen(false)}

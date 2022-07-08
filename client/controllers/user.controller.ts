@@ -97,7 +97,7 @@ export const linkWalletToDiscord = async (
     );
   const user = await UserService.updateUserWalletAddress(
     username,
-    discriminator,
+    +discriminator,
     address
   );
   return res.json(successResponse(user));

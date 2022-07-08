@@ -35,21 +35,44 @@ export const getUserByDiscordIdentifiers = async (
 export const getUserByWalletAddress = async (address: string) =>
   await prisma.user.findFirst({ where: { walletAddress: address } });
 
-export const updateUserWalletAddress = async (
+export const updateUserWalletAddressOld = async (
   username: string,
-  discriminator: string,
+  discriminator: number,
   walletAddress: string
 ) => {
   return await prisma.user.update({
     where: {
       discordUsername_discordDiscriminator: {
         discordUsername: username,
-        discordDiscriminator: +discriminator,
+        discordDiscriminator: discriminator,
       },
     },
     data: {
       walletAddress,
     },
+  });
+};
+export const updateUserWalletAddress = async (
+  username: string,
+  discriminator: number,
+  walletAddress: string
+) => {
+  await prisma.user.delete({
+    where: {
+      discordUsername_discordDiscriminator: {
+        discordDiscriminator: discriminator,
+        discordUsername: username,
+      },
+    },
+  });
+  return await prisma.user.upsert({
+    where: { walletAddress },
+    create: {
+      discordUsername: username,
+      discordDiscriminator: discriminator,
+      walletAddress,
+    },
+    update: { discordDiscriminator: discriminator, discordUsername: username },
   });
 };
 

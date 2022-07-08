@@ -86,3 +86,53 @@ export const getAllProjectsOfLoggedInDiscordUser = async (
   if (user) return getAllProjectsByDiscordId(user.username, user.discriminator);
   return null;
 };
+
+export const updateProjectOwner = async (
+  projectAddress: string,
+  projectChainId: number,
+  ownerAddress: string
+) => {
+  return await prisma.project.update({
+    where: {
+      address_chainId: { address: projectAddress, chainId: projectChainId },
+    },
+    data: {
+      owner: {
+        connectOrCreate: {
+          where: { walletAddress: ownerAddress },
+          create: { walletAddress: ownerAddress },
+        },
+      },
+    },
+  });
+};
+
+export const getProjectById = async (id: number) => {
+  return await prisma.project.findFirstOrThrow({ where: { id } });
+};
+
+export const updateProjectById = async (
+  id: number,
+  address: string,
+  chainId: number,
+  collectionType: string,
+  description: string,
+  imageUrl: string,
+  name: string,
+  userId: number,
+  whitelist: string[]
+) => {
+  return await prisma.project.update({
+    where: { id },
+    data: {
+      address,
+      chainId,
+      collectionType,
+      description,
+      imageUrl,
+      name,
+      userId,
+      whitelist,
+    },
+  });
+};
