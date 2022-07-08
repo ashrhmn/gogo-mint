@@ -58,10 +58,10 @@ export interface Collection721Interface extends utils.Interface {
     "transferOwnership(address)": FunctionFragment;
     "updateFeeToAddress(address)": FunctionFragment;
     "updatePrivateMintCharge(uint256)": FunctionFragment;
-    "updatePrivateSale1(uint256,uint256)": FunctionFragment;
-    "updatePrivateSale2(uint256,uint256)": FunctionFragment;
+    "updatePrivateSale1(uint256,uint256,bool)": FunctionFragment;
+    "updatePrivateSale2(uint256,uint256,bool)": FunctionFragment;
     "updatePublicMintCharge(uint256)": FunctionFragment;
-    "updatePublicSale(uint256,uint256)": FunctionFragment;
+    "updatePublicSale(uint256,uint256,bool)": FunctionFragment;
     "updateTokenUri(uint256,string)": FunctionFragment;
     "updateWhitelist(bytes32)": FunctionFragment;
     "whitelistRoot()": FunctionFragment;
@@ -237,11 +237,19 @@ export interface Collection721Interface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "updatePrivateSale1",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "updatePrivateSale2",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "updatePublicMintCharge",
@@ -249,7 +257,11 @@ export interface Collection721Interface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "updatePublicSale",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<boolean>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "updateTokenUri",
@@ -622,12 +634,14 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -639,6 +653,7 @@ export interface Collection721 extends BaseContract {
     updatePublicSale(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -812,12 +827,14 @@ export interface Collection721 extends BaseContract {
   updatePrivateSale1(
     _startTime: PromiseOrValue<BigNumberish>,
     _endTime: PromiseOrValue<BigNumberish>,
+    _status: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   updatePrivateSale2(
     _startTime: PromiseOrValue<BigNumberish>,
     _endTime: PromiseOrValue<BigNumberish>,
+    _status: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -829,6 +846,7 @@ export interface Collection721 extends BaseContract {
   updatePublicSale(
     _startTime: PromiseOrValue<BigNumberish>,
     _endTime: PromiseOrValue<BigNumberish>,
+    _status: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1000,12 +1018,14 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1017,6 +1037,7 @@ export interface Collection721 extends BaseContract {
     updatePublicSale(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1211,12 +1232,14 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1228,6 +1251,7 @@ export interface Collection721 extends BaseContract {
     updatePublicSale(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1378,12 +1402,14 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1395,6 +1421,7 @@ export interface Collection721 extends BaseContract {
     updatePublicSale(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      _status: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

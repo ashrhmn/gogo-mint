@@ -7,7 +7,10 @@ import { useRouter } from "next/router";
 import React from "react";
 import { getUserByAccessToken } from "../../services/discord.service";
 import { getAllProjectsByDiscordId } from "../../services/project.service";
-import { getAccessTokenFromCookie, getHttpCookie } from "../../utils/Request";
+import {
+  getAccessTokenFromCookie,
+  getHttpCookie,
+} from "../../utils/Request.utils";
 
 interface Props {
   projects: Project[] | null;

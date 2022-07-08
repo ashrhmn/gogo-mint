@@ -4,7 +4,7 @@ import * as UserService from "../services/user.service";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import { User } from "@prisma/client";
 import { getUserByAccessToken } from "../services/discord.service";
-import { getAccessTokenFromCookie } from "../utils/Request";
+import { getAccessTokenFromCookie } from "../utils/Request.utils";
 
 export const getAllUser = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.json(await prisma.user.findMany());

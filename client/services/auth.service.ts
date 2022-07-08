@@ -1,6 +1,9 @@
 import { GetServerSidePropsContext, PreviewData } from "next";
 import { ParsedUrlQuery } from "querystring";
-import { getAccessTokenFromCookie, getHttpCookie } from "../utils/Request";
+import {
+  getAccessTokenFromCookie,
+  getHttpCookie,
+} from "../utils/Request.utils";
 import { getUserByAccessToken } from "./discord.service";
 import { getProjectByChainAddress } from "./project.service";
 import { getUserByDiscordIdentifiers } from "./user.service";

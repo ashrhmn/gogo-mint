@@ -10,7 +10,7 @@ import { randomIntFromInterval } from "../utils/Number.utils";
 import Image from "next/image";
 import Link from "next/link";
 import { DISCORD_AUTH_URL } from "../constants/configuration";
-import { getHttpCookie } from "../utils/Request";
+import { getHttpCookie } from "../utils/Request.utils";
 import toast from "react-hot-toast";
 
 interface Props {

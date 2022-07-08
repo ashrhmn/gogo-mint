@@ -9,7 +9,7 @@ import {
   DiscordUserResponse,
   NextOrIncomingMessage,
 } from "../types";
-import { getAccessTokenFromCookie } from "../utils/Request";
+import { getAccessTokenFromCookie } from "../utils/Request.utils";
 
 export const getLoggedInUser = async (req: NextOrIncomingMessage) => {
   try {

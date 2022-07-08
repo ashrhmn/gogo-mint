@@ -1,5 +1,5 @@
 import { ContractFile } from "../types";
-import { getContractFile } from "../utils/SolidityUtils";
+import { getContractFile } from "../utils/Solidity.utils";
 
 export const getAbiEvmCodeFromSolidity = (name: string, source: string) => {
   try {

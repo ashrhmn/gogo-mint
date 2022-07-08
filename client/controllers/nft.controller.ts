@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getAccessTokenFromCookie } from "../utils/Request";
+import { getAccessTokenFromCookie } from "../utils/Request.utils";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as NftService from "../services/nft.service";
 import { getUserByAccessToken } from "../services/discord.service";

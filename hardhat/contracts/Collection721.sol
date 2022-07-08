@@ -52,31 +52,34 @@ contract Collection721 is Ownable, ERC721URIStorage {
         publicMintCharge = charge;
     }
 
-    function updatePrivateSale1(uint256 _startTime, uint256 _endTime)
-        public
-        onlyOwner
-    {
+    function updatePrivateSale1(
+        uint256 _startTime,
+        uint256 _endTime,
+        bool _status
+    ) public onlyOwner {
         privateSale1.startTime = _startTime;
         privateSale1.endTime = _endTime;
-        privateSale1.status = true;
+        privateSale1.status = _status;
     }
 
-    function updatePrivateSale2(uint256 _startTime, uint256 _endTime)
-        public
-        onlyOwner
-    {
+    function updatePrivateSale2(
+        uint256 _startTime,
+        uint256 _endTime,
+        bool _status
+    ) public onlyOwner {
         privateSale2.startTime = _startTime;
         privateSale2.endTime = _endTime;
-        privateSale2.status = true;
+        privateSale2.status = _status;
     }
 
-    function updatePublicSale(uint256 _startTime, uint256 _endTime)
-        public
-        onlyOwner
-    {
+    function updatePublicSale(
+        uint256 _startTime,
+        uint256 _endTime,
+        bool _status
+    ) public onlyOwner {
         publicSale.startTime = _startTime;
         publicSale.endTime = _endTime;
-        publicSale.status = true;
+        publicSale.status = _status;
     }
 
     function updateWhitelist(bytes32 _root) public onlyOwner {

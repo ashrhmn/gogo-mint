@@ -2,7 +2,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { NextHandler } from "next-connect";
 import { getUserByAccessToken } from "../services/discord.service";
 import { getUserByDiscordIdentifiers } from "../services/user.service";
-import { getAccessTokenFromCookie, getHttpCookie } from "../utils/Request";
+import {
+  getAccessTokenFromCookie,
+  getHttpCookie,
+} from "../utils/Request.utils";
 import { errorResponse } from "../utils/Response.utils";
 
 const onlyValidUser = async (

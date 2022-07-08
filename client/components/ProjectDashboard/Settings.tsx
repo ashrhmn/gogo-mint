@@ -126,6 +126,14 @@ const SettingsSection = ({
   }, [projectId]);
   const handleUpdateBasic = async () => {
     try {
+      if (!configSet.name) {
+        toast.error("Name is required");
+        return;
+      }
+      if (!/^[A-Za-z0-9 -_]+$/.test(configSet.name)) {
+        toast.error("Name must be alphanumeric");
+        return;
+      }
       setBasicDataBgProc((v) => v + 1);
       let imageUrl: string | null = null;
       if (configSet.logo) {
@@ -421,7 +429,7 @@ const SettingsSection = ({
           <button
             onClick={handleUpdateBasic}
             disabled={!!basicDataBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             Update
           </button>
@@ -448,7 +456,7 @@ const SettingsSection = ({
         <div>
           <button
             disabled={!!feeAddressBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
             onClick={handleFeetoAddressUpdate}
           >
             Update
@@ -472,7 +480,7 @@ const SettingsSection = ({
             min={0}
             value={configSet.privateMintCharge}
             disabled={!!privateMintChargeBgProc}
-            step={0.01}
+            step={0.00001}
             onChange={(e) =>
               setConfigSet((c) => ({
                 ...c,
@@ -482,7 +490,7 @@ const SettingsSection = ({
           />
           <button
             disabled={!!privateMintChargeBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400"
+            className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
             onClick={handleUpdatePrivateMintCharge}
           >
             Update
@@ -502,7 +510,7 @@ const SettingsSection = ({
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
-            step={0.01}
+            step={0.00001}
             disabled={!!publicMintChargeBgProc}
             min={0}
             value={configSet.publicMintCharge}
@@ -566,7 +574,7 @@ const SettingsSection = ({
         <div>
           <button
             disabled={!!whitelistBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
             onClick={handleUpdateWhitelist}
           >
             Update

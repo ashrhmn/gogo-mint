@@ -270,8 +270,8 @@ const NewProject: NextPage = () => {
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="number"
               min={0}
+              step={0.00001}
               value={configSet.privateMintCharge}
-              step={0.01}
               onChange={(e) =>
                 setConfigSet((c) => ({
                   ...c,
@@ -287,8 +287,8 @@ const NewProject: NextPage = () => {
             <input
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="number"
-              step={0.01}
               min={0}
+              step={0.00001}
               value={configSet.publicMintCharge}
               onChange={(e) =>
                 setConfigSet((c) => ({

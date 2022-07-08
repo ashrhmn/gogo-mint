@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as ProjectService from "../services/project.service";
-import { getAccessTokenFromCookie } from "../utils/Request";
+import { getAccessTokenFromCookie } from "../utils/Request.utils";
 import { isAddress } from "ethers/lib/utils";
 import { json } from "stream/consumers";
 

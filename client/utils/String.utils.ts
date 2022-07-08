@@ -46,3 +46,21 @@ export function normalizeString(input: string) {
 }
 
 export const bufferTohex = (buf: Buffer) => `0x${buf.toString("hex")}`;
+
+export const getSaleConfigFromResponse = (data: { [x: string]: any }) => ({
+  status: data["status"],
+  startTime: +data["startTime"].toString(),
+  endTime: +data["endTime"].toString(),
+});
+
+function forceTwo(inp: number) {
+  return inp.toString().padStart(2, "0");
+}
+
+export function formatHtmlDateTime(datetime: Date) {
+  return `${datetime.getFullYear()}-${forceTwo(
+    datetime.getMonth() + 1
+  )}-${forceTwo(datetime.getDate())}T${forceTwo(
+    datetime.getHours()
+  )}:${forceTwo(datetime.getMinutes())}`;
+}

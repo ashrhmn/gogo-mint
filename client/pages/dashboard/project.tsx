@@ -114,7 +114,16 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
             />
           )}
         </div>
-        <div>{currentTab == "claims" && <ClaimsSection />}</div>
+        <div>
+          {currentTab == "claims" && (
+            <ClaimsSection
+              projectId={project.id}
+              projectAddress={project.address}
+              projectChainId={project.chainId}
+              collectionType={project.collectionType}
+            />
+          )}
+        </div>
         <div>
           {currentTab == "settings" && (
             <SettingsSection

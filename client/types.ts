@@ -107,3 +107,9 @@ export interface NftExtended extends NFT {
 export interface ProjectExtended extends Project {
   nfts: NftExtended[];
 }
+
+export interface ISaleConfig {
+  status: boolean;
+  startTime: number;
+  endTime: number;
+}
