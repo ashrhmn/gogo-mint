@@ -57,8 +57,10 @@ export interface Collection721Interface extends utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "updateFeeToAddress(address)": FunctionFragment;
+    "updatePrivateMintCharge(uint256)": FunctionFragment;
     "updatePrivateSale1(uint256,uint256)": FunctionFragment;
     "updatePrivateSale2(uint256,uint256)": FunctionFragment;
+    "updatePublicMintCharge(uint256)": FunctionFragment;
     "updatePublicSale(uint256,uint256)": FunctionFragment;
     "updateTokenUri(uint256,string)": FunctionFragment;
     "updateWhitelist(bytes32)": FunctionFragment;
@@ -94,8 +96,10 @@ export interface Collection721Interface extends utils.Interface {
       | "transferFrom"
       | "transferOwnership"
       | "updateFeeToAddress"
+      | "updatePrivateMintCharge"
       | "updatePrivateSale1"
       | "updatePrivateSale2"
+      | "updatePublicMintCharge"
       | "updatePublicSale"
       | "updateTokenUri"
       | "updateWhitelist"
@@ -228,12 +232,20 @@ export interface Collection721Interface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "updatePrivateMintCharge",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updatePrivateSale1",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "updatePrivateSale2",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updatePublicMintCharge",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "updatePublicSale",
@@ -334,11 +346,19 @@ export interface Collection721Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "updatePrivateMintCharge",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updatePrivateSale1",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "updatePrivateSale2",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updatePublicMintCharge",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -594,6 +614,11 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    updatePrivateMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
@@ -603,6 +628,11 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updatePublicMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -774,6 +804,11 @@ export interface Collection721 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  updatePrivateMintCharge(
+    charge: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   updatePrivateSale1(
     _startTime: PromiseOrValue<BigNumberish>,
     _endTime: PromiseOrValue<BigNumberish>,
@@ -783,6 +818,11 @@ export interface Collection721 extends BaseContract {
   updatePrivateSale2(
     _startTime: PromiseOrValue<BigNumberish>,
     _endTime: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updatePublicMintCharge(
+    charge: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -952,6 +992,11 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    updatePrivateMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
@@ -961,6 +1006,11 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updatePublicMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1153,6 +1203,11 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    updatePrivateMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
@@ -1162,6 +1217,11 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updatePublicMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1310,6 +1370,11 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    updatePrivateMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     updatePrivateSale1(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
@@ -1319,6 +1384,11 @@ export interface Collection721 extends BaseContract {
     updatePrivateSale2(
       _startTime: PromiseOrValue<BigNumberish>,
       _endTime: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updatePublicMintCharge(
+      charge: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

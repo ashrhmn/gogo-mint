@@ -1765,6 +1765,14 @@ contract ${normalizeString(contractName)} is Ownable, ERC721URIStorage {
         publicMintCharge = _publicMintCharge;
     }
 
+    function updatePrivateMintCharge(uint256 charge) public onlyOwner{
+        privateMintCharge = charge;
+    }
+
+    function updatePublicMintCharge(uint256 charge) public onlyOwner{
+        publicMintCharge = charge;
+    }
+
     function updatePrivateSale1(uint256 _startTime, uint256 _endTime)
         public
         onlyOwner

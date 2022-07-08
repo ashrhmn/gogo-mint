@@ -1,7 +1,7 @@
 import { useEthers } from "@usedapp/core";
 import { getChainById } from "@usedapp/core/dist/esm/src/helpers";
 import { Contract, getDefaultProvider } from "ethers";
-import { isAddress } from "ethers/lib/utils";
+import { formatEther, isAddress, parseEther } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
@@ -16,13 +16,13 @@ const SettingsSection = ({
   projectId,
   projectAddress,
   projectChainId,
-  collectionype,
+  collectionType,
   whitelist,
 }: {
   projectId: number;
   projectChainId: number | null;
   projectAddress: string | null;
-  collectionype: string | null;
+  collectionType: string | null;
   whitelist: string[];
 }) => {
   const { account, library, chainId } = useEthers();
@@ -30,6 +30,8 @@ const SettingsSection = ({
   const [basicDataBgProc, setBasicDataBgProc] = useState(0);
   const [feeAddressBgProc, setFeeAddressBgProc] = useState(0);
   const [whitelistBgProc, setWhitelistBgProc] = useState(0);
+  const [privateMintChargeBgProc, setPrivateMintChargeBgProc] = useState(0);
+  const [publicMintChargeBgProc, setPublicMintChargeBgProc] = useState(0);
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
 
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
@@ -62,20 +64,36 @@ const SettingsSection = ({
           return;
         const contract = new Contract(
           projectAddress,
-          collectionype === "721" ? ABI721 : ABI1155,
+          collectionType === "721" ? ABI721 : ABI1155,
           getDefaultProvider(RPC_URLS[projectChainId])
         );
         setFeeAddressBgProc((v) => v + 1);
-        const feeToAddress = await contract.feeDestination();
-        setConfigSet((c) => ({ ...c, feeToAddress }));
+        setPrivateMintChargeBgProc((v) => v + 1);
+        setPublicMintChargeBgProc((v) => v + 1);
+        const [feeToAddress, privateMintCharge, publicMintCharge] =
+          await Promise.all([
+            contract.feeDestination(),
+            contract.privateMintCharge(),
+            contract.publicMintCharge(),
+          ]);
+        setConfigSet((c) => ({
+          ...c,
+          feeToAddress,
+          privateMintCharge: +formatEther(privateMintCharge),
+          publicMintCharge: +formatEther(publicMintCharge),
+        }));
         setFeeAddressBgProc((v) => v - 1);
+        setPrivateMintChargeBgProc((v) => v - 1);
+        setPublicMintChargeBgProc((v) => v - 1);
       })();
     } catch (error) {
       setFeeAddressBgProc((v) => v - 1);
+      setPrivateMintChargeBgProc((v) => v - 1);
+      setPublicMintChargeBgProc((v) => v - 1);
       console.log("Error fetching fee to address : ", error);
       toast.error("Error fetching fee to address");
     }
-  }, [collectionype, projectAddress, projectChainId]);
+  }, [collectionType, projectAddress, projectChainId]);
   useEffect(() => {
     try {
       (async () => {
@@ -155,7 +173,7 @@ const SettingsSection = ({
     }
     const contract = new Contract(
       projectAddress,
-      collectionype === "721" ? ABI721 : ABI1155,
+      collectionType === "721" ? ABI721 : ABI1155,
       library.getSigner(account)
     );
     try {
@@ -227,7 +245,7 @@ const SettingsSection = ({
       setWhitelistBgProc((v) => v + 1);
       const contract = new Contract(
         projectAddress,
-        collectionype === "721" ? ABI721 : ABI1155,
+        collectionType === "721" ? ABI721 : ABI1155,
         library.getSigner(account)
       );
       const tx = await toast.promise(
@@ -256,6 +274,90 @@ const SettingsSection = ({
       setWhitelistBgProc((v) => v - 1);
       toast.error("Error updating whitelist");
       console.log("Error updating whitelist : ", error);
+    }
+  };
+  const handleUpdatePrivateMintCharge = async () => {
+    try {
+      if (!account || !library || !chainId) {
+        toast.error("Please connect your wallet");
+        return;
+      }
+      if (!projectAddress || !projectChainId) {
+        toast.error("Error loading project");
+        return;
+      }
+      if (configSet.privateMintCharge < 0) {
+        toast.error("Charge can not be less than zero");
+        return;
+      }
+      setPrivateMintChargeBgProc((v) => v + 1);
+      const contract = new Contract(
+        projectAddress,
+        collectionType === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+      const tx = await toast.promise(
+        contract.updatePrivateMintCharge(
+          parseEther(configSet.privateMintCharge.toString())
+        ),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setPrivateMintChargeBgProc((v) => v - 1);
+    } catch (error) {
+      setPrivateMintChargeBgProc((v) => v - 1);
+      console.log("Error updating private mint charge : ", error);
+      toast.error("Error updating private mint charge");
+    }
+  };
+  const handleUpdatePublicMintCharge = async () => {
+    try {
+      if (!account || !library || !chainId) {
+        toast.error("Please connect your wallet");
+        return;
+      }
+      if (!projectAddress || !projectChainId) {
+        toast.error("Error loading project");
+        return;
+      }
+      if (configSet.publicMintCharge < 0) {
+        toast.error("Charge can not be less than zero");
+        return;
+      }
+      setPublicMintChargeBgProc((v) => v + 1);
+      const contract = new Contract(
+        projectAddress,
+        collectionType === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+      const tx = await toast.promise(
+        contract.updatePublicMintCharge(
+          parseEther(configSet.publicMintCharge.toString())
+        ),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setPublicMintChargeBgProc((v) => v - 1);
+    } catch (error) {
+      setPublicMintChargeBgProc((v) => v - 1);
+      console.log("Error updating public mint charge : ", error);
+      toast.error("Error updating public mint charge");
     }
   };
   return (
@@ -348,6 +450,73 @@ const SettingsSection = ({
             disabled={!!feeAddressBgProc}
             className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400"
             onClick={handleFeetoAddressUpdate}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 bg-gray-200 rounded p-4 relative">
+        {!!privateMintChargeBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <label className="font-bold">
+          Private Mint Charge <span className="text-red-700">*</span>
+        </label>
+        <div className="flex items-center gap-4">
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="number"
+            min={0}
+            value={configSet.privateMintCharge}
+            disabled={!!privateMintChargeBgProc}
+            step={0.01}
+            onChange={(e) =>
+              setConfigSet((c) => ({
+                ...c,
+                privateMintCharge: e.target.valueAsNumber,
+              }))
+            }
+          />
+          <button
+            disabled={!!privateMintChargeBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400"
+            onClick={handleUpdatePrivateMintCharge}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="my-4 bg-gray-200 rounded p-4 relative">
+        {!!publicMintChargeBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <label className="font-bold">
+          Public Mint Charge <span className="text-red-700">*</span>
+        </label>
+        <div className="flex items-center gap-4">
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="number"
+            step={0.01}
+            disabled={!!publicMintChargeBgProc}
+            min={0}
+            value={configSet.publicMintCharge}
+            onChange={(e) =>
+              setConfigSet((c) => ({
+                ...c,
+                publicMintCharge: e.target.valueAsNumber,
+              }))
+            }
+          />
+          <button
+            disabled={!!publicMintChargeBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400"
+            onClick={handleUpdatePublicMintCharge}
           >
             Update
           </button>

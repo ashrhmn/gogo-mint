@@ -625,6 +625,19 @@ export const ABI721 = [
     inputs: [
       {
         internalType: "uint256",
+        name: "charge",
+        type: "uint256",
+      },
+    ],
+    name: "updatePrivateMintCharge",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "_startTime",
         type: "uint256",
       },
@@ -653,6 +666,19 @@ export const ABI721 = [
       },
     ],
     name: "updatePrivateSale2",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "charge",
+        type: "uint256",
+      },
+    ],
+    name: "updatePublicMintCharge",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
