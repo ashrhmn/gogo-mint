@@ -128,6 +128,7 @@ export const updateProjectById = async (
       name,
       userId,
       whitelist,
+      uid,
     } = req.body;
     return res.json(
       successResponse(
@@ -140,11 +141,29 @@ export const updateProjectById = async (
           imageUrl,
           name,
           userId,
-          whitelist
+          whitelist,
+          uid
         )
       )
     );
   } catch (error) {
+    return res.json(errorResponse(error));
+  }
+};
+
+export const projectExistsWithUid = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const uid = req.query.uid;
+    if (!uid || typeof uid !== "string")
+      return res.json(errorResponse("Invalid Project UID"));
+    return res.json(
+      successResponse(await ProjectService.projectExistsWithUid(uid))
+    );
+  } catch (error) {
+    console.log("Error : ", error);
     return res.json(errorResponse(error));
   }
 };

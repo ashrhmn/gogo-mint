@@ -393,12 +393,14 @@ export interface Collection721Interface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "Mint(address,address,string,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Mint"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
@@ -426,6 +428,19 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface MintEventObject {
+  from: string;
+  to: string;
+  tokenUri: string;
+  tokenId: BigNumber;
+}
+export type MintEvent = TypedEvent<
+  [string, string, string, BigNumber],
+  MintEventObject
+>;
+
+export type MintEventFilter = TypedEventFilter<MintEvent>;
 
 export interface OwnershipTransferredEventObject {
   previousOwner: string;
@@ -1077,6 +1092,19 @@ export interface Collection721 extends BaseContract {
       operator?: PromiseOrValue<string> | null,
       approved?: null
     ): ApprovalForAllEventFilter;
+
+    "Mint(address,address,string,uint256)"(
+      from?: null,
+      to?: null,
+      tokenUri?: null,
+      tokenId?: null
+    ): MintEventFilter;
+    Mint(
+      from?: null,
+      to?: null,
+      tokenUri?: null,
+      tokenId?: null
+    ): MintEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,

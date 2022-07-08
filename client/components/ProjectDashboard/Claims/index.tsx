@@ -1,5 +1,5 @@
 import React from "react";
-import ClaimItem from "./Claims/ClaimItem";
+import ClaimItem from "./ClaimItem";
 
 const ClaimsSection = ({
   collectionType,

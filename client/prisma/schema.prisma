@@ -34,6 +34,7 @@ model Project {
   nfts           NFT[]
   chainId        Int?
   collectionType String?
+  uid            String?  @unique
 
 
   @@unique([address, chainId])
@@ -53,6 +54,7 @@ model NFT {
   externalUrl     String?
   properties      NFTMetadataProperties[]
 
+  @@unique([projectId, tokenId])
   @@map("nfts")
 }
 

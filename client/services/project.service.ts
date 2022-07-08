@@ -120,7 +120,8 @@ export const updateProjectById = async (
   imageUrl: string,
   name: string,
   userId: number,
-  whitelist: string[]
+  whitelist: string[],
+  uid: string
 ) => {
   return await prisma.project.update({
     where: { id },
@@ -133,6 +134,11 @@ export const updateProjectById = async (
       name,
       userId,
       whitelist,
+      uid,
     },
   });
+};
+
+export const projectExistsWithUid = async (uid: string) => {
+  return (await prisma.project.count({ where: { uid } })) > 0;
 };

@@ -40,6 +40,7 @@ export interface IDeployConfigSet {
   whitelistAddresses: string[];
   privateMintCharge: number;
   publicMintCharge: number;
+  uid: string;
 }
 
 export type ContractFile = {

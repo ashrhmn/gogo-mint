@@ -29,7 +29,9 @@ describe.only("721 new", function () {
     const coll721 = await Coll721.deploy(accounts[0].address, root, 3, 4);
     await coll721.deployed();
 
-    await (await coll721.updatePrivateSale1(startDate - 86400, endDate)).wait();
+    await (
+      await coll721.updatePrivateSale1(startDate - 86400, endDate, true)
+    ).wait();
 
     const validLeaf = keccak256(accounts[7].address);
     const invalidLeaf = keccak256(accounts[4].address);
@@ -62,9 +64,13 @@ describe.only("721 new", function () {
       .mintPrivate("Hello2", validProof, signature2, {
         value: "3",
       });
-    await validPrivateMintTx2.wait();
 
-    await (await coll721.updatePublicSale(startDate - 86400, endDate)).wait();
+    const rec = await validPrivateMintTx2.wait();
+    console.log(rec.events.find((e: any) => e.event == "Mint").args);
+
+    await (
+      await coll721.updatePublicSale(startDate - 86400, endDate, true)
+    ).wait();
 
     const validPublicMintTx = await coll721
       .connect(accounts[7])

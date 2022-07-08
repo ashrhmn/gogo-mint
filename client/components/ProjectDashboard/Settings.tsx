@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
+import useDebounce from "../../hooks/useDebounce";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { IDeployConfigSet } from "../../types";
@@ -32,6 +33,7 @@ const SettingsSection = ({
   const [whitelistBgProc, setWhitelistBgProc] = useState(0);
   const [privateMintChargeBgProc, setPrivateMintChargeBgProc] = useState(0);
   const [publicMintChargeBgProc, setPublicMintChargeBgProc] = useState(0);
+  const [isUidUnavailable, setIsUidUnavailable] = useState(false);
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
 
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
@@ -43,9 +45,11 @@ const SettingsSection = ({
     whitelistAddresses: whitelist,
     privateMintCharge: 0,
     publicMintCharge: 0,
+    uid: "",
   });
   const [imageBase64, setImageBase64] = useState("");
   const imgInputRef = useRef<HTMLInputElement | null>(null);
+  const [currentUid, setCurrentUid] = useState("");
   const onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -112,7 +116,9 @@ const SettingsSection = ({
             description: project.data.description,
             name: project.data.name,
             whitelistAddresses: project.data.whitelist,
+            uid: project.data.uid || "",
           }));
+          setCurrentUid(project.data.uid || "");
           setBasicDataBgProc((v) => v - 1);
           setWhitelistBgProc((v) => v - 1);
         }
@@ -134,6 +140,10 @@ const SettingsSection = ({
         toast.error("Name must be alphanumeric");
         return;
       }
+      if (isUidUnavailable) {
+        toast.error("UID is not available, please choose something else");
+        return;
+      }
       setBasicDataBgProc((v) => v + 1);
       let imageUrl: string | null = null;
       if (configSet.logo) {
@@ -148,6 +158,7 @@ const SettingsSection = ({
           name: configSet.name,
           description: configSet.description,
           imageUrl: imageUrl ? imageUrl : imageBase64,
+          uid: configSet.uid === "" ? null : configSet.uid,
         }),
         {
           error: "Error updating data",
@@ -368,6 +379,26 @@ const SettingsSection = ({
       toast.error("Error updating public mint charge");
     }
   };
+  useDebounce(
+    () => {
+      if (configSet.uid === "") {
+        setIsUidUnavailable(false);
+        return;
+      }
+      (async () => {
+        try {
+          const { data: isExist } = await service.get(
+            `/projects/uid/exists?uid=${configSet.uid}`
+          );
+          setIsUidUnavailable(isExist.data && configSet.uid !== currentUid);
+        } catch (error) {
+          console.log("Error fetching uid availability : ", error);
+        }
+      })();
+    },
+    200,
+    [configSet.uid]
+  );
   return (
     <div className="mt-4">
       <div className="bg-gray-200 p-4 rounded relative">
@@ -376,7 +407,7 @@ const SettingsSection = ({
             <LoaderIcon />
           </div>
         )}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
           <div
             onClick={() => {
               if (imgInputRef && imgInputRef.current)
@@ -422,6 +453,23 @@ const SettingsSection = ({
                   setConfigSet((c) => ({ ...c, description: e.target.value }))
                 }
               />
+            </div>
+            <div className="mt-4 space-y-2">
+              <label className="font-bold">Project UID</label>
+              <input
+                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                type="text"
+                disabled={!!basicDataBgProc}
+                value={configSet.uid}
+                onChange={(e) =>
+                  setConfigSet((c) => ({ ...c, uid: e.target.value }))
+                }
+              />
+              {isUidUnavailable && (
+                <span className="text-red-600">
+                  UID is not available, please choose something else
+                </span>
+              )}
             </div>
           </div>
         </div>

@@ -32,6 +32,8 @@ contract Collection721 is Ownable, ERC721URIStorage {
 
     mapping(bytes => bool) public isSignatureRedeemed;
 
+    event Mint(address from, address to, string tokenUri, uint256 tokenId);
+
     constructor(
         address _feeDestination,
         bytes32 _whitelistRoot,
@@ -175,8 +177,9 @@ contract Collection721 is Ownable, ERC721URIStorage {
     {
         _mint(to, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
-        nextTokenId.increment();
         isSignatureRedeemed[signature] = true;
+        emit Mint(msg.sender, to, _tokenURI, nextTokenId.current());
+        nextTokenId.increment();
     }
 
     function mintPrivate(
@@ -193,8 +196,9 @@ contract Collection721 is Ownable, ERC721URIStorage {
     {
         _mint(msg.sender, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
-        nextTokenId.increment();
         isSignatureRedeemed[signature] = true;
+        emit Mint(msg.sender, msg.sender, _tokenURI, nextTokenId.current());
+        nextTokenId.increment();
     }
 
     function mint(
@@ -210,7 +214,8 @@ contract Collection721 is Ownable, ERC721URIStorage {
     {
         _mint(to, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
-        nextTokenId.increment();
         isSignatureRedeemed[signature] = true;
+        emit Mint(msg.sender, to, _tokenURI, nextTokenId.current());
+        nextTokenId.increment();
     }
 }

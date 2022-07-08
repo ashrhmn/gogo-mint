@@ -26,6 +26,7 @@ const NewProject: NextPage = () => {
     whitelistAddresses: [],
     privateMintCharge: 0,
     publicMintCharge: 0,
+    uid: "",
   });
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   useEffect(() => {
