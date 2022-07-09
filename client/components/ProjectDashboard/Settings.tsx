@@ -33,8 +33,12 @@ const SettingsSection = ({
   const [whitelistBgProc, setWhitelistBgProc] = useState(0);
   const [privateMintChargeBgProc, setPrivateMintChargeBgProc] = useState(0);
   const [publicMintChargeBgProc, setPublicMintChargeBgProc] = useState(0);
+  const [privateMintLimitBgProc, setPrivateMintLimitBgProc] = useState(0);
+  const [publicMintLimitBgProc, setPublicMintLimitBgProc] = useState(0);
   const [isUidUnavailable, setIsUidUnavailable] = useState(false);
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
+  const [privateMintLimit, setPrivateMintLimit] = useState(0);
+  const [publicMintLimit, setPublicMintLimit] = useState(0);
 
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
     name: "",
@@ -399,6 +403,103 @@ const SettingsSection = ({
     200,
     [configSet.uid]
   );
+  useEffect(() => {
+    (async () => {
+      if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId])
+        return;
+      try {
+        setPrivateMintLimitBgProc((v) => v + 1);
+        const contract = new Contract(
+          projectAddress,
+          collectionType == "721" ? ABI721 : ABI1155,
+          getDefaultProvider(RPC_URLS[projectChainId])
+        );
+        const [privateMintLimit, publicMintLimit] = await Promise.all([
+          contract.maxMintInPrivate(),
+          contract.maxMintInPublic(),
+        ]);
+        setPrivateMintLimit(privateMintLimit.toString());
+        setPublicMintLimit(publicMintLimit.toString());
+        setPrivateMintLimitBgProc((v) => v - 1);
+      } catch (error) {
+        console.log("Error fetching limits : ", error);
+
+        setPrivateMintLimitBgProc((v) => v - 1);
+      }
+    })();
+  }, [collectionType, projectAddress, projectChainId]);
+
+  const handleUpdatePrivateMintMaxLimit = async () => {
+    if (!account || !library || !chainId) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+      toast.error("Error preparing contract");
+      return;
+    }
+    try {
+      setPrivateMintLimitBgProc((v) => v + 1);
+      const contract = new Contract(
+        projectAddress,
+        collectionType === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+      const tx = await toast.promise(
+        contract.updateMaxMintInPrivate(privateMintLimit),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setPrivateMintLimitBgProc((v) => v - 1);
+    } catch (error) {
+      console.log("Error updating private mint limit : ", error);
+      setPrivateMintLimitBgProc((v) => v - 1);
+    }
+  };
+
+  const handleUpdatePublicMintMaxLimit = async () => {
+    if (!account || !library || !chainId) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+      toast.error("Error preparing contract");
+      return;
+    }
+    try {
+      setPublicMintLimitBgProc((v) => v + 1);
+      const contract = new Contract(
+        projectAddress,
+        collectionType === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+      const tx = await toast.promise(
+        contract.updateMaxMintInPublic(publicMintLimit),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setPublicMintLimitBgProc((v) => v - 1);
+    } catch (error) {
+      console.log("Error updating public mint limit : ", error);
+      setPublicMintLimitBgProc((v) => v - 1);
+    }
+  };
   return (
     <div className="mt-4">
       <div className="bg-gray-200 p-4 rounded relative">
@@ -518,9 +619,7 @@ const SettingsSection = ({
             <LoaderIcon />
           </div>
         )}
-        <label className="font-bold">
-          Private Mint Charge <span className="text-red-700">*</span>
-        </label>
+        <label className="font-bold">Private Mint Charge</label>
         <div className="flex items-center gap-4">
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
@@ -551,9 +650,7 @@ const SettingsSection = ({
             <LoaderIcon />
           </div>
         )}
-        <label className="font-bold">
-          Public Mint Charge <span className="text-red-700">*</span>
-        </label>
+        <label className="font-bold">Public Mint Charge</label>
         <div className="flex items-center gap-4">
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
@@ -573,6 +670,56 @@ const SettingsSection = ({
             disabled={!!publicMintChargeBgProc}
             className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400"
             onClick={handleUpdatePublicMintCharge}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="my-4 bg-gray-200 rounded p-4 relative">
+        {!!privateMintLimitBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <label className="font-bold">Private Mint Max Limit</label>
+        <div className="flex items-center gap-4">
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="number"
+            disabled={!!privateMintLimitBgProc}
+            min={0}
+            value={privateMintLimit}
+            onChange={(e) => setPrivateMintLimit(e.target.valueAsNumber)}
+          />
+          <button
+            disabled={!!privateMintLimitBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400"
+            onClick={handleUpdatePrivateMintMaxLimit}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="my-4 bg-gray-200 rounded p-4 relative">
+        {!!publicMintLimitBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <label className="font-bold">Public Mint Max Limit</label>
+        <div className="flex items-center gap-4">
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="number"
+            disabled={!!publicMintLimitBgProc}
+            min={0}
+            value={publicMintLimit}
+            onChange={(e) => setPublicMintLimit(e.target.valueAsNumber)}
+          />
+          <button
+            disabled={!!publicMintLimitBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-40 hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:text-gray-400"
+            onClick={handleUpdatePublicMintMaxLimit}
           >
             Update
           </button>

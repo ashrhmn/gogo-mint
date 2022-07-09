@@ -36,9 +36,10 @@ export interface Collection721Interface extends utils.Interface {
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isSignatureRedeemed(bytes)": FunctionFragment;
-    "mint(address,string,bytes)": FunctionFragment;
+    "maxMintInPrivate()": FunctionFragment;
+    "maxMintInPublic()": FunctionFragment;
+    "mint(string,bytes)": FunctionFragment;
     "mintPrivate(string,bytes32[],bytes)": FunctionFragment;
-    "mintPrivateTo(address,string,bytes32[],bytes)": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
@@ -57,6 +58,8 @@ export interface Collection721Interface extends utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "updateFeeToAddress(address)": FunctionFragment;
+    "updateMaxMintInPrivate(uint256)": FunctionFragment;
+    "updateMaxMintInPublic(uint256)": FunctionFragment;
     "updatePrivateMintCharge(uint256)": FunctionFragment;
     "updatePrivateSale1(uint256,uint256,bool)": FunctionFragment;
     "updatePrivateSale2(uint256,uint256,bool)": FunctionFragment;
@@ -75,9 +78,10 @@ export interface Collection721Interface extends utils.Interface {
       | "getApproved"
       | "isApprovedForAll"
       | "isSignatureRedeemed"
+      | "maxMintInPrivate"
+      | "maxMintInPublic"
       | "mint"
       | "mintPrivate"
-      | "mintPrivateTo"
       | "name"
       | "owner"
       | "ownerOf"
@@ -96,6 +100,8 @@ export interface Collection721Interface extends utils.Interface {
       | "transferFrom"
       | "transferOwnership"
       | "updateFeeToAddress"
+      | "updateMaxMintInPrivate"
+      | "updateMaxMintInPublic"
       | "updatePrivateMintCharge"
       | "updatePrivateSale1"
       | "updatePrivateSale2"
@@ -131,25 +137,20 @@ export interface Collection721Interface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
+    functionFragment: "maxMintInPrivate",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxMintInPublic",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "mint",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "mintPrivate",
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BytesLike>[],
-      PromiseOrValue<BytesLike>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintPrivateTo",
-    values: [
-      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<BytesLike>[],
       PromiseOrValue<BytesLike>
@@ -232,6 +233,14 @@ export interface Collection721Interface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateMaxMintInPrivate",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateMaxMintInPublic",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updatePrivateMintCharge",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -294,13 +303,17 @@ export interface Collection721Interface extends utils.Interface {
     functionFragment: "isSignatureRedeemed",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "mintPrivate",
+    functionFragment: "maxMintInPrivate",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "mintPrivateTo",
+    functionFragment: "maxMintInPublic",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "mintPrivate",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
@@ -358,6 +371,14 @@ export interface Collection721Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "updateMaxMintInPrivate",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateMaxMintInPublic",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updatePrivateMintCharge",
     data: BytesLike
   ): Result;
@@ -393,7 +414,7 @@ export interface Collection721Interface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "Mint(address,address,string,uint256)": EventFragment;
+    "Mint(address,string,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
@@ -430,13 +451,12 @@ export type ApprovalForAllEvent = TypedEvent<
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
 
 export interface MintEventObject {
-  from: string;
-  to: string;
+  msgSender: string;
   tokenUri: string;
   tokenId: BigNumber;
 }
 export type MintEvent = TypedEvent<
-  [string, string, string, BigNumber],
+  [string, string, BigNumber],
   MintEventObject
 >;
 
@@ -522,22 +542,17 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    maxMintInPrivate(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    maxMintInPublic(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     mint(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       signature: PromiseOrValue<BytesLike>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     mintPrivate(
-      _tokenURI: PromiseOrValue<string>,
-      proof: PromiseOrValue<BytesLike>[],
-      signature: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    mintPrivateTo(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       proof: PromiseOrValue<BytesLike>[],
       signature: PromiseOrValue<BytesLike>,
@@ -641,6 +656,16 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    updateMaxMintInPrivate(
+      _maxMintInPrivate: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateMaxMintInPublic(
+      _maxMintInPublic: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     updatePrivateMintCharge(
       charge: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -715,22 +740,17 @@ export interface Collection721 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  maxMintInPrivate(overrides?: CallOverrides): Promise<BigNumber>;
+
+  maxMintInPublic(overrides?: CallOverrides): Promise<BigNumber>;
+
   mint(
-    to: PromiseOrValue<string>,
     _tokenURI: PromiseOrValue<string>,
     signature: PromiseOrValue<BytesLike>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   mintPrivate(
-    _tokenURI: PromiseOrValue<string>,
-    proof: PromiseOrValue<BytesLike>[],
-    signature: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  mintPrivateTo(
-    to: PromiseOrValue<string>,
     _tokenURI: PromiseOrValue<string>,
     proof: PromiseOrValue<BytesLike>[],
     signature: PromiseOrValue<BytesLike>,
@@ -834,6 +854,16 @@ export interface Collection721 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  updateMaxMintInPrivate(
+    _maxMintInPrivate: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateMaxMintInPublic(
+    _maxMintInPublic: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   updatePrivateMintCharge(
     charge: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -908,22 +938,17 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    maxMintInPrivate(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxMintInPublic(overrides?: CallOverrides): Promise<BigNumber>;
+
     mint(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       signature: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     mintPrivate(
-      _tokenURI: PromiseOrValue<string>,
-      proof: PromiseOrValue<BytesLike>[],
-      signature: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    mintPrivateTo(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       proof: PromiseOrValue<BytesLike>[],
       signature: PromiseOrValue<BytesLike>,
@@ -1025,6 +1050,16 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    updateMaxMintInPrivate(
+      _maxMintInPrivate: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateMaxMintInPublic(
+      _maxMintInPublic: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updatePrivateMintCharge(
       charge: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1093,18 +1128,12 @@ export interface Collection721 extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
-    "Mint(address,address,string,uint256)"(
-      from?: null,
-      to?: null,
+    "Mint(address,string,uint256)"(
+      msgSender?: null,
       tokenUri?: null,
       tokenId?: null
     ): MintEventFilter;
-    Mint(
-      from?: null,
-      to?: null,
-      tokenUri?: null,
-      tokenId?: null
-    ): MintEventFilter;
+    Mint(msgSender?: null, tokenUri?: null, tokenId?: null): MintEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
@@ -1157,22 +1186,17 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    maxMintInPrivate(overrides?: CallOverrides): Promise<BigNumber>;
+
+    maxMintInPublic(overrides?: CallOverrides): Promise<BigNumber>;
+
     mint(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       signature: PromiseOrValue<BytesLike>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     mintPrivate(
-      _tokenURI: PromiseOrValue<string>,
-      proof: PromiseOrValue<BytesLike>[],
-      signature: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    mintPrivateTo(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       proof: PromiseOrValue<BytesLike>[],
       signature: PromiseOrValue<BytesLike>,
@@ -1252,6 +1276,16 @@ export interface Collection721 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    updateMaxMintInPrivate(
+      _maxMintInPrivate: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateMaxMintInPublic(
+      _maxMintInPublic: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     updatePrivateMintCharge(
       charge: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1327,22 +1361,17 @@ export interface Collection721 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    maxMintInPrivate(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    maxMintInPublic(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     mint(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       signature: PromiseOrValue<BytesLike>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     mintPrivate(
-      _tokenURI: PromiseOrValue<string>,
-      proof: PromiseOrValue<BytesLike>[],
-      signature: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    mintPrivateTo(
-      to: PromiseOrValue<string>,
       _tokenURI: PromiseOrValue<string>,
       proof: PromiseOrValue<BytesLike>[],
       signature: PromiseOrValue<BytesLike>,
@@ -1419,6 +1448,16 @@ export interface Collection721 extends BaseContract {
 
     updateFeeToAddress(
       _feeDestination: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateMaxMintInPrivate(
+      _maxMintInPrivate: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateMaxMintInPublic(
+      _maxMintInPublic: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

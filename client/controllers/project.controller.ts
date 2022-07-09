@@ -167,3 +167,17 @@ export const projectExistsWithUid = async (
     return res.json(errorResponse(error));
   }
 };
+
+export const getProjectByUid = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const uid = req.query.uid;
+    if (!uid || typeof uid !== "string")
+      return res.json(errorResponse("Invalid UID"));
+    return res.json(successResponse(await ProjectService.getProjectByUid(uid)));
+  } catch (error) {
+    return res.json(errorResponse(error));
+  }
+};

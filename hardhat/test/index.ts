@@ -26,7 +26,14 @@ describe.only("721 new", function () {
 
     const hash = keccak256(accounts[0].address);
     const Coll721 = await ethers.getContractFactory("Collection721");
-    const coll721 = await Coll721.deploy(accounts[0].address, root, 3, 4);
+    const coll721 = await Coll721.deploy(
+      accounts[0].address,
+      root,
+      3,
+      4,
+      "",
+      ""
+    );
     await coll721.deployed();
 
     await (
@@ -52,9 +59,12 @@ describe.only("721 new", function () {
       arrayify(solidityKeccak256(["string"], ["Hello4"]))
     );
 
+    const privateLimitTx = await coll721.updateMaxMintInPrivate(3);
+    await privateLimitTx.wait();
+
     const validPrivateMintTx = await coll721
       .connect(accounts[7])
-      .mintPrivateTo(accounts[7].address, "Hello1", validProof, signature1, {
+      .mintPrivate("Hello1", validProof, signature1, {
         value: "3",
       });
     await validPrivateMintTx.wait();
@@ -66,6 +76,14 @@ describe.only("721 new", function () {
       });
 
     const rec = await validPrivateMintTx2.wait();
+
+    const validPrivateMintTx3 = await coll721
+      .connect(accounts[7])
+      .mintPrivate("Hello4", validProof, signature4, {
+        value: "3",
+      });
+
+    await validPrivateMintTx3.wait();
     console.log(rec.events.find((e: any) => e.event == "Mint").args);
 
     await (
@@ -74,7 +92,7 @@ describe.only("721 new", function () {
 
     const validPublicMintTx = await coll721
       .connect(accounts[7])
-      .mint(accounts[7].address, "Hello3", signature3, {
+      .mint("Hello3", signature3, {
         value: "4",
       });
     await validPublicMintTx.wait();

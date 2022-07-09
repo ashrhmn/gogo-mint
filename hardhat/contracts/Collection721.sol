@@ -30,20 +30,36 @@ contract Collection721 is Ownable, ERC721URIStorage {
     SaleConfig public privateSale2;
     SaleConfig public publicSale;
 
+    uint256 public maxMintInPrivate;
+    uint256 public maxMintInPublic;
+
     mapping(bytes => bool) public isSignatureRedeemed;
 
-    event Mint(address from, address to, string tokenUri, uint256 tokenId);
+    event Mint(address msgSender, string tokenUri, uint256 tokenId);
 
     constructor(
         address _feeDestination,
         bytes32 _whitelistRoot,
         uint256 _privateMintCharge,
-        uint256 _publicMintCharge
-    ) ERC721("", "") {
+        uint256 _publicMintCharge,
+        string memory _name,
+        string memory _symbol
+    ) ERC721(_name, _symbol) {
         feeDestination = _feeDestination;
         whitelistRoot = _whitelistRoot;
         privateMintCharge = _privateMintCharge;
         publicMintCharge = _publicMintCharge;
+    }
+
+    function updateMaxMintInPrivate(uint256 _maxMintInPrivate)
+        public
+        onlyOwner
+    {
+        maxMintInPrivate = _maxMintInPrivate;
+    }
+
+    function updateMaxMintInPublic(uint256 _maxMintInPublic) public onlyOwner {
+        maxMintInPublic = _maxMintInPublic;
     }
 
     function updatePrivateMintCharge(uint256 charge) public onlyOwner {
@@ -162,24 +178,24 @@ contract Collection721 is Ownable, ERC721URIStorage {
         _;
     }
 
-    function mintPrivateTo(
-        address to,
-        string memory _tokenURI,
-        bytes32[] memory proof,
-        bytes memory signature
-    )
-        public
-        payable
-        onlyPrivateSale
-        onlyWhitelisted(proof)
-        onlyValidTokenUri(_tokenURI, signature)
-        privateFeeProvided
-    {
-        _mint(to, nextTokenId.current());
-        _setTokenURI(nextTokenId.current(), _tokenURI);
-        isSignatureRedeemed[signature] = true;
-        emit Mint(msg.sender, to, _tokenURI, nextTokenId.current());
-        nextTokenId.increment();
+    modifier maxPrivateLimitNotReached() {
+        if (maxMintInPrivate != 0) {
+            require(
+                balanceOf(msg.sender) < maxMintInPrivate,
+                "Max limit reached"
+            );
+        }
+        _;
+    }
+
+    modifier maxPublicLimitNotReached() {
+        if (maxMintInPublic != 0) {
+            require(
+                balanceOf(msg.sender) < maxMintInPublic,
+                "Max limit reached"
+            );
+        }
+        _;
     }
 
     function mintPrivate(
@@ -190,6 +206,7 @@ contract Collection721 is Ownable, ERC721URIStorage {
         public
         payable
         onlyPrivateSale
+        maxPrivateLimitNotReached
         onlyWhitelisted(proof)
         onlyValidTokenUri(_tokenURI, signature)
         privateFeeProvided
@@ -197,25 +214,22 @@ contract Collection721 is Ownable, ERC721URIStorage {
         _mint(msg.sender, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
         isSignatureRedeemed[signature] = true;
-        emit Mint(msg.sender, msg.sender, _tokenURI, nextTokenId.current());
+        emit Mint(msg.sender, _tokenURI, nextTokenId.current());
         nextTokenId.increment();
     }
 
-    function mint(
-        address to,
-        string memory _tokenURI,
-        bytes memory signature
-    )
+    function mint(string memory _tokenURI, bytes memory signature)
         public
         payable
         onlyPublicSale
+        maxPublicLimitNotReached
         onlyValidTokenUri(_tokenURI, signature)
         publicFeeProvided
     {
-        _mint(to, nextTokenId.current());
+        _mint(msg.sender, nextTokenId.current());
         _setTokenURI(nextTokenId.current(), _tokenURI);
         isSignatureRedeemed[signature] = true;
-        emit Mint(msg.sender, to, _tokenURI, nextTokenId.current());
+        emit Mint(msg.sender, _tokenURI, nextTokenId.current());
         nextTokenId.increment();
     }
 }

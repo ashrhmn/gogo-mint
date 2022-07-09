@@ -142,3 +142,7 @@ export const updateProjectById = async (
 export const projectExistsWithUid = async (uid: string) => {
   return (await prisma.project.count({ where: { uid } })) > 0;
 };
+
+export const getProjectByUid = async (uid: string) => {
+  return await prisma.project.findFirst({ where: { uid } });
+};

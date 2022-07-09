@@ -21,6 +21,16 @@ export const ABI721 = [
         name: "_publicMintCharge",
         type: "uint256",
       },
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "_symbol",
+        type: "string",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -81,13 +91,7 @@ export const ABI721 = [
       {
         indexed: false,
         internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "to",
+        name: "msgSender",
         type: "address",
       },
       {
@@ -263,12 +267,33 @@ export const ABI721 = [
     type: "function",
   },
   {
-    inputs: [
+    inputs: [],
+    name: "maxMintInPrivate",
+    outputs: [
       {
-        internalType: "address",
-        name: "to",
-        type: "address",
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "maxMintInPublic",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       {
         internalType: "string",
         name: "_tokenURI",
@@ -304,34 +329,6 @@ export const ABI721 = [
       },
     ],
     name: "mintPrivate",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "string",
-        name: "_tokenURI",
-        type: "string",
-      },
-      {
-        internalType: "bytes32[]",
-        name: "proof",
-        type: "bytes32[]",
-      },
-      {
-        internalType: "bytes",
-        name: "signature",
-        type: "bytes",
-      },
-    ],
-    name: "mintPrivateTo",
     outputs: [],
     stateMutability: "payable",
     type: "function",
@@ -648,6 +645,32 @@ export const ABI721 = [
       },
     ],
     name: "updateFeeToAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_maxMintInPrivate",
+        type: "uint256",
+      },
+    ],
+    name: "updateMaxMintInPrivate",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_maxMintInPublic",
+        type: "uint256",
+      },
+    ],
+    name: "updateMaxMintInPublic",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
