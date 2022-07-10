@@ -48,6 +48,8 @@ const ClaimItem = ({
         const result = await contract.functions[getFunction]();
         // console.log(heading, "Result : ", getSaleConfigFromResponse(result));
         setConfigSet(getSaleConfigFromResponse(result));
+        if (getSaleConfigFromResponse(result).endTime === 0)
+          setIsNoEndChecked(true);
         setSaleConfigBgProc((v) => v - 1);
       })();
     } catch (error) {

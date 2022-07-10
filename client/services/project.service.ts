@@ -144,5 +144,15 @@ export const projectExistsWithUid = async (uid: string) => {
 };
 
 export const getProjectByUid = async (uid: string) => {
-  return await prisma.project.findFirst({ where: { uid } });
+  return await prisma.project.findFirst({
+    where: { uid },
+    select: {
+      id: true,
+      nfts: true,
+      address: true,
+      chainId: true,
+      collectionType: true,
+      whitelist: true,
+    },
+  });
 };

@@ -53,6 +53,12 @@ export const getSaleConfigFromResponse = (data: { [x: string]: any }) => ({
   endTime: +data["endTime"].toString(),
 });
 
+export const getMintEventArgsMapping = (data: { [x: string]: any }) => ({
+  msgSender: data["msgSender"],
+  tokenId: +data["tokenId"].toString(),
+  tokenUri: data["tokenUri"],
+});
+
 function forceTwo(inp: number) {
   return inp.toString().padStart(2, "0");
 }

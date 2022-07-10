@@ -3,7 +3,7 @@ import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as ProjectService from "../services/project.service";
 import { getAccessTokenFromCookie } from "../utils/Request.utils";
 import { isAddress } from "ethers/lib/utils";
-import { json } from "stream/consumers";
+import * as MerkleService from "../services/merkletree.service";
 
 export const getAllProjectsByDiscordId = async (
   req: NextApiRequest,
@@ -178,6 +178,27 @@ export const getProjectByUid = async (
       return res.json(errorResponse("Invalid UID"));
     return res.json(successResponse(await ProjectService.getProjectByUid(uid)));
   } catch (error) {
+    return res.json(errorResponse(error));
+  }
+};
+
+export const getProofFromProjectId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const { id, address } = req.query;
+    if (!id || typeof id !== "string")
+      return res.json(errorResponse("Invalid ID"));
+    if (!address || typeof address !== "string")
+      return res.json(errorResponse("Invalid Address"));
+    const project = await ProjectService.getProjectById(+id);
+    if (!project)
+      return res.json(errorResponse(`Project not found with id ${id}`));
+    const proof = MerkleService.getWhitelistProof(project.whitelist, address);
+    return res.json(successResponse(proof));
+  } catch (error) {
+    console.log(error);
     return res.json(errorResponse(error));
   }
 };

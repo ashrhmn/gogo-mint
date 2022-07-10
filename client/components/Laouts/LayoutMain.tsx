@@ -11,21 +11,21 @@ const LayoutMain = ({ children }: { children: React.ReactNode }) => {
           <div className="w-0 sm:w-auto overflow-hidden">Logo</div>
           <div className="flex overflow-auto">
             <Link href={`/`}>
-              <a className="p-2 font-bold text-gray-800 hover:text-black">
+              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
                 Home
               </a>
             </Link>
             <Link href={`/dashboard`}>
-              <a className="p-2 font-bold text-gray-800 hover:text-black">
+              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
                 Dashboard
               </a>
             </Link>
             <Link href={`/authenticate`}>
-              <a className="p-2 font-bold text-gray-800 hover:text-black">
+              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
                 Authenticate
               </a>
             </Link>
-            <div className="sm:flex hidden items-center justify-center group p-2 font-bold text-gray-800 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
+            <div className="sm:flex hidden items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
               {account ? (
                 <>
                   <span className="group-hover:hidden">

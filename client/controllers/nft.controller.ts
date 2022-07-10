@@ -82,3 +82,22 @@ export const getNftMetadata = async (
     return res.json(errorResponse(error));
   }
 };
+
+export const updateTokenId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const { id, tokenId } = req.body;
+    if (!id || typeof id !== "number")
+      return res.json(errorResponse("Invalid ID"));
+    if (typeof tokenId !== "number")
+      return res.json(errorResponse("Invalid TokenID"));
+    return res.json(
+      successResponse(await NftService.updateTokenId(id, tokenId))
+    );
+  } catch (error) {
+    console.log("Error updating token ID");
+    return res.json(errorResponse(error));
+  }
+};

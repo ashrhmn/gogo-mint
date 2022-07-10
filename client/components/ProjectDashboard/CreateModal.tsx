@@ -73,11 +73,20 @@ const CreateModal = ({
       );
 
       if (nft.data && nft.data.id && account && library) {
-        const signature = await library
-          .getSigner(account)
-          .signMessage(
-            arrayify(solidityKeccak256(["string"], [getTokenUri(nft.data.id)]))
-          );
+        const signature = await toast.promise(
+          library
+            .getSigner(account)
+            .signMessage(
+              arrayify(
+                solidityKeccak256(["string"], [getTokenUri(nft.data.id)])
+              )
+            ),
+          {
+            error: "Error getting signature",
+            loading: "Waiting for signature...",
+            success: "Signature Received",
+          }
+        );
         const result = await toast.promise(
           service.put(`nft/signature`, { id: nft.data.id, signature }),
           {

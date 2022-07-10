@@ -70,3 +70,7 @@ export const getMetadata = async (nftId: number) => {
     background_color: nft.backgroundColor,
   };
 };
+
+export const updateTokenId = async (id: number, tokenId: number) => {
+  return await prisma.nFT.update({ where: { id }, data: { tokenId } });
+};
