@@ -1,4 +1,4 @@
 export const getTokenUri = (nftId: number) =>
   `https://${
-    process.env.HOST_ROOT || "gogo-mint.ashrhmn.com"
+    process.env.NEXT_PUBLIC_HOST_ROOT || "gogo-mint.ashrhmn.com"
   }/api/v1/nft/tokenUri?item=${nftId}`;
