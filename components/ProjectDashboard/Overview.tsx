@@ -37,7 +37,7 @@ const OverviewSection = ({
         getDefaultProvider(RPC_URLS[projectChainId])
       );
       const promises = nfts
-        .filter((n) => !!n.tokenId)
+        .filter((n) => n.tokenId !== null)
         .map((n) => contract.ownerOf(n.tokenId));
       if (promises.length > 0) {
         toast

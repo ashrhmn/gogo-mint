@@ -14,7 +14,7 @@ const MintHome: NextPage<Props> = ({ projects }) => {
       <h1 className="text-3xl text-center font-bold">Mint Projects</h1>
       {projects.map((p) => (
         <Link key={p.id} href={`/mint/${p.uid}`} passHref>
-          <a className="text-2xl rounded hover:underline hover:text-blue-900 transition">
+          <a className="text-2xl rounded hover:underline hover:text-blue-900 transition block">
             {p.name}
           </a>
         </Link>

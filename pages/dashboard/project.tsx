@@ -1,8 +1,6 @@
-import { NFT, NFTMetadataProperties, Project } from "@prisma/client";
 import { shortenIfAddress } from "@usedapp/core";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import ClaimsSection from "../../components/ProjectDashboard/Claims";
@@ -10,7 +8,6 @@ import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
 import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
-import { ENV_PROTOCOL } from "../../constants/configuration";
 import { authorizeProject } from "../../services/auth.service";
 import { ProjectExtended } from "../../types";
 
