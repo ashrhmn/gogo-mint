@@ -17,6 +17,8 @@ export const get721CompiledContract = async (
     //   console.log("name : ", name);
     //   console.log("nzd name : ", normalizeString(name));
     const code = get721ContractCode(name);
+    console.log("Code : ", code);
+
     const initCode = getAbiEvmCodeFromSolidity(normalizeString(name), code);
     if (!initCode) return res.json(errorResponse("Error compiling"));
     return res.json(successResponse(initCode));

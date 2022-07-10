@@ -160,3 +160,18 @@ export const getProjectByUid = async (uid: string) => {
 export const getProjectsWithValidUid = async () => {
   return await prisma.project.findMany({ where: { uid: { not: null } } });
 };
+
+export const getProjectMetadata = async (address: string) => {
+  const project = await prisma.project.findFirst({
+    where: { address },
+    include: { owner: true },
+  });
+  if (!project) return {};
+  return {
+    name: project.name,
+    description: project.description,
+    image: project.imageUrl,
+    external_link: project.uid,
+    fee_recipient: project.owner.walletAddress,
+  };
+};

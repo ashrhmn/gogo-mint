@@ -202,3 +202,17 @@ export const getProofFromProjectId = async (
     return res.json(errorResponse(error));
   }
 };
+
+export const getContractUri = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const address = req.query.address;
+    if (!address || typeof address !== "string" || !isAddress(address))
+      return res.json(errorResponse("Invalid address"));
+    return res.json(await ProjectService.getProjectMetadata(address));
+  } catch (error) {
+    return res.json(errorResponse(error));
+  }
+};
