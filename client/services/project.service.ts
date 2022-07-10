@@ -156,3 +156,7 @@ export const getProjectByUid = async (uid: string) => {
     },
   });
 };
+
+export const getProjectsWithValidUid = async () => {
+  return await prisma.project.findMany({ where: { uid: { not: null } } });
+};
