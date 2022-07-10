@@ -1,6 +1,8 @@
 node_modules
 .wakatime-project
 
+.next
+
 node_modules
 .env
 coverage
