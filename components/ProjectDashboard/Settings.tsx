@@ -78,12 +78,15 @@ const SettingsSection = ({
         setFeeAddressBgProc((v) => v + 1);
         setPrivateMintChargeBgProc((v) => v + 1);
         setPublicMintChargeBgProc((v) => v + 1);
-        const [feeToAddress, privateMintCharge, publicMintCharge] =
+        const [feeToAddress, privateMintCharge, publicMintCharge, curi] =
           await Promise.all([
             contract.feeDestination(),
             contract.privateMintCharge(),
             contract.publicMintCharge(),
+            contract.contractURI(),
           ]);
+        console.log("CURi : ", curi);
+
         setConfigSet((c) => ({
           ...c,
           feeToAddress,

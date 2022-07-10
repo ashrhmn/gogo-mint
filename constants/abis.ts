@@ -193,6 +193,19 @@ export const ABI721 = [
   },
   {
     inputs: [],
+    name: "contractURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "feeDestination",
     outputs: [
       {

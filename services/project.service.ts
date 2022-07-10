@@ -163,7 +163,7 @@ export const getProjectsWithValidUid = async () => {
 
 export const getProjectMetadata = async (address: string) => {
   const project = await prisma.project.findFirst({
-    where: { address },
+    where: { address: { mode: "insensitive", equals: address } },
     include: { owner: true },
   });
   if (!project) return {};
