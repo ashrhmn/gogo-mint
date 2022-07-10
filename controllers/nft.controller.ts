@@ -73,7 +73,7 @@ export const getNftMetadata = async (
   res: NextApiResponse
 ) => {
   try {
-    const id = req.query.id;
+    const id = req.query.item;
     if (!id || typeof id != "string" || isNaN(+id))
       return res.json(errorResponse("Invalid ID"));
     return res.json(successResponse(await NftService.getMetadata(+id)));
