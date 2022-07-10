@@ -11,5 +11,8 @@
     },
     "engines": {
         "node": "16"
+    },
+    "devDependencies": {
+        "yarn": "^1.22.19"
     }
 }
