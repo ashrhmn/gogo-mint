@@ -8,5 +8,8 @@
     "scripts": {
         "build": "yarn --cwd client && yarn --cwd client build",
         "start": "yarn --cwd client start"
+    },
+    "engines": {
+        "node": "16"
     }
 }
