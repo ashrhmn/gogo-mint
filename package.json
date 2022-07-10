@@ -1,18 +1,48 @@
 {
-    "name": "gogo-mint",
-    "version": "1.0.0",
-    "main": "index.js",
-    "repository": "git@github.com:ashrhmn/gogo-mint.git",
-    "author": "ashrhmn <ashrhmn99@gmail.com>",
-    "license": "MIT",
+    "name": "client",
+    "version": "0.1.0",
+    "private": true,
     "scripts": {
-        "build": "yarn --cwd client && yarn --cwd client build",
-        "start": "yarn --cwd client start"
+        "dev": "next dev",
+        "build": "prisma db push --accept-data-loss && next build",
+        "start": "next start",
+        "lint": "next lint",
+        "dbpush": "prisma db push",
+        "pgen": "prisma generate",
+        "pstudio": "prisma studio",
+        "test": "mocha -r ts-node/register test/**/*.{test.js,test.ts}"
     },
-    "engines": {
-        "node": "16"
+    "dependencies": {
+        "@prisma/client": "4.0.0",
+        "@usedapp/core": "^1.0.15",
+        "axios": "^0.27.2",
+        "cookies": "^0.8.0",
+        "crypto-js": "^4.1.1",
+        "ethers": "^5.6.9",
+        "firebase": "^9.8.4",
+        "merkletreejs": "^0.2.32",
+        "next": "^12.2.0",
+        "next-connect": "^0.12.2",
+        "react": "18.2.0",
+        "react-dom": "18.2.0",
+        "react-hot-toast": "^2.2.0",
+        "solc": "^0.8.15",
+        "uuid": "^8.3.2"
     },
     "devDependencies": {
-        "yarn": "^1.22.19"
+        "@types/cookies": "^0.7.7",
+        "@types/crypto-js": "^4.1.1",
+        "@types/node": "18.0.0",
+        "@types/react": "18.0.14",
+        "@types/react-dom": "18.0.5",
+        "@types/uuid": "^8.3.4",
+        "autoprefixer": "^10.4.7",
+        "eslint": "8.18.0",
+        "eslint-config-next": "12.2.0",
+        "postcss": "^8.4.14",
+        "prisma": "^4.0.0",
+        "tailwindcss": "^3.1.4",
+        "types-solc": "^1.0.1",
+        "typescript": "4.7.4"
     }
 }
