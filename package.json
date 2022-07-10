@@ -1,0 +1,12 @@
+{
+    "name": "gogo-mint",
+    "version": "1.0.0",
+    "main": "index.js",
+    "repository": "git@github.com:ashrhmn/gogo-mint.git",
+    "author": "ashrhmn <ashrhmn99@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+        "build": "yarn --cwd client && yarn --cwd client build",
+        "start": "yarn --cwd client start"
+    }
+}
