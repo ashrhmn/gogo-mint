@@ -8,15 +8,16 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/router";
 import { useEthers } from "@usedapp/core";
 import { arrayify, solidityKeccak256 } from "ethers/lib/utils";
-import { solc } from "types-solc";
 import { getTokenUri } from "../../constants/tokenUri";
 
 const CreateModal = ({
   projectId,
   isCreateModalOpen,
   setIsCreateModalOpen,
+  ownerAddress,
 }: {
   projectId: number;
+  ownerAddress: string | null;
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
 }) => {
@@ -72,7 +73,17 @@ const CreateModal = ({
         }
       );
 
-      if (nft.data && nft.data.id && account && library) {
+      if (ownerAddress && account && ownerAddress !== account)
+        toast.error("Remeber to sign NFT to make them dropable");
+
+      if (
+        ownerAddress &&
+        account &&
+        library &&
+        ownerAddress === account &&
+        nft.data &&
+        nft.data.id
+      ) {
         const signature = await toast.promise(
           library
             .getSigner(account)

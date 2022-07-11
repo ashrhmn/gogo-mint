@@ -1,4 +1,4 @@
-import { NFT, NFTMetadataProperties, Project } from "@prisma/client";
+import { NFT, NFTMetadataProperties, Project, User } from "@prisma/client";
 import { IncomingMessage, ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -107,10 +107,21 @@ export interface NftExtended extends NFT {
 }
 export interface ProjectExtended extends Project {
   nfts: NftExtended[];
+  owner: User;
 }
 
 export interface ISaleConfig {
   status: boolean;
   startTime: number;
   endTime: number;
+}
+
+export interface MintPageConfig {
+  privateMintCharge: number;
+  publicMintCharge: number;
+  privateSaleConfig1: ISaleConfig | null;
+  privateSaleConfig2: ISaleConfig | null;
+  publicSaleConfig: ISaleConfig | null;
+  maxMintInPrivate: number;
+  maxMintInPublic: number;
 }

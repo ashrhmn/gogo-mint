@@ -100,6 +100,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
               projectChainId={project.chainId}
               nfts={project.nfts}
               collectionType={project.collectionType}
+              ownerAddress={project.owner.walletAddress}
             />
           )}
         </div>
@@ -118,6 +119,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
               projectAddress={project.address}
               projectChainId={project.chainId}
               collectionType={project.collectionType}
+              projectOwner={project.owner.walletAddress}
             />
           )}
         </div>
@@ -143,6 +145,7 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
         isCreateModalOpen={isCreateModalOpen}
         setIsCreateModalOpen={setIsCreateModalOpen}
         projectId={project.id}
+        ownerAddress={project.owner.walletAddress}
       />
     </div>
   );

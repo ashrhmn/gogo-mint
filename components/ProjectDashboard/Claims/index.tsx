@@ -6,11 +6,13 @@ const ClaimsSection = ({
   projectAddress,
   projectChainId,
   projectId,
+  projectOwner,
 }: {
   projectId: number;
   projectChainId: number | null;
   projectAddress: string | null;
   collectionType: string | null;
+  projectOwner: string | null;
 }) => {
   return (
     <div>
@@ -21,6 +23,7 @@ const ClaimsSection = ({
         collectionType={collectionType}
         projectAddress={projectAddress}
         projectChainId={projectChainId}
+        projectOwner={projectOwner}
       />
       <ClaimItem
         heading="Private Sale 2"
@@ -29,6 +32,7 @@ const ClaimsSection = ({
         collectionType={collectionType}
         projectAddress={projectAddress}
         projectChainId={projectChainId}
+        projectOwner={projectOwner}
       />
       <ClaimItem
         heading="Public Sale"
@@ -37,6 +41,7 @@ const ClaimsSection = ({
         collectionType={collectionType}
         projectAddress={projectAddress}
         projectChainId={projectChainId}
+        projectOwner={projectOwner}
       />
     </div>
   );

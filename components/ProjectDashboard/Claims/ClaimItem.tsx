@@ -17,6 +17,7 @@ const ClaimItem = ({
   projectAddress,
   projectChainId,
   updateFunction,
+  projectOwner,
 }: {
   heading: string;
   getFunction: string;
@@ -24,6 +25,7 @@ const ClaimItem = ({
   projectChainId: number | null;
   projectAddress: string | null;
   collectionType: string | null;
+  projectOwner: string | null;
 }) => {
   const { account, library, chainId } = useEthers();
   const [saleConfigBgProc, setSaleConfigBgProc] = useState(0);
@@ -67,8 +69,18 @@ const ClaimItem = ({
       toast.error(`Please switch to network id ${projectChainId}`);
       return;
     }
-    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+    if (
+      !projectAddress ||
+      !projectChainId ||
+      !RPC_URLS[projectChainId] ||
+      !projectOwner
+    ) {
       toast.error("Error loading project contract");
+      return;
+    }
+
+    if (projectOwner !== account) {
+      toast.error("Only owner can update configs");
       return;
     }
 

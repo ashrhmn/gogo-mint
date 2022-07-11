@@ -1,7 +1,6 @@
-import { Project } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
 import { Contract, getDefaultProvider } from "ethers";
-import { parseEther } from "ethers/lib/utils";
+import { isAddress } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -11,7 +10,7 @@ import { RPC_URLS } from "../../constants/RPC_URL";
 import { getTokenUri } from "../../constants/tokenUri";
 import { service } from "../../service";
 import { getProjectByUid } from "../../services/project.service";
-import { ISaleConfig, ProjectExtended } from "../../types";
+import { MintPageConfig, ProjectExtended } from "../../types";
 import { randomIntFromInterval } from "../../utils/Number.utils";
 import {
   getMintEventArgsMapping,
@@ -26,16 +25,43 @@ interface Props {
 const MintPage: NextPage<Props> = ({ project, type }) => {
   const router = useRouter();
   const { account, library, chainId, activateBrowserWallet } = useEthers();
-  const [privateMintCharge, setPrivateMintCharge] = useState(0);
-  const [publicMintCharge, setPublicMintCharge] = useState(0);
-  const [privateSale1Config, setPrivateSale1Config] =
-    useState<ISaleConfig | null>(null);
-  const [privateSale2Config, setPrivateSale2Config] =
-    useState<ISaleConfig | null>(null);
-  const [publicSaleConfig, setPublicSaleConfig] = useState<ISaleConfig | null>(
-    null
-  );
+  const [userTokenBalance, setUserTokenBalance] = useState(0);
   const [saleConfigBgProc, setSaleConfigBgProc] = useState(0);
+  const [configSet, setConfigSet] = useState<MintPageConfig>({
+    maxMintInPrivate: 0,
+    maxMintInPublic: 0,
+    privateMintCharge: 0,
+    privateSaleConfig1: null,
+    privateSaleConfig2: null,
+    publicMintCharge: 0,
+    publicSaleConfig: null,
+  });
+  useEffect(() => {
+    (async () => {
+      if (
+        !account ||
+        !isAddress(account) ||
+        !project.address ||
+        !project.chainId ||
+        !RPC_URLS[project.chainId]
+      )
+        return;
+      try {
+        setSaleConfigBgProc((v) => v + 1);
+        const contract = new Contract(
+          project.address,
+          project.collectionType === "721" ? ABI721 : ABI1155,
+          getDefaultProvider(RPC_URLS[project.chainId])
+        );
+        const balance = await contract.balanceOf(account);
+        setUserTokenBalance(balance.toString());
+        setSaleConfigBgProc((v) => v - 1);
+      } catch (error) {
+        setSaleConfigBgProc((v) => v - 1);
+        console.log("Error fetching user balance : ", error);
+      }
+    })();
+  }, [account, project.address, project.chainId, project.collectionType]);
   useEffect(() => {
     (async () => {
       try {
@@ -48,23 +74,33 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
           getDefaultProvider(RPC_URLS[project.chainId])
         );
         const [
-          privateSale1,
-          privateSale2,
-          publicSale,
+          privateSaleConfig1,
+          privateSaleConfig2,
+          publicSaleConfig,
           privateMintCharge,
           publicMintCharge,
+          maxMintInPrivate,
+          maxMintInPublic,
         ] = await Promise.all([
           contract.privateSale1(),
           contract.privateSale2(),
           contract.publicSale(),
           contract.privateMintCharge(),
           contract.publicMintCharge(),
+          contract.maxMintInPrivate(),
+          contract.maxMintInPublic(),
         ]);
-        setPrivateMintCharge(privateMintCharge.toString());
-        setPublicMintCharge(publicMintCharge.toString());
-        setPrivateSale1Config(getSaleConfigFromResponse(privateSale1));
-        setPrivateSale2Config(getSaleConfigFromResponse(privateSale2));
-        setPublicSaleConfig(getSaleConfigFromResponse(publicSale));
+
+        setConfigSet((old) => ({
+          ...old,
+          maxMintInPrivate: +maxMintInPrivate.toString(),
+          maxMintInPublic: +maxMintInPublic.toString(),
+          privateMintCharge: +privateMintCharge.toString(),
+          publicMintCharge: +publicMintCharge.toString(),
+          privateSaleConfig1: getSaleConfigFromResponse(privateSaleConfig1),
+          privateSaleConfig2: getSaleConfigFromResponse(privateSaleConfig2),
+          publicSaleConfig: getSaleConfigFromResponse(publicSaleConfig),
+        }));
         setSaleConfigBgProc((v) => v - 1);
       } catch (error) {
         setSaleConfigBgProc((v) => v - 1);
@@ -74,34 +110,37 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
   }, [project.address, project.chainId, project.collectionType]);
 
   const isPrivateSale1Valid = useMemo(() => {
-    if (!privateSale1Config) return false;
+    if (!configSet.privateSaleConfig1) return false;
     const now = +(Date.now() / 1000).toFixed(0);
     return (
-      privateSale1Config.status &&
-      privateSale1Config.startTime < now &&
-      (privateSale1Config.endTime === 0 || privateSale1Config.endTime > now)
+      configSet.privateSaleConfig1.status &&
+      configSet.privateSaleConfig1.startTime < now &&
+      (configSet.privateSaleConfig1.endTime === 0 ||
+        configSet.privateSaleConfig1.endTime > now)
     );
-  }, [privateSale1Config]);
+  }, [configSet.privateSaleConfig1]);
 
   const isPrivateSale2Valid = useMemo(() => {
-    if (!privateSale2Config) return false;
+    if (!configSet.privateSaleConfig2) return false;
     const now = +(Date.now() / 1000).toFixed(0);
     return (
-      privateSale2Config.status &&
-      privateSale2Config.startTime < now &&
-      (privateSale2Config.endTime === 0 || privateSale2Config.endTime > now)
+      configSet.privateSaleConfig2.status &&
+      configSet.privateSaleConfig2.startTime < now &&
+      (configSet.privateSaleConfig2.endTime === 0 ||
+        configSet.privateSaleConfig2.endTime > now)
     );
-  }, [privateSale2Config]);
+  }, [configSet.privateSaleConfig2]);
 
   const isPublicSaleValid = useMemo(() => {
-    if (!publicSaleConfig) return false;
+    if (!configSet.publicSaleConfig) return false;
     const now = +(Date.now() / 1000).toFixed(0);
     return (
-      publicSaleConfig.status &&
-      publicSaleConfig.startTime < now &&
-      (publicSaleConfig.endTime === 0 || publicSaleConfig.endTime > now)
+      configSet.publicSaleConfig.status &&
+      configSet.publicSaleConfig.startTime < now &&
+      (configSet.publicSaleConfig.endTime === 0 ||
+        configSet.publicSaleConfig.endTime > now)
     );
-  }, [publicSaleConfig]);
+  }, [configSet.publicSaleConfig]);
 
   const handleRandomPublicMint = async () => {
     try {
@@ -130,7 +169,7 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
 
       const tx = await toast.promise(
         contract.mint(getTokenUri(randomNft.id), randomNft.signature, {
-          value: publicMintCharge.toString(),
+          value: configSet.publicMintCharge.toString(),
         }),
         {
           error: "Error sending transaction",
@@ -205,7 +244,7 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
           getTokenUri(randomNft.id),
           proof.data,
           randomNft.signature,
-          { value: privateMintCharge.toString() }
+          { value: configSet.privateMintCharge.toString() }
         ),
         {
           error: "Error sending transaction",
@@ -239,39 +278,168 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
       console.log("Error Private Minting : ", error);
     }
   };
+
+  const isPrivateMintButtonDisabled = useMemo(
+    () =>
+      !account
+        ? false
+        : (account && !project.whitelist.includes(account)) ||
+          userTokenBalance >= configSet.maxMintInPrivate ||
+          project.nfts.filter((n) => n.tokenId === null).length === 0,
+    [
+      account,
+      configSet.maxMintInPrivate,
+      project.nfts,
+      project.whitelist,
+      userTokenBalance,
+    ]
+  );
+
+  const isPublicMintButtonDisabled = useMemo(
+    () =>
+      !account
+        ? false
+        : userTokenBalance >= configSet.maxMintInPrivate ||
+          project.nfts.filter((n) => n.tokenId === null).length === 0,
+    [account, configSet.maxMintInPrivate, project.nfts, userTokenBalance]
+  );
+
+  const privateMintButtonText = useMemo(() => {
+    if (!account) return `Please connect wallet`;
+    if (!project.whitelist.includes(account)) return `You are not whitelisted`;
+    if (userTokenBalance >= configSet.maxMintInPrivate)
+      return `Max Limit Reached`;
+    if (project.nfts.filter((n) => n.tokenId === null).length === 0)
+      return `Mint Sold Out`;
+    return `Mint`;
+  }, [
+    account,
+    configSet.maxMintInPrivate,
+    project.nfts,
+    project.whitelist,
+    userTokenBalance,
+  ]);
+
+  const publicMintButtonText = useMemo(() => {
+    if (!account) return `Please connect wallet`;
+    if (userTokenBalance >= configSet.maxMintInPrivate)
+      return `Max Limit Reached`;
+    if (project.nfts.filter((n) => n.tokenId === null).length === 0)
+      return `Mint Sold Out`;
+    return `Mint`;
+  }, [account, configSet.maxMintInPrivate, project.nfts, userTokenBalance]);
+
+  const privateSale1NextDate = useMemo(
+    () =>
+      configSet.privateSaleConfig1 &&
+      configSet.privateSaleConfig1.status &&
+      configSet.privateSaleConfig1.startTime >
+        +(Date.now() / 1000).toFixed(2) &&
+      `Private Sale 1 Starts at ${new Date(
+        configSet.privateSaleConfig1.startTime * 1000
+      ).toLocaleString()}`,
+    [configSet.privateSaleConfig1]
+  );
+
+  const privateSale2NextDate = useMemo(
+    () =>
+      configSet.privateSaleConfig2 &&
+      configSet.privateSaleConfig2.status &&
+      configSet.privateSaleConfig2.startTime >
+        +(Date.now() / 1000).toFixed(2) &&
+      `Private Sale 2 Starts at ${new Date(
+        configSet.privateSaleConfig2.startTime * 1000
+      ).toLocaleString()}`,
+    [configSet.privateSaleConfig2]
+  );
+
+  const publicSaleNextDate = useMemo(
+    () =>
+      configSet.publicSaleConfig &&
+      configSet.publicSaleConfig.status &&
+      configSet.publicSaleConfig.startTime > +(Date.now() / 1000).toFixed(2) &&
+      `Private Sale 2 Starts at ${new Date(
+        configSet.publicSaleConfig.startTime * 1000
+      ).toLocaleString()}`,
+    [configSet.publicSaleConfig]
+  );
+
+  const Card = {
+    public: () => (
+      <>
+        {isPublicSaleValid ? (
+          <button
+            className="bg-blue-500 text-white p-2 hover:bg-blue-600 transition-colors w-full rounded-3xl disabled:bg-blue-400 disabled:text-gray-500"
+            disabled={isPublicMintButtonDisabled}
+            onClick={account ? handleRandomPublicMint : activateBrowserWallet}
+          >
+            {publicMintButtonText}
+          </button>
+        ) : (
+          <>
+            <h1>Public Sell is not currently running</h1>
+            <h2>Please check back later</h2>
+            <h2>{publicSaleNextDate}</h2>
+          </>
+        )}
+      </>
+    ),
+    private: () => (
+      <>
+        {isPrivateSale1Valid || isPrivateSale2Valid ? (
+          <button
+            className="bg-blue-500 text-white p-2 hover:bg-blue-600 transition-colors w-full rounded-3xl disabled:bg-blue-400 disabled:text-gray-500"
+            disabled={isPrivateMintButtonDisabled}
+            onClick={account ? handleRandomPrivateMint : activateBrowserWallet}
+          >
+            {privateMintButtonText}
+          </button>
+        ) : (
+          <>
+            <h1>Private Sell is not currently running</h1>
+            <h2>Please check back later</h2>
+            <h2>{privateSale1NextDate}</h2>
+            <h2>{privateSale2NextDate}</h2>
+          </>
+        )}
+      </>
+    ),
+  };
+
+  const LinkButton = ({
+    text,
+    selected = false,
+  }: {
+    text: string;
+    selected?: boolean;
+  }) => (
+    <button
+      className={`${
+        selected ? "bg-blue-700 font-bold" : "bg-blue-500 font-medium"
+      } text-white p-2 w-36 hover:bg-blue-700 transition-colors`}
+      onClick={() =>
+        router.push({
+          ...router,
+          query: { ...router.query, type: text.toLowerCase() },
+        })
+      }
+    >
+      {text}
+    </button>
+  );
+
+  const Button = {
+    private: () => <LinkButton text="Private" selected={type === "private"} />,
+    public: () => <LinkButton text="Public" selected={type === "public"} />,
+  };
+
   return (
     <div>
       <div className="flex justify-end">
-        <button
-          className={`${
-            type === "private"
-              ? "bg-blue-700 font-bold"
-              : "bg-blue-500 font-medium"
-          } text-white p-2 w-36 hover:bg-blue-700 rounded-l-3xl transition-colors`}
-          onClick={() =>
-            router.push({
-              ...router,
-              query: { ...router.query, type: "private" },
-            })
-          }
-        >
-          Private
-        </button>
-        <button
-          className={`${
-            type === "public"
-              ? "bg-blue-700 font-bold"
-              : "bg-blue-500 font-medium"
-          } text-white p-2 w-36 hover:bg-blue-700 rounded-r-3xl transition-colors`}
-          onClick={() =>
-            router.push({
-              ...router,
-              query: { ...router.query, type: "public" },
-            })
-          }
-        >
-          Public
-        </button>
+        <div className="flex rounded-3xl overflow-hidden">
+          <Button.private />
+          <Button.public />
+        </div>
       </div>
       <div className="bg-gray-200 rounded p-4 my-4 text-2xl max-w-sm">
         <div className="my-4 font-medium">
@@ -290,119 +458,8 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
           </div>
         ) : (
           <>
-            {type === "private" && (
-              <>
-                {isPrivateSale1Valid || isPrivateSale2Valid ? (
-                  <>
-                    {!account ? (
-                      <button onClick={activateBrowserWallet}>
-                        Please Connect your wallet
-                      </button>
-                    ) : (
-                      <>
-                        {project.whitelist.includes(account) ? (
-                          <>
-                            <button
-                              className="bg-blue-500 text-white p-2 hover:bg-blue-600 transition-colors w-full rounded-3xl disabled:bg-blue-400 disabled:text-gray-500"
-                              onClick={handleRandomPrivateMint}
-                              disabled={
-                                project.nfts.filter((n) => n.tokenId === null)
-                                  .length === 0
-                              }
-                            >
-                              {project.nfts.filter((n) => n.tokenId === null)
-                                .length > 0
-                                ? "Mint"
-                                : "Mint Sold Out"}
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <h1>You are not whitelisted</h1>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <h1>Private Sell is not currently running</h1>
-                    <h2>Please check back later</h2>
-                    {privateSale1Config &&
-                      privateSale1Config.status &&
-                      privateSale1Config.startTime >
-                        +(Date.now() / 1000).toFixed(2) && (
-                        <h2>
-                          Private Sale 1 starts at{" "}
-                          <span>
-                            {new Date(
-                              privateSale1Config.startTime * 1000
-                            ).toLocaleString()}
-                          </span>
-                        </h2>
-                      )}
-                    {privateSale2Config &&
-                      privateSale2Config.status &&
-                      privateSale2Config.startTime >
-                        +(Date.now() / 1000).toFixed(2) && (
-                        <h2>
-                          Private Sale 2 starts at{" "}
-                          <span>
-                            {new Date(
-                              privateSale2Config.startTime * 1000
-                            ).toLocaleString()}
-                          </span>
-                        </h2>
-                      )}
-                  </>
-                )}
-              </>
-            )}
-            {type === "public" && (
-              <>
-                {isPublicSaleValid ? (
-                  <>
-                    {!account ? (
-                      <button onClick={activateBrowserWallet}>
-                        Please Connect your wallet
-                      </button>
-                    ) : (
-                      <button
-                        className="bg-blue-500 text-white p-2 hover:bg-blue-600 transition-colors w-full rounded-3xl disabled:bg-blue-400 disabled:text-gray-500"
-                        onClick={handleRandomPublicMint}
-                        disabled={
-                          project.nfts.filter((n) => n.tokenId === null)
-                            .length === 0
-                        }
-                      >
-                        {project.nfts.filter((n) => n.tokenId === null).length >
-                        0
-                          ? "Mint"
-                          : "Mint Sold Out"}
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <h1>Public Sell is not currently running</h1>
-                    <h2>Please check back later</h2>
-                    {publicSaleConfig &&
-                      publicSaleConfig.status &&
-                      publicSaleConfig.startTime >
-                        +(Date.now() / 1000).toFixed(2) && (
-                        <h2>
-                          Public Sale starts at{" "}
-                          <span>
-                            {new Date(
-                              publicSaleConfig.startTime * 1000
-                            ).toLocaleString()}
-                          </span>
-                        </h2>
-                      )}
-                  </>
-                )}
-              </>
-            )}
+            {type === "private" && <Card.private />}
+            {type === "public" && <Card.public />}
           </>
         )}
       </div>
@@ -416,8 +473,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { props: {}, redirect: { destination: "/404" } };
   const project = await getProjectByUid(uid);
   if (!project) return { props: {}, redirect: { destination: "/404" } };
-  //   console.log("Project : ", project);
-
   return { props: { project, type: type === "public" ? type : "private" } };
 };
 
