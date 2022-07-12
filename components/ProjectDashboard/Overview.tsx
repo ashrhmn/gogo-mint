@@ -46,6 +46,8 @@ const OverviewSection = ({
         setBgProcRunning((v) => v + 1);
         try {
           const owner = await contract.ownerOf(nft.tokenId);
+          const tokenUri = await contract.tokenURI(nft.tokenId);
+          console.log("Token URI ", nft.id, " : ", tokenUri);
           setNftsWithOwner((old) => [
             ...old.filter((o) => o.id !== nft.id),
             { ...nft, owner },
