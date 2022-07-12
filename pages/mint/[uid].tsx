@@ -284,7 +284,8 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
       !account
         ? false
         : (account && !project.whitelist.includes(account)) ||
-          userTokenBalance >= configSet.maxMintInPrivate ||
+          (configSet.maxMintInPrivate !== 0 &&
+            userTokenBalance >= configSet.maxMintInPrivate) ||
           project.nfts.filter((n) => n.tokenId === null).length === 0,
     [
       account,
@@ -299,7 +300,8 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
     () =>
       !account
         ? false
-        : userTokenBalance >= configSet.maxMintInPrivate ||
+        : (configSet.maxMintInPrivate !== 0 &&
+            userTokenBalance >= configSet.maxMintInPrivate) ||
           project.nfts.filter((n) => n.tokenId === null).length === 0,
     [account, configSet.maxMintInPrivate, project.nfts, userTokenBalance]
   );
@@ -307,7 +309,10 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
   const privateMintButtonText = useMemo(() => {
     if (!account) return `Please connect wallet`;
     if (!project.whitelist.includes(account)) return `You are not whitelisted`;
-    if (userTokenBalance >= configSet.maxMintInPrivate)
+    if (
+      configSet.maxMintInPrivate !== 0 &&
+      userTokenBalance >= configSet.maxMintInPrivate
+    )
       return `Max Limit Reached`;
     if (project.nfts.filter((n) => n.tokenId === null).length === 0)
       return `Mint Sold Out`;
@@ -322,7 +327,10 @@ const MintPage: NextPage<Props> = ({ project, type }) => {
 
   const publicMintButtonText = useMemo(() => {
     if (!account) return `Please connect wallet`;
-    if (userTokenBalance >= configSet.maxMintInPrivate)
+    if (
+      configSet.maxMintInPrivate !== 0 &&
+      userTokenBalance >= configSet.maxMintInPrivate
+    )
       return `Max Limit Reached`;
     if (project.nfts.filter((n) => n.tokenId === null).length === 0)
       return `Mint Sold Out`;
