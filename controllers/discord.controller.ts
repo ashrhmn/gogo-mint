@@ -34,7 +34,7 @@ export const discordRedirectGet = async (
     return res.redirect(DISCORD_AUTH_URL);
   } catch (error) {
     console.log("Error : ", error);
-    return res.json(error);
+    return res.json({ message: "Error authenticating discord" });
   }
 };
 
