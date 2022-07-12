@@ -1,25 +1,32 @@
 import { User } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import { GetServerSideProps, NextApiRequest, NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { service } from "../service";
 import { getLoggedInUser } from "../services/user.service";
 import { DiscordUserResponse } from "../types";
 import { randomIntFromInterval } from "../utils/Number.utils";
 import Image from "next/image";
 import Link from "next/link";
-import { DISCORD_AUTH_URL } from "../constants/configuration";
+import {
+  DISCORD_AUTH_URL,
+  getMessageToSignOnAuth,
+} from "../constants/configuration";
 import { getHttpCookie } from "../utils/Request.utils";
 import toast from "react-hot-toast";
+import { getSigner } from "../services/ethereum.service";
+import assert from "assert";
+import { getCookieWallet } from "../services/auth.service";
 
 interface Props {
   user?: DiscordUserResponse;
   msg: string | null;
+  cookieAddress: string | null;
 }
 
-const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
-  const { account, deactivate, activateBrowserWallet } = useEthers();
+const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
+  const { account, deactivate, activateBrowserWallet, library } = useEthers();
   const [connectedUser, setConnectedUser] = useState<User | null>();
   const [connectedWallet, setConnectedWallet] = useState<string | null>("");
   const [bgProcesses, setBgProcesses] = useState(0);
@@ -31,7 +38,6 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
       id = setTimeout(() => {
         toast.error(msg, { id: "page_msg" });
       }, 1000);
-      console.log(id);
     }
     if (id) return () => clearTimeout(id);
   }, [msg, router.query.msg]);
@@ -39,24 +45,20 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
   useEffect(() => {
     if (user) {
       setBgProcesses((v) => v + 1);
-      toast
-        .promise(
-          service.get(
-            `/users?username=${user.username}&discriminator=${user.discriminator}`
-          ),
-          {
-            error: "Error fetching discord user data",
-            loading: "Fetching discord user data...",
-            success: "Discord user data fetched successfully",
-          },
-          { id: "fetch_discord_data" }
+      service
+        .get(
+          `/users?username=${user.username}&discriminator=${user.discriminator}`
         )
-        .then(({ data: { data: user } }: { data: { data: User } }) => {
-          // console.log(user);
-          //   console.log("Fetched wallet : ", user.walletAddress);
-          setBgProcesses((v) => v - 1);
-          setConnectedWallet(user.walletAddress);
-        })
+        .then(
+          ({
+            data: { data: user, error },
+          }: {
+            data: { data: User; error: any };
+          }) => {
+            setBgProcesses((v) => v - 1);
+            setConnectedWallet(!!user ? user.walletAddress : null);
+          }
+        )
         .catch((err) => {
           console.log(err);
           setConnectedWallet("");
@@ -72,26 +74,18 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
   useEffect(() => {
     if (account) {
       setBgProcesses((v) => v + 1);
-      toast
-        .promise(
-          service.get(`/users?address=${account}`),
-          {
-            error: "Error fetching wallet data",
-            loading: "Fetching wallet data...",
-            success: "Wallet data fetched successfully",
-          },
-          { id: "fetch_wallet_data" }
-        )
+      service
+        .get(`/users?address=${account}`)
         .then(
           ({
             data: { data: user, error },
           }: {
             data: { data: User; error: any };
           }) => {
-            // console.log(error);
-            // console.log("Fetched user : ", user);
+            console.log(error);
+            console.log("Fetched user : ", user);
             setBgProcesses((v) => v - 1);
-            setConnectedUser(user);
+            setConnectedUser(error ? null : user);
           }
         )
         .catch((err) => {
@@ -105,11 +99,25 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
     if (!user || !account) {
       return;
     }
+    if (!connectedUser) {
+      toast.error("Sign is Required");
+      return;
+    }
+
+    if (cookieAddress !== account) {
+      toast.error(
+        `Signed in wallet is ${shortenIfAddress(
+          cookieAddress
+        )}, but connected wallet is ${shortenIfAddress(account)}`
+      );
+      return;
+    }
+
     setBgProcesses((v) => v + 1);
     const { data: response } = await toast.promise(
       service.post("/auth/discord/link", {
         username: user.username,
-        discriminator: user.discriminator,
+        discriminator: +user.discriminator,
         address: account,
       }),
       {
@@ -122,7 +130,27 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
     setBgProcesses((v) => v - 1);
     if (!response.error) {
     } else {
-      alert(response.error);
+      console.log(response.error);
+    }
+  };
+
+  const handleSignClick = async () => {
+    try {
+      assert(account && library, "Please connect Wallet");
+      const signature = await library
+        .getSigner(account)
+        .signMessage(getMessageToSignOnAuth(account));
+      // console.log("Sig : ", signature);
+      const res = await service.post(`/auth/wallet/login`, {
+        address: account,
+        signature,
+      });
+      console.log(res.data);
+      router.reload();
+    } catch (error: any) {
+      console.error(error);
+      if (error.message && typeof error.message === "string")
+        toast.error(error.message);
     }
   };
 
@@ -230,7 +258,13 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
           </div>
         )}
       </div>
-      <div className="flex justify-center text-3xl my-10">
+      <div className="flex flex-col md:flex-row gap-4 justify-center text-3xl my-10">
+        <button
+          className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
+          onClick={handleSignClick}
+        >
+          Sign Wallet
+        </button>
         <button
           disabled={
             !!bgProcesses ||
@@ -253,17 +287,26 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg }) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookie = getHttpCookie(context.req, context.res);
-  const msg = cookie.get("auth_page_message");
-  // console.log("Msg : ", msg);
-
-  cookie.set("auth_page_message", "", { expires: new Date(0) });
-  const response = await getLoggedInUser(context.req);
-  return {
-    props: {
-      user: response.data,
-      msg: msg ? msg : null,
-    },
-  };
+  try {
+    const msg = cookie.get("auth_page_message");
+    cookie.set("auth_page_message", "", { expires: new Date(0) });
+    const response = await getLoggedInUser(context.req);
+    let cookieAddress: string | null;
+    try {
+      cookieAddress = getCookieWallet(cookie);
+    } catch (error) {
+      cookieAddress = null;
+    }
+    return {
+      props: {
+        user: response.data,
+        cookieAddress,
+        msg: msg ? msg : null,
+      },
+    };
+  } catch (error) {
+    return { props: {}, redirect: { destination: "/500" } };
+  }
 };
 
 export default AuthenticatePage;

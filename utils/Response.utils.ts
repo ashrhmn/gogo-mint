@@ -4,3 +4,6 @@ export const errorResponse = (errorMessage: string | any) => ({
 });
 
 export const successResponse = (data: any) => ({ data, error: null });
+
+export const authPageUrlWithMessage = (msg: string) =>
+  `/api/v1/auth/redirect?message=${msg}`;

@@ -1,12 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
-import {
-  addNewProject,
-  getAllProjectsByDiscordId,
-} from "../../../../controllers/project.controller";
-import onlyValidUser from "../../../../middlewares/user";
+import { addNewProject } from "../../../../controllers/project.controller";
 
-export default nextConnect<NextApiRequest, NextApiResponse>()
-  .use(onlyValidUser)
-  .get(getAllProjectsByDiscordId)
-  .post(addNewProject);
+export default nextConnect<NextApiRequest, NextApiResponse>().post(
+  addNewProject
+);

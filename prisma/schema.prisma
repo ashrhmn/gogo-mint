@@ -14,7 +14,6 @@ model User {
   discordDiscriminator Int?
   walletAddress        String?   @unique
   projects             Project[]
-  isCreator            Boolean   @default(false)
   accessToken          String?
   refreshToken         String?
 
@@ -36,9 +35,17 @@ model Project {
   collectionType String?
   uid            String?  @unique
 
-
   @@unique([address, chainId])
   @@map("projects")
+}
+
+model CreatorDiscord {
+  id            Int    @id @default(autoincrement())
+  username      String
+  discriminator Int
+
+  @@unique([username, discriminator])
+  @@map("creator_discords")
 }
 
 model NFT {

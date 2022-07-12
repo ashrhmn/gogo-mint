@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as ProjectService from "../services/project.service";
-import { getAccessTokenFromCookie } from "../utils/Request.utils";
+import { getHttpCookie } from "../utils/Request.utils";
 import { isAddress } from "ethers/lib/utils";
 import * as MerkleService from "../services/merkletree.service";
 
@@ -31,9 +31,6 @@ export const addNewProject = async (
   res: NextApiResponse
 ) => {
   try {
-    const accessToken = getAccessTokenFromCookie(req);
-    if (!accessToken)
-      return res.json(errorResponse("Access token not provided"));
     const {
       name,
       address,
@@ -42,19 +39,21 @@ export const addNewProject = async (
       whitelist,
       chainId,
       collectionType,
+      signerAddress,
     } = req.body;
     if (!name || typeof name !== "string")
       return res.json(errorResponse("Name is required"));
 
-    const project = await ProjectService.createProjectForLoggedInUser(
+    const project = await ProjectService.createProjectForCookieWalletUser(
       name,
       address,
       description,
       imageUrl,
       whitelist,
-      accessToken,
       chainId,
-      collectionType
+      collectionType,
+      signerAddress,
+      getHttpCookie(req, res)
     );
     return res.json(successResponse(project));
   } catch (error) {
@@ -111,6 +110,7 @@ export const getProjectById = async (
     return res.json(errorResponse(error));
   }
 };
+
 export const updateProjectById = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -142,7 +142,8 @@ export const updateProjectById = async (
           name,
           userId,
           whitelist,
-          uid
+          uid,
+          getHttpCookie(req, res)
         )
       )
     );
@@ -208,11 +209,14 @@ export const getContractUri = async (
   res: NextApiResponse
 ) => {
   try {
-    const address = req.query.address;
+    const { address, network } = req.query;
     if (!address || typeof address !== "string" || !isAddress(address))
       return res.json(errorResponse("Invalid address"));
-    return res.json(await ProjectService.getProjectMetadata(address));
+    if (!network || typeof network !== "string" || isNaN(+network))
+      return res.json(errorResponse("Invalid address"));
+    return res.json(await ProjectService.getProjectMetadata(address, +network));
   } catch (error) {
+    console.log("Error getting contract URI : ", error);
     return res.json(errorResponse(error));
   }
 };

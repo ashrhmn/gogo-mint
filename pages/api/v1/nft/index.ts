@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
-import { addNftAsDiscordUser } from "../../../../controllers/nft.controller";
-import onlyValidUser from "../../../../middlewares/user";
+import { addNftAsCookieWallet } from "../../../../controllers/nft.controller";
 
-export default nextConnect<NextApiRequest, NextApiResponse>()
-  .use(onlyValidUser)
-  .post(addNftAsDiscordUser);
+export default nextConnect<NextApiRequest, NextApiResponse>().post(
+  addNftAsCookieWallet
+);

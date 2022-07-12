@@ -1779,7 +1779,9 @@ export const get721ContractCode = (contractName: string) => {
               string(
                   string.concat(
                       "${getContractUri("")}",
-                      Strings.toHexString(uint256(uint160(address(this))), 20)
+                      Strings.toHexString(uint256(uint160(address(this))), 20),
+                      "&network=",
+                      Strings.toString(block.chainid)
                   )
               );
       }

@@ -1,18 +1,26 @@
-import { shortenAddress, useEthers } from "@usedapp/core";
-import axios from "axios";
+import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { ContractFactory } from "ethers";
 import { isAddress, parseEther } from "ethers/lib/utils";
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
+import { getCookieWallet } from "../../services/auth.service";
+import { isCreator } from "../../services/creators.service";
+import { getUserByWalletAddress } from "../../services/user.service";
 import { IDeployConfigSet } from "../../types";
+import { getHttpCookie } from "../../utils/Request.utils";
+import { authPageUrlWithMessage } from "../../utils/Response.utils";
 import { normalizeString } from "../../utils/String.utils";
 
-const NewProject: NextPage = () => {
+interface Props {
+  cookieAddress: string;
+}
+
+const NewProject: NextPage<Props> = ({ cookieAddress }) => {
   const { account, library, chainId } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
@@ -31,7 +39,17 @@ const NewProject: NextPage = () => {
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   useEffect(() => {
     if (account) setConfigSet((c) => ({ ...c, feeToAddress: account }));
-  }, [account]);
+    if (account && account !== cookieAddress)
+      router.push(
+        authPageUrlWithMessage(
+          `Signed in wallet is ${shortenIfAddress(
+            cookieAddress
+          )}, but connected wallet is ${shortenIfAddress(
+            account
+          )}. Please Sign with current wallet`
+        )
+      );
+  }, [account, cookieAddress, router]);
   const [imageBase64, setImageBase64] = useState("");
   const onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -158,6 +176,7 @@ const NewProject: NextPage = () => {
             whitelist,
             chainId,
             collectionType: "721",
+            signerAddress: account,
           }),
           contract.deployed(),
         ]),
@@ -361,6 +380,44 @@ const NewProject: NextPage = () => {
       </form>
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const cookie = getHttpCookie(context.req, context.res);
+  try {
+    const cookieAddress = getCookieWallet(cookie);
+    const dbUser = await getUserByWalletAddress(cookieAddress);
+    if (!dbUser)
+      return {
+        props: {},
+        redirect: { destination: authPageUrlWithMessage("Sign Required") },
+      };
+    if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage("No discord account is linked"),
+        },
+      };
+    if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage(
+            "You are not creator, are you logged in with the correct account?"
+          ),
+        },
+      };
+    return { props: { cookieAddress } };
+  } catch (error) {
+    cookie.set(
+      "auth_page_message",
+      (error as any).message && typeof (error as any).message === "string"
+        ? (error as any).message
+        : "Error authenticating user"
+    );
+    return { props: {}, redirect: { destination: "/authenticate" } };
+  }
 };
 
 export default NewProject;

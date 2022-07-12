@@ -15,7 +15,7 @@ export const removeDiscordAccessToken = (
 ) => {
   const cookie = new Cookies(req, res);
   cookie.set(ACCESS_TOKEN_COOKIE_KEY, "", {
-    expires: new Date(Date.now() - 86400),
+    expires: new Date(0),
   });
 };
 

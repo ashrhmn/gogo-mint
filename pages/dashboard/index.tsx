@@ -1,23 +1,44 @@
 import { getNetwork } from "@ethersproject/networks";
 import { Project } from "@prisma/client";
-import { shortenIfAddress } from "@usedapp/core";
+import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { GetServerSideProps, NextApiRequest, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect } from "react";
+import { getCookieWallet } from "../../services/auth.service";
+import { isCreator } from "../../services/creators.service";
 import { getUserByAccessToken } from "../../services/discord.service";
-import { getAllProjectsByDiscordId } from "../../services/project.service";
+import {
+  getAllProjectByOwnerAddress,
+  getAllProjectsByDiscordId,
+} from "../../services/project.service";
+import { getUserByWalletAddress } from "../../services/user.service";
 import {
   getAccessTokenFromCookie,
   getHttpCookie,
 } from "../../utils/Request.utils";
+import { authPageUrlWithMessage } from "../../utils/Response.utils";
 
 interface Props {
   projects: Project[] | null;
+  cookieAddress: string;
 }
 
-const Dashboard: NextPage<Props> = ({ projects }) => {
+const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
   const router = useRouter();
+  const { account } = useEthers();
+  useEffect(() => {
+    if (account && account !== cookieAddress)
+      router.push(
+        authPageUrlWithMessage(
+          `Signed in wallet is ${shortenIfAddress(
+            cookieAddress
+          )}, but connected wallet is ${shortenIfAddress(
+            account
+          )}. Please Sign with current wallet`
+        )
+      );
+  }, [account, cookieAddress, router]);
   return (
     <div>
       <div className="flex justify-between my-4 items-center">
@@ -92,22 +113,42 @@ const Dashboard: NextPage<Props> = ({ projects }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const accessToken = getAccessTokenFromCookie(context.req);
   const cookie = getHttpCookie(context.req, context.res);
-  if (!accessToken) {
-    cookie.set("auth_page_message", "You must login to continue");
+  try {
+    const cookieAddress = getCookieWallet(cookie);
+    const dbUser = await getUserByWalletAddress(cookieAddress);
+    if (!dbUser)
+      return {
+        props: {},
+        redirect: { destination: authPageUrlWithMessage("Sign Required") },
+      };
+    if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage("No discord account is linked"),
+        },
+      };
+    if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage(
+            "You are not creator, are you logged in with and/or linked the correct creator account?"
+          ),
+        },
+      };
+    const projects = await getAllProjectByOwnerAddress(cookieAddress);
+    return { props: { projects, cookieAddress } };
+  } catch (error) {
+    cookie.set(
+      "auth_page_message",
+      (error as any).message && typeof (error as any).message === "string"
+        ? (error as any).message
+        : "Error authenticating user"
+    );
     return { props: {}, redirect: { destination: "/authenticate" } };
   }
-  const user = await getUserByAccessToken(accessToken);
-  if (!user) {
-    cookie.set("auth_page_message", "You must login to continue");
-    return { props: {}, redirect: { destination: "/authenticate" } };
-  }
-  const projects = await getAllProjectsByDiscordId(
-    user.username,
-    user.discriminator
-  );
-  return { props: { projects } };
 };
 
 export default Dashboard;

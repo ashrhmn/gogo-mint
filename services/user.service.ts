@@ -90,12 +90,10 @@ export const updateUserOnDiscordAuth = async (
     create: {
       discordUsername: user.username,
       discordDiscriminator: +user.discriminator,
-      isCreator: false,
       accessToken: creds.access_token,
       refreshToken: creds.refresh_token,
     },
     update: {
-      isCreator: false,
       accessToken: creds.access_token,
       refreshToken: creds.refresh_token,
     },

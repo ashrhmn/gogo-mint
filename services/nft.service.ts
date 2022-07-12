@@ -1,4 +1,7 @@
+import Cookies from "cookies";
 import { prisma } from "../lib/db";
+import { getHttpCookie } from "../utils/Request.utils";
+import { getCookieWallet } from "./auth.service";
 
 export const addNftToProject = async (
   projectId: number,
@@ -9,8 +12,16 @@ export const addNftToProject = async (
   properties: { type: string; value: string }[],
   backgroundColor: string,
   externalUrl: string,
-  imageUrl: string
+  imageUrl: string,
+  cookies: Cookies
 ) => {
+  const cookieAddress = getCookieWallet(cookies);
+  const project = await prisma.project.findFirstOrThrow({
+    where: { id: projectId },
+    include: { owner: true },
+  });
+  if (project.owner.walletAddress !== cookieAddress)
+    throw "Logged in user is not project owner";
   return await prisma.nFT.create({
     data: {
       projectId,

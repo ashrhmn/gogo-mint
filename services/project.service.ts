@@ -1,4 +1,7 @@
+import assert from "assert";
+import Cookies from "cookies";
 import { prisma } from "../lib/db";
+import { getCookieWallet } from "./auth.service";
 import { getUserByAccessToken } from "./discord.service";
 import { getUserByDiscordIdentifiers } from "./user.service";
 
@@ -14,6 +17,12 @@ export const getAllProjectsByDiscordId = async (
       },
     },
   });
+
+export const getAllProjectByOwnerAddress = async (address: string) => {
+  return await prisma.project.findMany({
+    where: { owner: { walletAddress: address } },
+  });
+};
 
 export const getProjectByChainAddress = async (
   address: string,
@@ -47,6 +56,35 @@ export const addNewProject = async (
       collectionType,
     },
   });
+};
+
+export const createProjectForCookieWalletUser = async (
+  name: string,
+  address: string,
+  description: string,
+  imageUrl: string,
+  whitelist: string[],
+  chainId: number,
+  collectionType: string,
+  signerAddress: string,
+  cookies: Cookies
+) => {
+  const cookieWallet = getCookieWallet(cookies);
+  assert(cookieWallet === signerAddress, "signer is not logged in");
+  const dbUser = await prisma.user.findFirst({
+    where: { walletAddress: cookieWallet },
+  });
+  assert(!!dbUser, "User Sign Wallet Required");
+  return await addNewProject(
+    name,
+    address,
+    description,
+    imageUrl,
+    dbUser.id,
+    whitelist,
+    chainId,
+    collectionType
+  );
 };
 
 export const createProjectForLoggedInUser = async (
@@ -108,7 +146,10 @@ export const updateProjectOwner = async (
 };
 
 export const getProjectById = async (id: number) => {
-  return await prisma.project.findFirstOrThrow({ where: { id } });
+  return await prisma.project.findFirstOrThrow({
+    where: { id },
+    include: { owner: true },
+  });
 };
 
 export const updateProjectById = async (
@@ -121,8 +162,16 @@ export const updateProjectById = async (
   name: string,
   userId: number,
   whitelist: string[],
-  uid: string
+  uid: string,
+  cookies: Cookies
 ) => {
+  const cookieAddress = getCookieWallet(cookies);
+  const project = await prisma.project.findFirstOrThrow({
+    where: { id },
+    select: { owner: true },
+  });
+  if (project.owner.walletAddress !== cookieAddress)
+    throw "Logged in wallet is not project owner";
   return await prisma.project.update({
     where: { id },
     data: {
@@ -146,13 +195,8 @@ export const projectExistsWithUid = async (uid: string) => {
 export const getProjectByUid = async (uid: string) => {
   return await prisma.project.findFirst({
     where: { uid },
-    select: {
-      id: true,
+    include: {
       nfts: true,
-      address: true,
-      chainId: true,
-      collectionType: true,
-      whitelist: true,
     },
   });
 };
@@ -161,12 +205,19 @@ export const getProjectsWithValidUid = async () => {
   return await prisma.project.findMany({ where: { uid: { not: null } } });
 };
 
-export const getProjectMetadata = async (address: string) => {
+export const getProjectMetadata = async (address: string, chainId: number) => {
   const project = await prisma.project.findFirst({
-    where: { address: { mode: "insensitive", equals: address } },
+    where: { address: { mode: "insensitive", equals: address }, chainId },
     include: { owner: true },
   });
-  if (!project) return {};
+  if (!project)
+    return {
+      name: "",
+      description: "",
+      image: "",
+      external_link: "",
+      fee_recipient: "",
+    };
   return {
     name: project.name,
     description: project.description,

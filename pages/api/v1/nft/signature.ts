@@ -4,5 +4,5 @@ import { updateNftCreationSignature } from "../../../../controllers/nft.controll
 import onlyValidUser from "../../../../middlewares/user";
 
 export default nextConnect<NextApiRequest, NextApiResponse>()
-  .use(onlyValidUser)
+  // .use(onlyValidUser)
   .put(updateNftCreationSignature);

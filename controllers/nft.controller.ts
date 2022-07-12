@@ -1,10 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getAccessTokenFromCookie } from "../utils/Request.utils";
+import {
+  getAccessTokenFromCookie,
+  getHttpCookie,
+} from "../utils/Request.utils";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as NftService from "../services/nft.service";
 import { getUserByAccessToken } from "../services/discord.service";
 
-export const addNftAsDiscordUser = async (
+export const addNftAsCookieWallet = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
@@ -35,7 +38,8 @@ export const addNftAsDiscordUser = async (
       properties,
       backgroundColor,
       externalUrl,
-      imageUrl
+      imageUrl,
+      getHttpCookie(req, res)
     );
     return res.json(successResponse(newNft));
   } catch (err) {

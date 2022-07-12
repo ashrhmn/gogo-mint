@@ -13,6 +13,12 @@ export const isValidQueryParam = (
   return !hasError;
 };
 
+export const decryptString = (str: string) =>
+  CryptoJS.AES.decrypt(str, CRYPTO_SECRET).toString(CryptoJS.enc.Utf8);
+
+export const encryptString = (encStr: string) =>
+  CryptoJS.AES.encrypt(encStr, CRYPTO_SECRET).toString();
+
 export const decryptAccessToken = (encryptedAccessToken: string) =>
   CryptoJS.AES.decrypt(encryptedAccessToken, CRYPTO_SECRET).toString(
     CryptoJS.enc.Utf8
@@ -26,15 +32,6 @@ export function capitalize(input: string) {
 }
 
 export function normalizeString(input: string) {
-  const res = input
-    .split(" ")
-    .map((w) => capitalize(w))
-    .join("")
-    .split("-")
-    .map((w) => capitalize(w))
-    .join("_");
-  console.log(input, " is nzd to ", res);
-
   return input
     .split(" ")
     .map((w) => capitalize(w))

@@ -1,22 +1,42 @@
-import { shortenIfAddress } from "@usedapp/core";
+import { shortenIfAddress, useEthers } from "@usedapp/core";
+import { isAddress } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ClaimsSection from "../../components/ProjectDashboard/Claims";
 import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
 import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
-import { authorizeProject } from "../../services/auth.service";
+import { authorizeProject, getCookieWallet } from "../../services/auth.service";
+import { isCreator } from "../../services/creators.service";
+import { getProjectByChainAddress } from "../../services/project.service";
+import { getUserByWalletAddress } from "../../services/user.service";
 import { ProjectExtended } from "../../types";
+import { getHttpCookie } from "../../utils/Request.utils";
+import { authPageUrlWithMessage } from "../../utils/Response.utils";
 
 interface Props {
   project: ProjectExtended;
+  cookieAddress: string;
 }
 
-const ProjectPage: NextPage<Props> = ({ project }) => {
+const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
   const router = useRouter();
+  const { account } = useEthers();
+  useEffect(() => {
+    if (account && account !== cookieAddress)
+      router.push(
+        authPageUrlWithMessage(
+          `Signed in wallet is ${shortenIfAddress(
+            cookieAddress
+          )}, but connected wallet is ${shortenIfAddress(
+            account
+          )}. Please Sign with current wallet`
+        )
+      );
+  }, [account, cookieAddress, router]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const setTab = (tab: string) =>
     router.push({ ...router, query: { ...router.query, tab } });
@@ -62,16 +82,6 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
           >
             Overview
           </button>
-          {/* <button
-            className={`${
-              currentTab == "permissions"
-                ? "text-indigo-600 border-b-2 border-indigo-600 font-medium"
-                : ""
-            }`}
-            onClick={() => setTab("permissions")}
-          >
-            Permissions
-          </button> */}
           <button
             className={`${
               currentTab == "claims"
@@ -152,24 +162,63 @@ const ProjectPage: NextPage<Props> = ({ project }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { contract, network } = context.query;
+  const cookies = getHttpCookie(context.req, context.res);
+  try {
+    const { contract, network } = context.query;
+    if (
+      !contract ||
+      !network ||
+      typeof contract != "string" ||
+      typeof network != "string" ||
+      !isAddress(contract) ||
+      isNaN(+network)
+    )
+      return { props: {}, redirect: { destination: `/404` } };
+    const cookieAddress = getCookieWallet(cookies);
+    const dbUser = await getUserByWalletAddress(cookieAddress);
+    if (!dbUser)
+      return {
+        props: {},
+        redirect: { destination: authPageUrlWithMessage("Sign Required") },
+      };
+    if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage("No discord account is linked"),
+        },
+      };
+    if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage(
+            "You are not creator, are you logged in with the correct account?"
+          ),
+        },
+      };
+    const project = await getProjectByChainAddress(contract, +network);
+    if (!project) return { props: {}, redirect: { destination: `/404` } };
+    if (project.owner.walletAddress !== cookieAddress)
+      return {
+        props: {},
+        redirect: {
+          destination: authPageUrlWithMessage(
+            "You are not owner of this project, are you logged in with the correct account/wallet?"
+          ),
+        },
+      };
 
-  if (
-    !contract ||
-    !network ||
-    typeof contract != "string" ||
-    typeof network != "string"
-  )
-    return { props: {}, redirect: { destination: `/404` } };
-  const project = await authorizeProject(context, contract, +network);
-  if (!!(project as any).redirect) {
-    return {
-      props: (project as any).props,
-      redirect: (project as any).redirect,
-    };
+    return { props: { project, cookieAddress } };
+  } catch (error) {
+    cookies.set(
+      "auth_page_message",
+      (error as any).message && typeof (error as any).message === "string"
+        ? (error as any).message
+        : "Error authenticating user"
+    );
+    return { props: {}, redirect: { destination: "/authenticate" } };
   }
-
-  return { props: { project } };
 };
 
 export default ProjectPage;
