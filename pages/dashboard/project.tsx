@@ -140,7 +140,6 @@ const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
               projectAddress={project.address}
               projectChainId={project.chainId}
               collectionType={project.collectionType}
-              whitelist={project.whitelist}
             />
           )}
         </div>
