@@ -2,26 +2,6 @@ export const ABI721 = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_feeDestination",
-        type: "address",
-      },
-      {
-        internalType: "bytes32",
-        name: "_whitelistRoot",
-        type: "bytes32",
-      },
-      {
-        internalType: "uint256",
-        name: "_privateMintCharge",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_publicMintCharge",
-        type: "uint256",
-      },
-      {
         internalType: "string",
         name: "_name",
         type: "string",
@@ -29,6 +9,26 @@ export const ABI721 = [
       {
         internalType: "string",
         name: "_symbol",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "_feeDestination",
+        type: "address",
+      },
+      {
+        internalType: "bytes32",
+        name: "_saleConfigRoot",
+        type: "bytes32",
+      },
+      {
+        internalType: "address",
+        name: "_msgSigner",
+        type: "address",
+      },
+      {
+        internalType: "string",
+        name: "_baseURI",
         type: "string",
       },
     ],
@@ -96,14 +96,14 @@ export const ABI721 = [
       },
       {
         indexed: false,
-        internalType: "string",
-        name: "tokenUri",
-        type: "string",
+        internalType: "uint256",
+        name: "fromTokenId",
+        type: "uint256",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "tokenId",
+        name: "toTokenId",
         type: "uint256",
       },
     ],
@@ -193,12 +193,38 @@ export const ABI721 = [
   },
   {
     inputs: [],
+    name: "baseURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "contractURI",
     outputs: [
       {
         internalType: "string",
         name: "",
         type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "emptyRoot",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
       },
     ],
     stateMutability: "view",
@@ -234,6 +260,67 @@ export const ABI721 = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "saleIdentifier",
+            type: "string",
+          },
+          {
+            internalType: "bool",
+            name: "enabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "endTime",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "mintCharge",
+            type: "uint256",
+          },
+          {
+            internalType: "bytes32",
+            name: "whitelistRoot",
+            type: "bytes32",
+          },
+          {
+            internalType: "uint256",
+            name: "maxMintPerWallet",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "maxMintInSale",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Collection721.SaleConfig",
+        name: "config",
+        type: "tuple",
+      },
+    ],
+    name: "getSaleConfigLeaf",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "pure",
     type: "function",
   },
   {
@@ -280,42 +367,78 @@ export const ABI721 = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "maxMintInPrivate",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "maxMintInPublic",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
+        internalType: "bytes32[]",
+        name: "saleConfigProof",
+        type: "bytes32[]",
+      },
+      {
+        internalType: "bytes32[]",
+        name: "whitelistProof",
+        type: "bytes32[]",
+      },
+      {
+        internalType: "uint256",
+        name: "numberOfMint",
+        type: "uint256",
+      },
+      {
         internalType: "string",
-        name: "_tokenURI",
+        name: "message",
         type: "string",
       },
       {
         internalType: "bytes",
         name: "signature",
         type: "bytes",
+      },
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "saleIdentifier",
+            type: "string",
+          },
+          {
+            internalType: "bool",
+            name: "enabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "endTime",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "mintCharge",
+            type: "uint256",
+          },
+          {
+            internalType: "bytes32",
+            name: "whitelistRoot",
+            type: "bytes32",
+          },
+          {
+            internalType: "uint256",
+            name: "maxMintPerWallet",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "maxMintInSale",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct Collection721.SaleConfig",
+        name: "config",
+        type: "tuple",
       },
     ],
     name: "mint",
@@ -327,23 +450,32 @@ export const ABI721 = [
     inputs: [
       {
         internalType: "string",
-        name: "_tokenURI",
+        name: "",
         type: "string",
       },
+    ],
+    name: "mintCountByIdentifier",
+    outputs: [
       {
-        internalType: "bytes32[]",
-        name: "proof",
-        type: "bytes32[]",
-      },
-      {
-        internalType: "bytes",
-        name: "signature",
-        type: "bytes",
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    name: "mintPrivate",
-    outputs: [],
-    stateMutability: "payable",
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "msgSigner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -386,101 +518,6 @@ export const ABI721 = [
         internalType: "address",
         name: "",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "privateMintCharge",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "privateSale1",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "status",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "startTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "endTime",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "privateSale2",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "status",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "startTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "endTime",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "publicMintCharge",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "publicSale",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "status",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "startTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "endTime",
-        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -545,6 +582,19 @@ export const ABI721 = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "saleConfigsRoot",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -595,10 +645,23 @@ export const ABI721 = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "tokenId",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
-        name: "tokenId",
+        name: "_tokenId",
         type: "uint256",
       },
     ],
@@ -665,166 +728,14 @@ export const ABI721 = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "_maxMintInPrivate",
-        type: "uint256",
-      },
-    ],
-    name: "updateMaxMintInPrivate",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_maxMintInPublic",
-        type: "uint256",
-      },
-    ],
-    name: "updateMaxMintInPublic",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "charge",
-        type: "uint256",
-      },
-    ],
-    name: "updatePrivateMintCharge",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_startTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_endTime",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "_status",
-        type: "bool",
-      },
-    ],
-    name: "updatePrivateSale1",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_startTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_endTime",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "_status",
-        type: "bool",
-      },
-    ],
-    name: "updatePrivateSale2",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "charge",
-        type: "uint256",
-      },
-    ],
-    name: "updatePublicMintCharge",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_startTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_endTime",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "_status",
-        type: "bool",
-      },
-    ],
-    name: "updatePublicSale",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "_tokenURI",
-        type: "string",
-      },
-    ],
-    name: "updateTokenUri",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "bytes32",
-        name: "_root",
+        name: "_saleConfigRoot",
         type: "bytes32",
       },
     ],
-    name: "updateWhitelist",
+    name: "updateSaleConfigRoot",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "whitelistRoot",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
 ];

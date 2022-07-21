@@ -1,5 +1,8 @@
 import React, { useRef, useState } from "react";
-import { formatHtmlDateTime } from "../../../utils/String.utils";
+import {
+  formatHtmlDateTime,
+  normalizeString,
+} from "../../../utils/String.utils";
 import { SaleConfig } from "@prisma/client";
 import { parse as parseCsv } from "papaparse";
 import { isAddress } from "ethers/lib/utils";
@@ -10,32 +13,35 @@ const SaleConfigItem = ({
   setSaleConfigs,
   index,
 }: {
-  saleWaveConfig: SaleConfig;
-  setSaleConfigs: React.Dispatch<React.SetStateAction<SaleConfig[]>>;
+  saleWaveConfig: Omit<SaleConfig, "id" | "projectId">;
+  setSaleConfigs: React.Dispatch<
+    React.SetStateAction<Omit<SaleConfig, "id" | "projectId">[]>
+  >;
   index: number;
 }) => {
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const checkboxRef = useRef<HTMLInputElement | null>(null);
+
   return (
     <details className="p-2 m-3 border-2 rounded-xl bg-gray-200">
-      <summary className="cursor-pointer select-none">Wave {index + 1}</summary>
+      <summary className="flex items-center w-full">
+        <span className="cursor-pointer select-none w-full font-bold text-xl">
+          Wave {index + 1}
+          <span className="font-light mx-2 text-xs">
+            {normalizeString(saleWaveConfig.saleType)}
+          </span>
+        </span>
+        <button className="text-red-500 hover:text-red-700 hover:bg-gray-100 rounded p-1 transition-colors">
+          Delete
+        </button>
+      </summary>
       <div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full font-medium">Status</div>
           <div className="w-full bg-gray-100 p-1 rounded">
             <select
               value={saleWaveConfig.enabled ? "enabled" : "disabled"}
-              //   onChange={(e) => {
-              //     setConfigSet((prev) => ({
-              //       ...prev,
-              //       saleWaves: prev.saleWaves.map((sw) =>
-              //         sw.uuid !== saleWaveConfig.uuid
-              //           ? { ...sw }
-              //           : { ...sw, enabled: e.target.value === "enabled" }
-              //       ),
-              //     }));
-              //   }}
               onChange={(e) =>
                 setSaleConfigs((prev) =>
                   prev.map((sc) =>
@@ -60,19 +66,6 @@ const SaleConfigItem = ({
           <div className="w-full bg-gray-100 p-1 rounded">
             <select
               value={saleWaveConfig.saleType}
-              //   onChange={(e) =>
-              //     setConfigSet((prev) => ({
-              //       ...prev,
-              //       saleWaves: prev.saleWaves.map((sw) =>
-              //         sw.uuid !== saleWaveConfig.uuid
-              //           ? { ...sw }
-              //           : {
-              //               ...sw,
-              //               saleType: e.target.value as "private" | "public",
-              //             }
-              //       ),
-              //     }))
-              //   }
               onChange={(e) =>
                 setSaleConfigs((prev) =>
                   prev.map((sc) =>
@@ -98,16 +91,6 @@ const SaleConfigItem = ({
             <div>
               <button
                 className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
-                // onClick={() =>
-                //   setConfigSet((prev) => ({
-                //     ...prev,
-                //     saleWaves: prev.saleWaves.map((sw) =>
-                //       sw.uuid !== saleWaveConfig.uuid
-                //         ? sw
-                //         : { ...sw, startTime: Date.now() / 1000 }
-                //     ),
-                //   }))
-                // }
                 onClick={(e) =>
                   setSaleConfigs((prev) =>
                     prev.map((sc) =>
@@ -132,16 +115,6 @@ const SaleConfigItem = ({
               value={formatHtmlDateTime(
                 new Date(saleWaveConfig.startTime * 1000)
               )}
-              //   onChange={(e) => {
-              //     setConfigSet((prev) => ({
-              //       ...prev,
-              //       saleWaves: prev.saleWaves.map((sw) =>
-              //         sw.uuid !== saleWaveConfig.uuid
-              //           ? { ...sw }
-              //           : { ...sw, startTime: +new Date(e.target.value) / 1000 }
-              //       ),
-              //     }));
-              //   }}
               onChange={(e) =>
                 setSaleConfigs((prev) =>
                   prev.map((sc) =>
@@ -167,21 +140,6 @@ const SaleConfigItem = ({
                   ref={checkboxRef}
                   type="checkbox"
                   checked={saleWaveConfig.endTime === 0}
-                  //   onChange={(e) =>
-                  //     setConfigSet((prev) => ({
-                  //       ...prev,
-                  //       saleWaves: prev.saleWaves.map((sw) =>
-                  //         sw.uuid !== saleWaveConfig.uuid
-                  //           ? sw
-                  //           : {
-                  //               ...sw,
-                  //               endTime: e.target.checked
-                  //                 ? 0
-                  //                 : (Date.now() + 604800000) / 1000,
-                  //             }
-                  //       ),
-                  //     }))
-                  //   }
                   onChange={(e) =>
                     setSaleConfigs((prev) =>
                       prev.map((sc) =>
@@ -209,17 +167,6 @@ const SaleConfigItem = ({
                 </label>
               </div>
               <button
-                // disabled={isNoEndChecked || !!saleConfigBgProc}
-                // onClick={() =>
-                //   setConfigSet((prev) => ({
-                //     ...prev,
-                //     saleWaves: prev.saleWaves.map((sw) =>
-                //       sw.uuid !== saleWaveConfig.uuid
-                //         ? sw
-                //         : { ...sw, endTime: Date.now() / 1000 }
-                //     ),
-                //   }))
-                // }
                 onClick={() =>
                   setSaleConfigs((prev) =>
                     prev.map((sc) =>
@@ -254,16 +201,6 @@ const SaleConfigItem = ({
                 value={formatHtmlDateTime(
                   new Date(saleWaveConfig.endTime * 1000)
                 )}
-                // onChange={(e) => {
-                //   setConfigSet((prev) => ({
-                //     ...prev,
-                //     saleWaves: prev.saleWaves.map((sw) =>
-                //       sw.uuid !== saleWaveConfig.uuid
-                //         ? { ...sw }
-                //         : { ...sw, endTime: +new Date(e.target.value) / 1000 }
-                //     ),
-                //   }));
-                // }}
                 onChange={(e) =>
                   setSaleConfigs((prev) =>
                     prev.map((sc) =>
@@ -290,16 +227,6 @@ const SaleConfigItem = ({
             min={0}
             step={0.00001}
             value={saleWaveConfig.mintCharge}
-            // onChange={(e) => {
-            //   setConfigSet((prev) => ({
-            //     ...prev,
-            //     saleWaves: prev.saleWaves.map((sw) =>
-            //       sw.uuid !== saleWaveConfig.uuid
-            //         ? { ...sw }
-            //         : { ...sw, mintCharge: e.target.valueAsNumber }
-            //     ),
-            //   }));
-            // }}
             onChange={(e) =>
               setSaleConfigs((prev) =>
                 prev.map((sc) =>
@@ -323,16 +250,6 @@ const SaleConfigItem = ({
             type="number"
             min={0}
             value={saleWaveConfig.maxMintPerWallet}
-            // onChange={(e) => {
-            //   setConfigSet((prev) => ({
-            //     ...prev,
-            //     saleWaves: prev.saleWaves.map((sw) =>
-            //       sw.uuid !== saleWaveConfig.uuid
-            //         ? { ...sw }
-            //         : { ...sw, maxMintPerWallet: e.target.valueAsNumber }
-            //     ),
-            //   }));
-            // }}
             onChange={(e) =>
               setSaleConfigs((prev) =>
                 prev.map((sc) =>
@@ -356,16 +273,6 @@ const SaleConfigItem = ({
             type="number"
             min={0}
             value={saleWaveConfig.maxMintInSale}
-            // onChange={(e) => {
-            //   setConfigSet((prev) => ({
-            //     ...prev,
-            //     saleWaves: prev.saleWaves.map((sw) =>
-            //       sw.uuid !== saleWaveConfig.uuid
-            //         ? { ...sw }
-            //         : { ...sw, maxMintInSale: e.target.valueAsNumber }
-            //     ),
-            //   }));
-            // }}
             onChange={(e) =>
               setSaleConfigs((prev) =>
                 prev.map((sc) =>
@@ -392,7 +299,7 @@ const SaleConfigItem = ({
                   onChange={(e) => {
                     if (!e.target.files || !e.target.files[0]) return;
                     parseCsv<string[]>(e.target.files[0], {
-                      complete(results, file) {
+                      complete: (results) => {
                         setSaleConfigs((prev) =>
                           prev.map((sc) =>
                             sc.saleIdentifier !== saleWaveConfig.saleIdentifier
@@ -418,36 +325,6 @@ const SaleConfigItem = ({
                       },
                     });
                   }}
-                  //   onChange={(e) => {
-                  //     if (!e.target.files || !e.target.files[0]) return;
-                  //     parseCsv<string[]>(e.target.files[0], {
-                  //       complete(results) {
-                  //         setConfigSet((prev) => ({
-                  //           ...prev,
-                  //           saleWaves: prev.saleWaves.map((sw) =>
-                  //             sw.uuid !== saleWaveConfig.uuid
-                  //               ? sw
-                  //               : {
-                  //                   ...sw,
-                  //                   whitelistAddresses: [
-                  //                     ...sw.whitelistAddresses,
-                  //                     ...results.data
-                  //                       .map((arr) => arr[0])
-                  //                       .filter(
-                  //                         (address) =>
-                  //                           typeof address === "string" &&
-                  //                           isAddress(address) &&
-                  //                           !saleWaveConfig.whitelistAddresses.includes(
-                  //                             address
-                  //                           )
-                  //                       ),
-                  //                   ],
-                  //                 }
-                  //           ),
-                  //         }));
-                  //       },
-                  //     });
-                  //   }}
                 />
                 <label className="font-bold">Add Whitelist addresses</label>
                 <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -513,8 +390,11 @@ const SaleConfigItem = ({
                     Whitelisted Addresses
                   </summary>
                   <div className="max-h-96 overflow-y-scroll">
-                    {saleWaveConfig.whitelist.map((address) => (
-                      <div className="flex gap-4 relative my-2" key={address}>
+                    {saleWaveConfig.whitelist.map((address, index) => (
+                      <div
+                        className="flex gap-4 relative my-2"
+                        key={index + address}
+                      >
                         <div className="w-full overflow-hidden group">
                           <div className="overflow-hidden w-full">
                             {address}
@@ -524,22 +404,6 @@ const SaleConfigItem = ({
                           </div> */}
                         </div>
                         <button
-                          //   onClick={() =>
-                          //     setConfigSet((prev) => ({
-                          //       ...prev,
-                          //       saleWaves: prev.saleWaves.map((sw) =>
-                          //         sw.uuid !== saleWaveConfig.uuid
-                          //           ? sw
-                          //           : {
-                          //               ...sw,
-                          //               whitelistAddresses:
-                          //                 sw.whitelistAddresses.filter(
-                          //                   (a) => a !== address
-                          //                 ),
-                          //             }
-                          //       ),
-                          //     }))
-                          //   }
                           onClick={() =>
                             setSaleConfigs((prev) =>
                               prev.map((sc) =>
