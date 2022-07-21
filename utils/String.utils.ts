@@ -33,6 +33,7 @@ export function capitalize(input: string) {
 
 export function normalizeString(input: string) {
   return input
+    .trim()
     .split(" ")
     .map((w) => capitalize(w))
     .join("")

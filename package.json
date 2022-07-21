@@ -13,7 +13,7 @@
         "test": "mocha -r ts-node/register test/**/*.{test.js,test.ts}"
     },
     "dependencies": {
-        "@prisma/client": "4.0.0",
+        "@prisma/client": "^4.1.0",
         "@usedapp/core": "^1.0.15",
         "axios": "^0.27.2",
         "cookies": "^0.8.0",
@@ -24,6 +24,7 @@
         "merkletreejs": "^0.2.32",
         "next": "^12.2.0",
         "next-connect": "^0.12.2",
+        "papaparse": "^5.3.2",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "react-hot-toast": "^2.2.0",
@@ -35,6 +36,7 @@
         "@types/cookies": "^0.7.7",
         "@types/crypto-js": "^4.1.1",
         "@types/node": "18.0.0",
+        "@types/papaparse": "^5.3.2",
         "@types/react": "18.0.14",
         "@types/react-dom": "18.0.5",
         "@types/uuid": "^8.3.4",
@@ -42,7 +44,7 @@
         "eslint": "8.18.0",
         "eslint-config-next": "12.2.0",
         "postcss": "^8.4.14",
-        "prisma": "^4.0.0",
+        "prisma": "^4.1.0",
         "tailwindcss": "^3.1.4",
         "types-solc": "^1.0.1",
         "typescript": "4.7.4"

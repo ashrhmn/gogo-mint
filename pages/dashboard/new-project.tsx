@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { v4 } from "uuid";
+import SaleConfigInput from "../../components/Projects/SaleConfigInput";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
@@ -31,12 +33,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
     feeToAddress: "",
     logo: null,
     symbol: "",
-    whitelistAddresses: [],
-    privateMintCharge: 0,
-    publicMintCharge: 0,
+    saleWaves: [],
     uid: "",
   });
-  const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   useEffect(() => {
     if (account) setConfigSet((c) => ({ ...c, feeToAddress: account }));
     if (account && account !== cookieAddress)
@@ -62,24 +61,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, logo: file }));
   };
-  const handleAddWhiteListButton = (e: any) => {
-    e.preventDefault();
-    if (!isAddress(tempWhitelistAddress)) {
-      toast.error("Invalid address");
-      return;
-    }
-    if (configSet.whitelistAddresses.includes(tempWhitelistAddress)) {
-      toast.error("Address already in whitelist");
-      return;
-    }
-    setConfigSet((c) => ({
-      ...c,
-      whitelistAddresses: [...c.whitelistAddresses, tempWhitelistAddress],
-    }));
-  };
 
-  const onDeployClick = async (e: React.ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onDeployClick = async () => {
     if (!library) {
       toast.error("No signer connected");
       return;
@@ -115,34 +98,46 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
     }
     setBgProcessRunning((v) => v + 1);
     try {
-      const whitelist = configSet.whitelistAddresses.includes(account)
-        ? configSet.whitelistAddresses
-        : [...configSet.whitelistAddresses, account];
+      const [
+        imageUrl,
+        { data: saleConfigRoot },
+        { data: initCode },
+        { data: platformSignerAddress },
+      ] = await toast.promise(
+        Promise.all([
+          uploadFileToFirebase(configSet.logo),
+          service.post(`sale-config/root`, {
+            saleConfigs: configSet.saleWaves.map((sw) => ({
+              ...sw,
+              whitelistAddresses: sw.whitelistAddresses.includes(account)
+                ? sw.whitelistAddresses
+                : [...sw.whitelistAddresses, account],
+            })),
+          }),
+          service.get(`contract/collection721?name=${configSet.name}`),
+          service.get(`platform-signer/public-address`),
+        ]),
+        {
+          success: "Contract Compiled Successfully",
+          error: "Error compiling contract",
+          loading: "Compiling contract...",
+        }
+      );
 
-      const [imageUrl, { data: whitelistRoot }, { data: initCode }] =
-        await toast.promise(
-          Promise.all([
-            uploadFileToFirebase(configSet.logo),
-            service.post(`merkletree`, {
-              addresses: whitelist,
-            }),
-            service.get(`contract/collection721?name=${configSet.name}`),
-          ]),
-          {
-            success: "Contract Compiled Successfully",
-            error: "Error compiling contract",
-            loading: "Compiling contract...",
-          }
-        );
-      //   console.log(imageUrl);
-      //   console.log(whitelistRoot);
+      if (!isAddress(platformSignerAddress.data)) {
+        toast.error("Error getting platform signer");
+        setBgProcessRunning((v) => v - 1);
+        return;
+      }
 
-      if (whitelistRoot.error) {
-        toast.error("Error getting whitelist root");
+      if (saleConfigRoot.error) {
+        toast.error("Error getting saleconfig root");
+        setBgProcessRunning((v) => v - 1);
         return;
       }
       if (initCode.error) {
         toast.error("Error contract data");
+        setBgProcessRunning((v) => v - 1);
         return;
       }
       const factory = new ContractFactory(
@@ -150,15 +145,15 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
         initCode.data.bytecode,
         library.getSigner(account)
       );
-      console.log(initCode);
+
       const contract = await toast.promise(
         factory.deploy(
-          configSet.feeToAddress,
-          whitelistRoot.data,
-          parseEther(configSet.privateMintCharge.toString()),
-          parseEther(configSet.publicMintCharge.toString()),
           normalizeString(configSet.name),
-          normalizeString(configSet.symbol)
+          normalizeString(configSet.symbol),
+          configSet.feeToAddress,
+          saleConfigRoot.data,
+          platformSignerAddress.data,
+          "https://gogomint.ashrhmn.com/api/"
         ),
         {
           success: "Transaction sent",
@@ -166,6 +161,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
           loading: "Sending transaction...",
         }
       );
+
       const [newProject] = await toast.promise(
         Promise.all([
           service.post(`/projects`, {
@@ -173,10 +169,20 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
             address: contract.address,
             description: configSet.description,
             imageUrl,
-            whitelist,
             chainId,
             collectionType: "721",
             signerAddress: account,
+            saleConfigs: configSet.saleWaves.map((sw) => ({
+              ...sw,
+              whitelistAddresses:
+                sw.saleType === "public"
+                  ? []
+                  : sw.whitelistAddresses.includes(account)
+                  ? sw.whitelistAddresses
+                  : [...sw.whitelistAddresses, account],
+              startTime: +sw.startTime.toFixed(0),
+              endTime: +sw.endTime.toFixed(0),
+            })),
           }),
           contract.deployed(),
         ]),
@@ -188,7 +194,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
       );
       if (newProject.data.error) {
         console.log(newProject.data.error);
-
+        setBgProcessRunning((v) => v - 1);
         toast.error("Error saving project");
         return;
       }
@@ -207,18 +213,12 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
     }
   };
 
-  const handleWhitelistAddressDelete = (address: string) => {
-    setConfigSet((c) => ({
-      ...c,
-      whitelistAddresses: c.whitelistAddresses.filter((a) => a !== address),
-    }));
-  };
   return (
     <div className="text-xl border-2 rounded-xl p-4">
       <h1 className="text-4xl my-3 font-bold">NFT Drop</h1>
       <h1 className="text-2xl font-medium my-1">Contract Information</h1>
       <h2>Customize your new project</h2>
-      <form onSubmit={onDeployClick}>
+      <div>
         <div>
           <div
             onClick={() => {
@@ -270,7 +270,12 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
             </div>
           </div>
           <div className="mt-4 space-y-2">
-            <label className="font-bold">Description</label>
+            <label
+              onClick={() => console.log(configSet.saleWaves)}
+              className="font-bold"
+            >
+              Description
+            </label>
             <input
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="text"
@@ -281,81 +286,39 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
             />
           </div>
         </div>
-        <div>
-          <div className="mt-4 space-y-2">
-            <label className="font-bold">
-              Private Mint Charge <span className="text-red-700">*</span>
-            </label>
-            <input
-              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-              type="number"
-              min={0}
-              step={0.00001}
-              value={configSet.privateMintCharge}
-              onChange={(e) =>
-                setConfigSet((c) => ({
-                  ...c,
-                  privateMintCharge: e.target.valueAsNumber,
-                }))
-              }
-            />
-          </div>
-          <div className="mt-4 space-y-2">
-            <label className="font-bold">
-              Public Mint Charge <span className="text-red-700">*</span>
-            </label>
-            <input
-              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-              type="number"
-              min={0}
-              step={0.00001}
-              value={configSet.publicMintCharge}
-              onChange={(e) =>
-                setConfigSet((c) => ({
-                  ...c,
-                  publicMintCharge: e.target.valueAsNumber,
-                }))
-              }
-            />
-          </div>
-        </div>
-        <div>
-          <div className="mt-4 space-y-2">
-            <label className="font-bold">Add Whitelist addresses</label>
-            <div className="flex items-center gap-3">
-              <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                type="text"
-                value={tempWhitelistAddress}
-                onChange={(e) => setTempWhitelistAddress(e.target.value)}
-              />
-              <button
-                onClick={handleAddWhiteListButton}
-                className="bg-blue-600 text-white h-14 w-28 rounded"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="my-4">
-          {configSet.whitelistAddresses.map((address) => (
-            <div className="flex gap-4 relative my-2" key={address}>
-              <div className="w-full overflow-hidden group">
-                <div className="overflow-hidden w-full">{address}</div>
-                <div className="absolute -top-6 hidden group-hover:block text-sm rounded shdaow-xl bg-gray-500 p-1 text-white z-10">
-                  {address}
-                </div>
-              </div>
-              <button
-                onClick={() => handleWhitelistAddressDelete(address)}
-                className="hover:bg-gray-500 rounded-full overflow-hidden h-8 w-8 hover:text-white transition-colors flex justify-center items-center"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-          ))}
-        </div>
+        <button
+          onClick={() =>
+            setConfigSet((c) => ({
+              ...c,
+              saleWaves: [
+                ...c.saleWaves,
+                {
+                  enabled: false,
+                  endTime: 0,
+                  maxMintInSale: 0,
+                  maxMintPerWallet: 0,
+                  mintCharge: 0,
+                  startTime: 0,
+                  uuid: v4(),
+                  whitelistAddresses: [],
+                  saleType: "private",
+                  noDeadline: false,
+                },
+              ],
+            }))
+          }
+        >
+          Add Sale Wave
+        </button>
+        {configSet.saleWaves.map((sw, idx) => (
+          <SaleConfigInput
+            key={sw.uuid}
+            saleWaveConfig={sw}
+            setConfigSet={setConfigSet}
+            index={idx}
+          />
+        ))}
+
         <div>
           <div className="mt-4 space-y-2">
             <label className="font-bold">
@@ -370,14 +333,15 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
               }
             />
           </div>
-          <input
-            type="submit"
+          <button
             disabled={!!bgProcessRunning}
             className="bg-indigo-600 text-white p-3 w-full my-4 rounded-xl hover:bg-blue-800 transition-colors cursor-pointer disabled:text-gray-400 disabled:bg-indigo-300 disabled:cursor-not-allowed"
-            value="Deploy Contract"
-          />
+            onClick={onDeployClick}
+          >
+            Deploy Contract
+          </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
@@ -392,22 +356,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
-      return {
-        props: {},
-        redirect: {
-          destination: authPageUrlWithMessage("No discord account is linked"),
-        },
-      };
-    if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
-      return {
-        props: {},
-        redirect: {
-          destination: authPageUrlWithMessage(
-            "You are not creator, are you logged in with the correct account?"
-          ),
-        },
-      };
+    // if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
+    //   return {
+    //     props: {},
+    //     redirect: {
+    //       destination: authPageUrlWithMessage("No discord account is linked"),
+    //     },
+    //   };
+    // if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
+    //   return {
+    //     props: {},
+    //     redirect: {
+    //       destination: authPageUrlWithMessage(
+    //         "You are not creator, are you logged in with the correct account?"
+    //       ),
+    //     },
+    //   };
     return { props: { cookieAddress } };
   } catch (error) {
     cookie.set(

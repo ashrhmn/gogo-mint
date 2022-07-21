@@ -181,22 +181,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
-      return {
-        props: {},
-        redirect: {
-          destination: authPageUrlWithMessage("No discord account is linked"),
-        },
-      };
-    if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
-      return {
-        props: {},
-        redirect: {
-          destination: authPageUrlWithMessage(
-            "You are not creator, are you logged in with the correct account?"
-          ),
-        },
-      };
+    // if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
+    //   return {
+    //     props: {},
+    //     redirect: {
+    //       destination: authPageUrlWithMessage("No discord account is linked"),
+    //     },
+    //   };
+    // if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
+    //   return {
+    //     props: {},
+    //     redirect: {
+    //       destination: authPageUrlWithMessage(
+    //         "You are not creator, are you logged in with the correct account?"
+    //       ),
+    //     },
+    //   };
     const project = await getProjectByChainAddress(contract, +network);
     if (!project) return { props: {}, redirect: { destination: `/404` } };
     if (project.owner.walletAddress !== cookieAddress)

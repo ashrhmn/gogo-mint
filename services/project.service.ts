@@ -1,6 +1,7 @@
 import assert from "assert";
 import Cookies from "cookies";
 import { prisma } from "../lib/db";
+import { ISaleConfigInput } from "../types";
 import { getCookieWallet } from "./auth.service";
 import { getUserByAccessToken } from "./discord.service";
 import { getUserByDiscordIdentifiers } from "./user.service";
@@ -39,8 +40,8 @@ export const addNewProject = async (
   address: string,
   description: string,
   imageUrl: string,
+  saleConfigs: ISaleConfigInput[],
   userId: number,
-  whitelist: string[],
   chainId: number,
   collectionType: string
 ) => {
@@ -51,9 +52,24 @@ export const addNewProject = async (
       address,
       description,
       imageUrl,
-      whitelist,
       chainId,
       collectionType,
+      saleConfigs: {
+        createMany: {
+          skipDuplicates: true,
+          data: saleConfigs.map((c) => ({
+            enabled: c.enabled,
+            startTime: c.startTime,
+            endTime: c.endTime,
+            maxMintInSale: c.maxMintInSale,
+            maxMintPerWallet: c.maxMintPerWallet,
+            mintCharge: c.mintCharge,
+            whitelist: c.whitelistAddresses,
+            saleIdentifier: c.uuid,
+            saleType: c.saleType,
+          })),
+        },
+      },
     },
   });
 };
@@ -63,7 +79,7 @@ export const createProjectForCookieWalletUser = async (
   address: string,
   description: string,
   imageUrl: string,
-  whitelist: string[],
+  saleConfigs: ISaleConfigInput[],
   chainId: number,
   collectionType: string,
   signerAddress: string,
@@ -80,42 +96,42 @@ export const createProjectForCookieWalletUser = async (
     address,
     description,
     imageUrl,
+    saleConfigs,
     dbUser.id,
-    whitelist,
     chainId,
     collectionType
   );
 };
 
-export const createProjectForLoggedInUser = async (
-  name: string,
-  address: string,
-  description: string,
-  imageUrl: string,
-  whitelist: string[],
-  accessToken: string,
-  chainId: number,
-  collectionType: string
-) => {
-  const user = await getUserByAccessToken(accessToken);
-  if (!user) throw "User not logged in";
-  const dbUser = await getUserByDiscordIdentifiers(
-    user.username,
-    user.discriminator
-  );
-  if (!dbUser) throw "User not found in db";
-  const newProject = await addNewProject(
-    name,
-    address,
-    description,
-    imageUrl,
-    dbUser.id,
-    whitelist,
-    chainId,
-    collectionType
-  );
-  return newProject;
-};
+// export const createProjectForLoggedInUser = async (
+//   name: string,
+//   address: string,
+//   description: string,
+//   imageUrl: string,
+//   whitelist: string[],
+//   accessToken: string,
+//   chainId: number,
+//   collectionType: string
+// ) => {
+//   const user = await getUserByAccessToken(accessToken);
+//   if (!user) throw "User not logged in";
+//   const dbUser = await getUserByDiscordIdentifiers(
+//     user.username,
+//     user.discriminator
+//   );
+//   if (!dbUser) throw "User not found in db";
+//   const newProject = await addNewProject(
+//     name,
+//     address,
+//     description,
+//     imageUrl,
+//     dbUser.id,
+//     whitelist,
+//     chainId,
+//     collectionType
+//   );
+//   return newProject;
+// };
 
 export const getAllProjectsOfLoggedInDiscordUser = async (
   accessToken: string

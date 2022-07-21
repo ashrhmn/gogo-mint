@@ -22,21 +22,39 @@ model User {
 }
 
 model Project {
-  id             Int      @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   userId         Int
   name           String
   description    String?
   imageUrl       String?
-  owner          User     @relation(fields: [userId], references: [id])
+  owner          User         @relation(fields: [userId], references: [id])
   address        String?
   whitelist      String[]
   nfts           NFT[]
   chainId        Int?
   collectionType String?
-  uid            String?  @unique
+  uid            String?      @unique
+  saleConfigs    SaleConfig[]
 
   @@unique([address, chainId])
   @@map("projects")
+}
+
+model SaleConfig {
+  id               Int      @id @default(autoincrement())
+  saleIdentifier   String   @unique
+  enabled          Boolean
+  saleType         String
+  startTime        Int
+  endTime          Int
+  mintCharge       Float
+  whitelist        String[]
+  maxMintPerWallet Int
+  maxMintInSale    Int
+  Project          Project? @relation(fields: [projectId], references: [id])
+  projectId        Int?
+
+  @@map("sale_configs")
 }
 
 model CreatorDiscord {

@@ -37,9 +37,7 @@ export interface IDeployConfigSet {
   symbol: string;
   description: string;
   feeToAddress: string;
-  whitelistAddresses: string[];
-  privateMintCharge: number;
-  publicMintCharge: number;
+  saleWaves: ISaleConfigInput[];
   uid: string;
 }
 
@@ -124,4 +122,27 @@ export interface MintPageConfig {
   publicSaleConfig: ISaleConfig | null;
   maxMintInPrivate: number;
   maxMintInPublic: number;
+}
+
+export interface ISaleConfigSol {
+  saleIdentifier: string;
+  enabled: boolean;
+  startTime: number;
+  endTime: number;
+  mintCharge: string;
+  whitelistRoot: string;
+  maxMintPerWallet: number;
+  maxMintInSale: number;
+}
+
+export interface ISaleConfigInput {
+  uuid: string;
+  enabled: boolean;
+  saleType: "private" | "public";
+  startTime: number;
+  endTime: number;
+  mintCharge: number;
+  whitelistAddresses: string[];
+  maxMintPerWallet: number;
+  maxMintInSale: number;
 }
