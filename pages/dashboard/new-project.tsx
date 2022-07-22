@@ -153,7 +153,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
           configSet.feeToAddress,
           saleConfigRoot.data,
           platformSignerAddress.data,
-          "https://gogomint.ashrhmn.com/api/"
+          "https://gogomint.ashrhmn.com/api/v1/"
         ),
         {
           success: "Transaction sent",
