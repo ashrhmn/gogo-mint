@@ -1,9 +1,10 @@
 import React, { useRef, useState } from "react";
 import { IDeployConfigSet, ISaleConfigInput } from "../../types";
-import { formatHtmlDateTime } from "../../utils/String.utils";
+import { formatHtmlDateTime, normalizeString } from "../../utils/String.utils";
 import { parse as parseCsv } from "papaparse";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const SaleConfigInput = ({
   saleWaveConfig,
@@ -19,7 +20,27 @@ const SaleConfigInput = ({
   const checkboxRef = useRef<HTMLInputElement | null>(null);
   return (
     <details className="p-2 m-3 border-2 rounded-xl bg-gray-200">
-      <summary className="cursor-pointer select-none">Wave {index + 1}</summary>
+      <summary className="flex items-center w-full">
+        <span className="cursor-pointer select-none w-full font-bold text-xl hover:text-blue-900 transition-colors">
+          Wave {index + 1}
+          <span className="font-light mx-2 text-xs">
+            {normalizeString(saleWaveConfig.saleType)}
+          </span>
+        </span>
+        <button
+          onClick={() =>
+            setConfigSet((prev) => ({
+              ...prev,
+              saleWaves: prev.saleWaves.filter(
+                (sw) => sw.uuid !== saleWaveConfig.uuid
+              ),
+            }))
+          }
+          className="text-red-500 hover:text-red-700 hover:bg-gray-100 rounded p-1 transition-colors"
+        >
+          Delete
+        </button>
+      </summary>
       <div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full font-medium">Status</div>
@@ -73,11 +94,7 @@ const SaleConfigInput = ({
             <h1>Start Time</h1>
             <div>
               <button
-                // onClick={() =>
-                //   setConfigSet((c) => ({ ...c, startTime: Date.now() / 1000 }))
-                // }
                 className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
-                // disabled={!!saleConfigBgProc}
                 onClick={() =>
                   setConfigSet((prev) => ({
                     ...prev,
@@ -123,7 +140,6 @@ const SaleConfigInput = ({
                   ref={checkboxRef}
                   type="checkbox"
                   checked={saleWaveConfig.endTime === 0}
-                  // disabled={!!saleConfigBgProc}
                   onChange={(e) =>
                     setConfigSet((prev) => ({
                       ...prev,
@@ -152,7 +168,6 @@ const SaleConfigInput = ({
                 </label>
               </div>
               <button
-                // disabled={isNoEndChecked || !!saleConfigBgProc}
                 onClick={() =>
                   setConfigSet((prev) => ({
                     ...prev,
@@ -299,68 +314,100 @@ const SaleConfigInput = ({
                                 }
                           ),
                         }));
+                        e.target.value = "";
                       },
                     });
                   }}
                 />
                 <label className="font-bold">Add Whitelist addresses</label>
-                <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex items-center gap-3">
                   <input
                     className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                     type="text"
                     value={tempWhitelistAddress}
                     onChange={(e) => setTempWhitelistAddress(e.target.value)}
                   />
-                  <div className="flex gap-4 w-full sm:w-auto">
-                    <button
-                      onClick={() => {
-                        if (
-                          saleWaveConfig.whitelistAddresses.includes(
-                            tempWhitelistAddress
-                          )
-                        ) {
-                          toast.error("Address already added");
-                          setTempWhitelistAddress("");
-                          return;
-                        }
-                        if (!isAddress(tempWhitelistAddress)) {
-                          toast.error("Invalid Address");
-                          setTempWhitelistAddress("");
-                          return;
-                        }
-                        setConfigSet((prev) => ({
-                          ...prev,
-                          saleWaves: prev.saleWaves.map((sw) =>
-                            sw.uuid !== saleWaveConfig.uuid
-                              ? sw
-                              : {
-                                  ...sw,
-                                  whitelistAddresses: [
-                                    ...sw.whitelistAddresses,
-                                    tempWhitelistAddress,
-                                  ],
-                                }
-                          ),
-                        }));
+                  <button
+                    onClick={() => {
+                      if (
+                        saleWaveConfig.whitelistAddresses.includes(
+                          tempWhitelistAddress
+                        )
+                      ) {
+                        toast.error("Address already added");
                         setTempWhitelistAddress("");
-                      }}
-                      className="bg-blue-600 text-white h-14 w-full sm:w-28 rounded"
-                    >
-                      Add
-                    </button>
-                    <button
-                      onClick={() =>
-                        whitelistCsvInputRef.current &&
-                        whitelistCsvInputRef.current.click()
+                        return;
                       }
-                      className="bg-blue-600 text-white h-14 w-full sm:w-40 rounded"
-                    >
-                      Attach CSV
+                      if (!isAddress(tempWhitelistAddress)) {
+                        toast.error("Invalid Address");
+                        setTempWhitelistAddress("");
+                        return;
+                      }
+                      setConfigSet((prev) => ({
+                        ...prev,
+                        saleWaves: prev.saleWaves.map((sw) =>
+                          sw.uuid !== saleWaveConfig.uuid
+                            ? sw
+                            : {
+                                ...sw,
+                                whitelistAddresses: [
+                                  ...sw.whitelistAddresses,
+                                  tempWhitelistAddress,
+                                ],
+                              }
+                        ),
+                      }));
+                      setTempWhitelistAddress("");
+                    }}
+                    className="bg-blue-600 text-white h-14 w-36 sm:w-28 rounded"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 text-lg justify-end items-center">
+                  <button
+                    onClick={() =>
+                      whitelistCsvInputRef.current &&
+                      whitelistCsvInputRef.current.click()
+                    }
+                    className="bg-blue-600 text-white h-8 w-full sm:w-40 rounded"
+                  >
+                    Attach CSV
+                  </button>
+                  <Link href={`/example/addresses.csv`} passHref>
+                    <button className="bg-blue-600 text-white h-8 w-full sm:w-40 rounded">
+                      Example CSV
                     </button>
-                  </div>
+                  </Link>
+                  <button
+                    onClick={() =>
+                      setConfigSet((prev) => ({
+                        ...prev,
+                        saleWaves: prev.saleWaves.map((sw) =>
+                          sw.uuid !== saleWaveConfig.uuid
+                            ? sw
+                            : { ...sw, whitelistAddresses: [] }
+                        ),
+                      }))
+                    }
+                    className="bg-blue-600 text-white h-8 w-full sm:w-40 rounded"
+                  >
+                    Reset List
+                  </button>
                 </div>
               </div>
             </div>
+            {saleWaveConfig.whitelistAddresses.length === 0 && (
+              <div className="text-center text-gray-600 my-4">
+                No address is currently in whitelist
+              </div>
+            )}
+            {saleWaveConfig.whitelistAddresses.length > 0 && (
+              <div className="text-center text-gray-600 my-4">
+                {saleWaveConfig.whitelistAddresses.length} address(es) is in
+                whitelist
+              </div>
+            )}
             {saleWaveConfig.whitelistAddresses.length > 0 && (
               <div className="my-4">
                 <details open>

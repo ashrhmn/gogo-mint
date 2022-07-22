@@ -293,7 +293,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
               saleWaves: [
                 ...c.saleWaves,
                 {
-                  enabled: false,
+                  enabled: true,
                   endTime: 0,
                   maxMintInSale: 0,
                   maxMintPerWallet: 0,
@@ -307,9 +307,15 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
               ],
             }))
           }
+          className="p-2 w-60 bg-blue-500 text-white hover:bg-blue-700 transition-colors rounded my-4"
         >
           Add Sale Wave
         </button>
+        {configSet.saleWaves.length == 0 && (
+          <div className="bg-gray-200 rounded-xl text-center font-bold p-4">
+            No Sale Wave is set. Without a Sale Wave no one will be able to mint
+          </div>
+        )}
         {configSet.saleWaves.map((sw, idx) => (
           <SaleConfigInput
             key={sw.uuid}
