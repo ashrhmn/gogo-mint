@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  client:
+    build:
+      context: .
+      args:
+        - PORT=${PORT:-3001}
+    image: gogo-mint-img
+    ports:
+      - ${PORT:-3001}:${PORT:-3001}
+    container_name: gogo-mint
+    restart: always

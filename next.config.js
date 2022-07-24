@@ -8,6 +8,7 @@ const nextConfig = {
       "gateway.pinata.cloud",
     ],
   },
+  output: "standalone",
 };
 
 module.exports = nextConfig;
