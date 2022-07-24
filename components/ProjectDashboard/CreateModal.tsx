@@ -45,7 +45,7 @@ const CreateModal = ({
       //   ? null
       //   : await uploadFileToFirebase(configSet.file);
 
-      const [url, { data: randomSignatureResponse }] = await Promise.all([
+      const [url] = await Promise.all([
         !configSet.file
           ? null
           : toast.promise(uploadFileToFirebase(configSet.file), {
@@ -53,17 +53,17 @@ const CreateModal = ({
               loading: "Uploading image",
               success: "Image uploaded successfully",
             }),
-        toast.promise(service.get(`/platform-signer/random-sign`), {
-          error: "Error generating signature",
-          loading: "Generating Signature",
-          success: "Signature Generated Successfully",
-        }),
+        // toast.promise(service.get(`/platform-signer/random-sign`), {
+        //   error: "Error generating signature",
+        //   loading: "Generating Signature",
+        //   success: "Signature Generated Successfully",
+        // }),
       ]);
 
-      if (randomSignatureResponse.error) {
-        toast.error("Error getting signature");
-        return;
-      }
+      // if (randomSignatureResponse.error) {
+      //   toast.error("Error getting signature");
+      //   return;
+      // }
 
       const { data: nft } = await toast.promise(
         service.post(`nft`, {
@@ -77,8 +77,8 @@ const CreateModal = ({
           backgroundColor: configSet.openSeaBgColor,
           externalUrl: configSet.openSeaExternalUrl,
           imageUrl: url,
-          message: randomSignatureResponse.data.message,
-          signature: randomSignatureResponse.data.signature,
+          // message: randomSignatureResponse.data.message,
+          // signature: randomSignatureResponse.data.signature,
         }),
         {
           error: "Error saving NFT",

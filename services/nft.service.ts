@@ -2,6 +2,7 @@ import Cookies from "cookies";
 import { prisma } from "../lib/db";
 import { getCookieWallet } from "./auth.service";
 import { NFT, Prisma } from "@prisma/client";
+import * as PlatformSignerService from "./platformSigner.service";
 
 export const addNftsInQueue = async (
   promises: Prisma.Prisma__NFTClient<NFT>[],
@@ -15,8 +16,8 @@ export const addNftsInQueue = async (
 
 export const addNftToProject = async (
   projectId: number,
-  signature: string,
-  message: string,
+  // signature: string,
+  // message: string,
   tokenId: number,
   name: string,
   description: string,
@@ -33,11 +34,14 @@ export const addNftToProject = async (
   });
   if (project.owner.walletAddress !== cookieAddress)
     throw "Logged in user is not project owner";
+
+  const messageSignature =
+    await PlatformSignerService.getRandomMessageSignature();
   return await prisma.nFT.create({
     data: {
       projectId,
-      signature,
-      message,
+      signature: messageSignature.signature,
+      message: messageSignature.message,
       tokenId,
       name,
       backgroundColor,
@@ -63,8 +67,8 @@ export const addNftToProject = async (
 
 export const addBatchNftsToProject = async (
   nftsData: {
-    signature: string;
-    message: string;
+    // signature: string;
+    // message: string;
     tokenId: number;
     name: string;
     description: string;
@@ -84,12 +88,17 @@ export const addBatchNftsToProject = async (
   if (project.owner.walletAddress !== cookieAddress)
     throw "Logged in user is not project owner";
 
-  const promises = nftsData.map((data) =>
-    prisma.nFT.create({
+  const messageSignatures =
+    await PlatformSignerService.getMultipleRandomMessageSignature(
+      nftsData.length
+    );
+
+  const promises = nftsData.map((data, index) => {
+    return prisma.nFT.create({
       data: {
         projectId,
-        signature: data.signature,
-        message: data.message,
+        signature: messageSignatures[index].signature,
+        message: messageSignatures[index].message,
         tokenId: data.tokenId,
         name: data.name,
         backgroundColor: data.backgroundColor,
@@ -110,8 +119,8 @@ export const addBatchNftsToProject = async (
           },
         },
       },
-    })
-  );
+    });
+  });
 
   if (promises.length < 10) return await Promise.all(promises);
   else {

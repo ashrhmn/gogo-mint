@@ -50,10 +50,10 @@ export const getMultipleRandomMessageSignature = async (
     const n = req.query.n;
     if (!n || isNaN(+n))
       return res.status(400).json(errorResponse("Invalid n value"));
-    // const cookieAddress = getCookieWallet(getHttpCookie(req, res));
-    // await prisma.user.findFirstOrThrow({
-    //   where: { walletAddress: cookieAddress },
-    // });
+    const cookieAddress = getCookieWallet(getHttpCookie(req, res));
+    await prisma.user.findFirstOrThrow({
+      where: { walletAddress: cookieAddress },
+    });
     return res.json(
       successResponse(
         await PlatformSignerService.getMultipleRandomMessageSignature(+n)

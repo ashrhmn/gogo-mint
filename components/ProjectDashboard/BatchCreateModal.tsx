@@ -8,9 +8,11 @@ import Image from "next/image";
 import { resolveIPFS } from "../../utils/Request.utils";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { v4 } from "uuid";
 
-type INFTCreateType = Omit<NFT, "id" | "tokenId"> & {
+type INFTCreateType = Omit<NFT, "id" | "tokenId" | "message" | "signature"> & {
   properties: { trait_type: string | null; value: string }[];
+  uid: string;
 };
 
 const BatchCreateModal = ({
@@ -31,8 +33,8 @@ const BatchCreateModal = ({
   const handleSaveBtn = async () => {
     try {
       const nfts: {
-        signature: string | null;
-        message: string | null;
+        // signature: string | null;
+        // message: string | null;
         tokenId: number | null;
         name: string;
         description: string | null;
@@ -41,12 +43,12 @@ const BatchCreateModal = ({
         externalUrl: string | null;
         imageUrl: string | null;
       }[] = nftsAdded.map((nft) => ({
-        signature: nft.signature,
+        // signature: nft.signature,
         backgroundColor: nft.backgroundColor,
         description: nft.description,
         externalUrl: nft.externalUrl,
         imageUrl: nft.imageUrl,
-        message: nft.message,
+        // message: nft.message,
         name: nft.name,
         tokenId: null,
         properties: nft.properties.map((p) => ({
@@ -139,15 +141,15 @@ const BatchCreateModal = ({
                   })
                   .array()
                   .parse(nftsJson);
-                const { data: messageSignaturesResponse } = await service.get(
-                  `platform-signer/random-sign/${nfts.length}`
-                );
+                // const { data: messageSignaturesResponse } = await service.get(
+                //   `platform-signer/random-sign/${nfts.length}`
+                // );
 
-                const messageSignatures = z
-                  .object({ message: z.string(), signature: z.string() })
-                  .array()
-                  .length(nfts.length)
-                  .parse(messageSignaturesResponse.data);
+                // const messageSignatures = z
+                //   .object({ message: z.string(), signature: z.string() })
+                //   .array()
+                //   .length(nfts.length)
+                //   .parse(messageSignaturesResponse.data);
 
                 setNftsAdded((prev) => [
                   ...prev,
@@ -158,12 +160,13 @@ const BatchCreateModal = ({
                     externalUrl: nft.external_url || null,
                     imageUrl: nft.image_url || null,
                     projectId: projectId,
-                    message: messageSignatures[index].message,
-                    signature: messageSignatures[index].signature,
+                    // message: messageSignatures[index].message,
+                    // signature: messageSignatures[index].signature,
                     properties: nft.properties.map((p) => ({
                       trait_type: p.trait_type || null,
                       value: p.value,
                     })),
+                    uid: v4(),
                   })),
                 ]);
                 setParseBgProc((v) => v - 1);
@@ -185,14 +188,14 @@ const BatchCreateModal = ({
                     .array()
                     .parse(results.data.map((d: any) => d.name));
 
-                  const { data: messageSignaturesResponse } = await service.get(
-                    `platform-signer/random-sign/${results.data.length}`
-                  );
-                  const messageSignatures = z
-                    .object({ message: z.string(), signature: z.string() })
-                    .array()
-                    .length(results.data.length)
-                    .parse(messageSignaturesResponse.data);
+                  // const { data: messageSignaturesResponse } = await service.get(
+                  //   `platform-signer/random-sign/${results.data.length}`
+                  // );
+                  // const messageSignatures = z
+                  //   .object({ message: z.string(), signature: z.string() })
+                  //   .array()
+                  //   .length(results.data.length)
+                  //   .parse(messageSignaturesResponse.data);
 
                   setNftsAdded((prev) => [
                     ...prev,
@@ -202,9 +205,10 @@ const BatchCreateModal = ({
                       backgroundColor: r.background_color || null,
                       externalUrl: r.external_url || null,
                       imageUrl: r.image || null,
-                      message: messageSignatures[index].message,
+                      // message: null,
                       projectId,
-                      signature: messageSignatures[index].signature,
+                      uid: v4(),
+                      // signature: messageSignatures[index].signature,
                       properties: Object.keys(r)
                         .filter(
                           (key) =>
@@ -273,13 +277,13 @@ const BatchCreateModal = ({
         {nftsAdded.map((nft) => (
           <div
             className="flex gap-4 mx-2 my-6 bg-gray-100 p-2 rounded-xl pt-8 relative"
-            key={nft.message}
+            key={nft.uid}
           >
             <div
               className="absolute top-2 right-2 cursor-pointer hover:bg-gray-200 rounded"
               onClick={() =>
                 setNftsAdded((prev) =>
-                  prev.filter((prevNft) => prevNft.message !== nft.message)
+                  prev.filter((prevNft) => prevNft.uid !== nft.uid)
                 )
               }
             >
