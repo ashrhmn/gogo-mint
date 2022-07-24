@@ -15,3 +15,10 @@ export const getHttpCookie = (
   req: NextOrIncomingMessage,
   res: NextOrServerResponse
 ) => new Cookies(req, res);
+
+export function resolveIPFS(input: string) {
+  if (input.startsWith("ipfs://"))
+    return `https://gateway.pinata.cloud/ipfs/${input.substring(7)}`;
+  // return `https://ipfs.io/ipfs/${input.substring(7)}`;
+  return input;
+}

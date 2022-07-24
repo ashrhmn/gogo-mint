@@ -7,7 +7,7 @@ export const handleControllerError = (res: NextApiResponse, error: unknown) => {
     "Controller Error : ",
     error instanceof ZodError ? error.flatten() : error
   );
-  return res.json(
-    errorResponse(error instanceof ZodError ? error.flatten() : error)
-  );
+  return res
+    .status(500)
+    .json(errorResponse(error instanceof ZodError ? error.flatten() : error));
 };

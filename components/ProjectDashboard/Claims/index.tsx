@@ -3,12 +3,11 @@ import { useEthers } from "@usedapp/core";
 import { Contract } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import toast, { LoaderIcon } from "react-hot-toast";
 import { v4 } from "uuid";
 import { ABI1155, ABI721 } from "../../../constants/abis";
 import { service } from "../../../service";
 import { ISaleConfigInput } from "../../../types";
-import ClaimItem from "./ClaimItem";
 import SaleConfigItem from "./SaleConfigItem";
 
 const ClaimsSection = ({
@@ -29,6 +28,7 @@ const ClaimsSection = ({
     Omit<SaleConfig, "id" | "projectId">[]
   >([]);
   const [bgProcess, setBgProcess] = useState(0);
+  const [refetcher, setRefetcher] = useState(false);
   useEffect(() => {
     (async () => {
       try {
@@ -45,7 +45,7 @@ const ClaimsSection = ({
         setBgProcess((v) => v - 1);
       }
     })();
-  }, [projectId]);
+  }, [projectId, refetcher]);
   const handleUpdateClick = async () => {
     if (!account || !library || !chainId) {
       toast.error("No wallet connected");
@@ -69,94 +69,119 @@ const ClaimsSection = ({
       return;
     }
 
-    const rootPayload: ISaleConfigInput[] = saleConfigs.map((sc) => ({
-      enabled: sc.enabled,
-      startTime: sc.startTime,
-      endTime: sc.endTime,
-      maxMintInSale: sc.maxMintInSale,
-      maxMintPerWallet: sc.maxMintPerWallet,
-      mintCharge: sc.mintCharge,
-      whitelistAddresses: sc.whitelist.includes(account)
-        ? sc.whitelist
-        : [...sc.whitelist, account],
-      saleType: sc.saleType as "private" | "public",
-      uuid: sc.saleIdentifier,
-    }));
+    try {
+      const rootPayload: ISaleConfigInput[] = saleConfigs.map((sc) => ({
+        enabled: sc.enabled,
+        startTime: sc.startTime,
+        endTime: sc.endTime,
+        maxMintInSale: sc.maxMintInSale,
+        maxMintPerWallet: sc.maxMintPerWallet,
+        mintCharge: sc.mintCharge,
+        whitelistAddresses: sc.whitelist.includes(account)
+          ? sc.whitelist
+          : [...sc.whitelist, account],
+        saleType: sc.saleType as "private" | "public",
+        uuid: sc.saleIdentifier,
+      }));
 
-    const { data: saleConfigRoot } = await toast.promise(
-      service.post(`/sale-config/root`, {
-        saleConfigs: rootPayload,
-      }),
-      {
-        error: "Error generating sale config hash",
-        loading: "Generating sale config hash",
-        success: "Sale configs hash generated...",
-      }
-    );
-
-    if (saleConfigRoot.error) {
-      toast.error("Error geenerating sale config hash");
-      return;
-    }
-
-    const contract = new Contract(
-      projectAddress,
-      collectionType === "721" ? ABI721 : ABI1155,
-      library.getSigner(account)
-    );
-
-    const updateSaleConfigRootTx = await toast.promise(
-      contract.updateSaleConfigRoot(saleConfigRoot.data),
-      {
-        error: "Error sending transaction",
-        loading: "Sending transaction",
-        success: "Transaction sent successfully",
-      }
-    );
-
-    const [{ data: response }] = await toast.promise(
-      Promise.all([
-        service.put(`sale-config/${projectId}`, {
-          saleConfigs: saleConfigs.map((sc) => ({
-            ...sc,
-            id: undefined,
-            projectId: undefined,
-          })),
+      const { data: saleConfigRoot } = await toast.promise(
+        service.post(`/sale-config/root`, {
+          saleConfigs: rootPayload,
         }),
-        (updateSaleConfigRootTx as any).wait(),
-      ]),
-      {
-        error: "Error completing transaction",
-        loading: "Mining transaction...",
-        success: "Transaction Completed",
+        {
+          error: "Error generating sale config hash",
+          loading: "Generating sale config hash",
+          success: "Sale configs hash generated...",
+        }
+      );
+
+      if (saleConfigRoot.error) {
+        toast.error("Error geenerating sale config hash");
+        return;
       }
-    );
-    console.log(response);
+
+      const contract = new Contract(
+        projectAddress,
+        collectionType === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+
+      const updateSaleConfigRootTx = await toast.promise(
+        contract.updateSaleConfigRoot(saleConfigRoot.data),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction",
+          success: "Transaction sent successfully",
+        }
+      );
+
+      const [{ data: response }] = await toast.promise(
+        Promise.all([
+          service.put(`sale-config/${projectId}`, {
+            saleConfigs: saleConfigs.map((sc) => ({
+              ...sc,
+              id: undefined,
+              projectId: undefined,
+            })),
+          }),
+          (updateSaleConfigRootTx as any).wait(),
+        ]),
+        {
+          error: "Error completing transaction",
+          loading: "Mining transaction...",
+          success: "Transaction Completed",
+        }
+      );
+      // console.log(response);
+    } catch (error) {
+      toast.error("Error saving SaleConfigs");
+      console.log(error);
+    }
   };
   return (
     <div>
-      <button onClick={() => console.log(saleConfigs)}>log</button>
-      <button
-        onClick={() =>
-          setSaleConfigs((prev) => [
-            ...prev,
-            {
-              enabled: true,
-              startTime: 0,
-              endTime: 0,
-              maxMintInSale: 0,
-              maxMintPerWallet: 0,
-              mintCharge: 0,
-              saleIdentifier: v4(),
-              saleType: "private",
-              whitelist: [],
-            },
-          ])
-        }
-      >
-        Add Sale Wave
-      </button>
-      <button onClick={handleUpdateClick}>Update</button>
+      <div className="flex justify-end gap-4 m-4 items-center">
+        {bgProcess > 0 && (
+          <div className="scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <button
+          onClick={() => setRefetcher((v) => !v)}
+          className="bg-teal-500 text-white rounded p-2 hover:bg-teal-700 transition-colors"
+        >
+          Reload
+        </button>
+        <button
+          disabled={bgProcess > 0}
+          className="bg-green-500 text-white rounded p-2 hover:bg-green-700 transition-colors"
+          onClick={() =>
+            setSaleConfigs((prev) => [
+              ...prev,
+              {
+                enabled: true,
+                startTime: 0,
+                endTime: 0,
+                maxMintInSale: 0,
+                maxMintPerWallet: 0,
+                mintCharge: 0,
+                saleIdentifier: v4(),
+                saleType: "private",
+                whitelist: [],
+              },
+            ])
+          }
+        >
+          Add Sale Wave
+        </button>
+        <button
+          disabled={bgProcess > 0}
+          className="bg-blue-500 text-white rounded p-2 hover:bg-blue-700 transition-colors"
+          onClick={handleUpdateClick}
+        >
+          Update
+        </button>
+      </div>
       {saleConfigs.map((sc, index) => (
         <SaleConfigItem
           index={index}

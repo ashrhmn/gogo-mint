@@ -27,11 +27,35 @@ export const getAllProjectByOwnerAddress = async (address: string) => {
 
 export const getProjectByChainAddress = async (
   address: string,
-  chainId: number
+  chainId: number,
+  skip: number,
+  take: number
 ) => {
   return await prisma.project.findFirst({
     where: { address, chainId },
-    include: { nfts: { include: { properties: true } }, owner: true },
+    include: {
+      nfts: { include: { properties: true }, skip, take },
+      owner: true,
+      _count: { select: { nfts: true } },
+    },
+  });
+};
+
+export const getClaimedSupplyCountByProjectChainAddress = async (
+  address: string,
+  chainId: number
+) => {
+  return await prisma.nFT.count({
+    where: { project: { address, chainId }, tokenId: { not: null } },
+  });
+};
+
+export const getUnclaimedSupplyCountByProjectChainAddress = async (
+  address: string,
+  chainId: number
+) => {
+  return await prisma.nFT.count({
+    where: { project: { address, chainId }, tokenId: null },
   });
 };
 

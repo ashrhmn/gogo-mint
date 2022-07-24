@@ -17,6 +17,6 @@ export const getSaleConfigRoot = async (
     );
   } catch (error) {
     console.log("Error getting sale config root : ", error);
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };

@@ -4,6 +4,7 @@ import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import BatchCreateModal from "../../components/ProjectDashboard/BatchCreateModal";
 import ClaimsSection from "../../components/ProjectDashboard/Claims";
 import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
@@ -11,18 +12,29 @@ import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
 import { authorizeProject, getCookieWallet } from "../../services/auth.service";
 import { isCreator } from "../../services/creators.service";
-import { getProjectByChainAddress } from "../../services/project.service";
+import {
+  getClaimedSupplyCountByProjectChainAddress,
+  getProjectByChainAddress,
+  getUnclaimedSupplyCountByProjectChainAddress,
+} from "../../services/project.service";
 import { getUserByWalletAddress } from "../../services/user.service";
 import { ProjectExtended } from "../../types";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
 
 interface Props {
-  project: ProjectExtended;
+  project: ProjectExtended & { _count: { nfts: number } };
   cookieAddress: string;
+  unclaimedSupply: number;
+  claimedSupply: number;
 }
 
-const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
+const ProjectPage: NextPage<Props> = ({
+  project,
+  cookieAddress,
+  claimedSupply,
+  unclaimedSupply,
+}) => {
   const router = useRouter();
   const { account } = useEthers();
   useEffect(() => {
@@ -38,6 +50,7 @@ const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
       );
   }, [account, cookieAddress, router]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBatchCreateModalOpen, setIsBatchCreateModalOpen] = useState(false);
   const setTab = (tab: string) =>
     router.push({ ...router, query: { ...router.query, tab } });
   const currentTab =
@@ -61,12 +74,18 @@ const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
             </h2>
           </div>
         </div>
-        <div>
+        <div className="flex gap-4 items-center">
           <button
             className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
             onClick={() => setIsCreateModalOpen(true)}
           >
             + Create
+          </button>
+          <button
+            className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+            onClick={() => setIsBatchCreateModalOpen(true)}
+          >
+            + Create Batch
           </button>
         </div>
       </div>
@@ -111,6 +130,9 @@ const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
               nfts={project.nfts}
               collectionType={project.collectionType}
               ownerAddress={project.owner.walletAddress}
+              nftCount={project._count.nfts}
+              claimedSupply={claimedSupply}
+              unclaimedSupply={unclaimedSupply}
             />
           )}
         </div>
@@ -145,9 +167,14 @@ const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
         </div>
       </div>
       <div
-        onClick={() => setIsCreateModalOpen(false)}
+        onClick={() => {
+          setIsCreateModalOpen(false);
+          setIsBatchCreateModalOpen(false);
+        }}
         className={`${
-          isCreateModalOpen ? "" : "opacity-0 translate-x-full"
+          isCreateModalOpen || isBatchCreateModalOpen
+            ? ""
+            : "opacity-0 translate-x-full"
         } fixed inset-0 z-50 bg-[rgba(0,0,0,0.5)] transition-opacity`}
       />
       <CreateModal
@@ -155,6 +182,12 @@ const ProjectPage: NextPage<Props> = ({ project, cookieAddress }) => {
         setIsCreateModalOpen={setIsCreateModalOpen}
         projectId={project.id}
         ownerAddress={project.owner.walletAddress}
+      />
+      <BatchCreateModal
+        isBatchCreateModalOpen={isBatchCreateModalOpen}
+        ownerAddress={project.owner.walletAddress}
+        projectId={project.id}
+        setIsBatchCreateModalOpen={setIsBatchCreateModalOpen}
       />
     </div>
   );
@@ -180,23 +213,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    // if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
-    //   return {
-    //     props: {},
-    //     redirect: {
-    //       destination: authPageUrlWithMessage("No discord account is linked"),
-    //     },
-    //   };
-    // if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
-    //   return {
-    //     props: {},
-    //     redirect: {
-    //       destination: authPageUrlWithMessage(
-    //         "You are not creator, are you logged in with the correct account?"
-    //       ),
-    //     },
-    //   };
-    const project = await getProjectByChainAddress(contract, +network);
+    const { page, view } = context.query;
+    const pageNo = typeof page === "string" && !isNaN(+page) ? +page : 1;
+    const take = typeof view === "string" && !isNaN(+view) ? +view : 10;
+    const skip = (pageNo - 1) * take;
+
+    const project = await getProjectByChainAddress(
+      contract,
+      +network,
+      skip,
+      take
+    );
     if (!project) return { props: {}, redirect: { destination: `/404` } };
     if (project.owner.walletAddress !== cookieAddress)
       return {
@@ -208,7 +235,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         },
       };
 
-    return { props: { project, cookieAddress } };
+    const [claimedSupply, unclaimedSupply] = await Promise.all([
+      getClaimedSupplyCountByProjectChainAddress(contract, +network),
+      getUnclaimedSupplyCountByProjectChainAddress(contract, +network),
+    ]);
+
+    return {
+      props: { project, cookieAddress, claimedSupply, unclaimedSupply },
+    };
   } catch (error) {
     cookies.set(
       "auth_page_message",

@@ -22,7 +22,7 @@ export const walletSignLogin = async (
     );
     return res.json(successResponse(user));
   } catch (error) {
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -47,7 +47,7 @@ export const linkDiscordToWallet = async (
     );
   } catch (error) {
     console.log("linkDiscordToWallet Error : ", error);
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -57,9 +57,7 @@ export const getCurrentlySignedWallet = async (
 ) => {
   try {
     return res.json(
-      successResponse(
-        await AuthService.getCookieWallet(getHttpCookie(req, res))
-      )
+      successResponse(AuthService.getCookieWallet(getHttpCookie(req, res)))
     );
   } catch (error) {
     handleControllerError(res, error);

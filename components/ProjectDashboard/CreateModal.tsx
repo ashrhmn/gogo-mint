@@ -6,22 +6,17 @@ import { uploadFileToFirebase } from "../../lib/firebase";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
-import { useEthers } from "@usedapp/core";
-import { arrayify, solidityKeccak256 } from "ethers/lib/utils";
-import { getTokenUri } from "../../constants/tokenUri";
 
 const CreateModal = ({
   projectId,
   isCreateModalOpen,
   setIsCreateModalOpen,
-  ownerAddress,
 }: {
   projectId: number;
   ownerAddress: string | null;
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
 }) => {
-  const { library, account } = useEthers();
   const router = useRouter();
   const [configSet, setConfigSet] = useState<INftMetadata>({
     file: null,
@@ -46,13 +41,30 @@ const CreateModal = ({
   };
   const handleAddNft = async () => {
     try {
-      const url = !configSet.file
-        ? null
-        : await toast.promise(uploadFileToFirebase(configSet.file), {
-            error: "Image uploading error",
-            loading: "Uploading image",
-            success: "Image uploaded successfully",
-          });
+      // const url = !configSet.file
+      //   ? null
+      //   : await uploadFileToFirebase(configSet.file);
+
+      const [url, { data: randomSignatureResponse }] = await Promise.all([
+        !configSet.file
+          ? null
+          : toast.promise(uploadFileToFirebase(configSet.file), {
+              error: "Image uploading error",
+              loading: "Uploading image",
+              success: "Image uploaded successfully",
+            }),
+        toast.promise(service.get(`/platform-signer/random-sign`), {
+          error: "Error generating signature",
+          loading: "Generating Signature",
+          success: "Signature Generated Successfully",
+        }),
+      ]);
+
+      if (randomSignatureResponse.error) {
+        toast.error("Error getting signature");
+        return;
+      }
+
       const { data: nft } = await toast.promise(
         service.post(`nft`, {
           projectId,
@@ -65,6 +77,8 @@ const CreateModal = ({
           backgroundColor: configSet.openSeaBgColor,
           externalUrl: configSet.openSeaExternalUrl,
           imageUrl: url,
+          message: randomSignatureResponse.data.message,
+          signature: randomSignatureResponse.data.signature,
         }),
         {
           error: "Error saving NFT",
@@ -73,49 +87,12 @@ const CreateModal = ({
         }
       );
 
-      if (ownerAddress && account && ownerAddress !== account)
-        toast.error("Remeber to sign NFT to make them dropable");
-
-      if (
-        ownerAddress &&
-        account &&
-        library &&
-        ownerAddress === account &&
-        nft.data &&
-        nft.data.id
-      ) {
-        const signature = await toast.promise(
-          library
-            .getSigner(account)
-            .signMessage(
-              arrayify(
-                solidityKeccak256(["string"], [getTokenUri(nft.data.id)])
-              )
-            ),
-          {
-            error: "Error getting signature",
-            loading: "Waiting for signature...",
-            success: "Signature Received",
-          }
-        );
-        const result = await toast.promise(
-          service.put(`nft/signature`, { id: nft.data.id, signature }),
-          {
-            error: "Error saving signature",
-            loading: "Storing signature...",
-            success: "Signature stored successfully",
-          }
-        );
-        if ((result as any).error && typeof (result as any).error == "string")
-          toast.error((result as any).error);
-      }
-
       if (!nft.error) router.reload();
-      if (typeof nft.error == "string") toast.error(nft.error);
+      // if (typeof nft.error == "string") toast.error(nft.error);
     } catch (error) {
       if (typeof error == "string") toast.error(error);
-      if (typeof (error as any).message == "string")
-        toast.error((error as any).message);
+      // if (typeof (error as any).message == "string")
+      //   toast.error((error as any).message);
       console.log(error);
     }
   };

@@ -7,6 +7,7 @@ import { SaleConfig } from "@prisma/client";
 import { parse as parseCsv } from "papaparse";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const SaleConfigItem = ({
   saleWaveConfig,
@@ -32,7 +33,16 @@ const SaleConfigItem = ({
             {normalizeString(saleWaveConfig.saleType)}
           </span>
         </span>
-        <button className="text-red-500 hover:text-red-700 hover:bg-gray-100 rounded p-1 transition-colors">
+        <button
+          onClick={() =>
+            setSaleConfigs((prev) =>
+              prev.filter(
+                (sc) => sc.saleIdentifier !== saleWaveConfig.saleIdentifier
+              )
+            )
+          }
+          className="text-red-500 hover:text-red-700 hover:bg-gray-100 rounded p-1 transition-colors"
+        >
           Delete
         </button>
       </summary>
@@ -322,19 +332,20 @@ const SaleConfigItem = ({
                                 }
                           )
                         );
+                        e.target.value = "";
                       },
                     });
                   }}
                 />
                 <label className="font-bold">Add Whitelist addresses</label>
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <input
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                    type="text"
-                    value={tempWhitelistAddress}
-                    onChange={(e) => setTempWhitelistAddress(e.target.value)}
-                  />
-                  <div className="flex gap-4 w-full sm:w-auto">
+                <div>
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <input
+                      className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                      type="text"
+                      value={tempWhitelistAddress}
+                      onChange={(e) => setTempWhitelistAddress(e.target.value)}
+                    />
                     <button
                       onClick={() => {
                         if (
@@ -370,19 +381,50 @@ const SaleConfigItem = ({
                     >
                       Add
                     </button>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-4 text-lg justify-end items-center my-4">
                     <button
                       onClick={() =>
                         whitelistCsvInputRef.current &&
                         whitelistCsvInputRef.current.click()
                       }
-                      className="bg-blue-600 text-white h-14 w-full sm:w-40 rounded"
+                      className="bg-blue-600 text-white h-8 w-full sm:w-40 rounded"
                     >
                       Attach CSV
+                    </button>
+                    <Link href={`/example/addresses.csv`} passHref>
+                      <button className="bg-blue-600 text-white h-8 w-full sm:w-40 rounded">
+                        Example CSV
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() =>
+                        setSaleConfigs((prev) =>
+                          prev.map((sc) =>
+                            sc.saleIdentifier !== saleWaveConfig.saleIdentifier
+                              ? sc
+                              : { ...sc, whitelist: [] }
+                          )
+                        )
+                      }
+                      className="bg-blue-600 text-white h-8 w-full sm:w-40 rounded"
+                    >
+                      Reset List
                     </button>
                   </div>
                 </div>
               </div>
             </div>
+            {saleWaveConfig.whitelist.length === 0 && (
+              <div className="text-center text-gray-600 my-4">
+                No address is currently in whitelist
+              </div>
+            )}
+            {saleWaveConfig.whitelist.length > 0 && (
+              <div className="text-center text-gray-600 my-4">
+                {saleWaveConfig.whitelist.length} address(es) in whitelist
+              </div>
+            )}
             {saleWaveConfig.whitelist.length > 0 && (
               <div className="my-4">
                 <details open>

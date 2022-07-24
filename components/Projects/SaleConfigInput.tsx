@@ -404,7 +404,7 @@ const SaleConfigInput = ({
             )}
             {saleWaveConfig.whitelistAddresses.length > 0 && (
               <div className="text-center text-gray-600 my-4">
-                {saleWaveConfig.whitelistAddresses.length} address(es) is in
+                {saleWaveConfig.whitelistAddresses.length} address(es) in
                 whitelist
               </div>
             )}

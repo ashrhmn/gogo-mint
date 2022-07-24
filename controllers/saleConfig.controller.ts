@@ -30,7 +30,7 @@ export const updateSaleConfigs = async (
   try {
     const projectId = req.query.projectId;
     if (!projectId || typeof projectId !== "string" || isNaN(+projectId))
-      return res.json(errorResponse("Invalid Project ID"));
+      return res.status(400).json(errorResponse("Invalid Project ID"));
     const saleConfigs = req.body.saleConfigs as SaleConfig[];
     return res.json(
       successResponse(
@@ -43,6 +43,6 @@ export const updateSaleConfigs = async (
     );
   } catch (error) {
     console.log("Error updating sale configs : ", error);
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };

@@ -47,10 +47,10 @@ export const getUserByWalletAddress = async (
 ) => {
   const address = req.query.address;
   if (!address || typeof address !== "string")
-    return res.json(errorResponse("address not provided"));
+    return res.status(400).json(errorResponse("address not provided"));
 
   const user = await UserService.getUserByWalletAddress(address);
-  if (!user) return res.json(errorResponse("User not found"));
+  if (!user) return res.status(404).json(errorResponse("User not found"));
   return res.json(successResponse(user));
 };
 
@@ -73,10 +73,12 @@ export const getUserByIdentifiers = async (
       discriminator
     );
   } else {
-    return res.json(errorResponse("At least one identifier required"));
+    return res
+      .status(400)
+      .json(errorResponse("At least one identifier required"));
   }
   if (!user) return res.json(errorResponse("User not found"));
-  return res.json(successResponse(user));
+  return res.status(500).json(successResponse(user));
 };
 
 export const linkWalletToDiscord = async (
@@ -92,13 +94,13 @@ export const linkWalletToDiscord = async (
     typeof discriminator !== "string" ||
     typeof address !== "string"
   )
-    return res.json(
-      errorResponse(`Invalid payload : ${JSON.stringify(req.body)}`)
-    );
+    return res
+      .status(400)
+      .json(errorResponse(`Invalid payload : ${JSON.stringify(req.body)}`));
   const user = await UserService.updateUserWalletAddress(
     username,
     +discriminator,
     address
   );
-  return res.json(successResponse(user));
+  return res.status(500).json(successResponse(user));
 };

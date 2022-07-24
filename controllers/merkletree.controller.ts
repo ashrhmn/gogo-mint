@@ -8,11 +8,11 @@ export const getMerkletreeRoot = async (
 ) => {
   const addresses = req.body.addresses;
   if (!(addresses && addresses[0] && typeof addresses[0] == "string"))
-    return res.json(errorResponse("Invalid address format"));
+    return res.status(400).json(errorResponse("Invalid address format"));
   try {
     const root = getWhitelistRoot(addresses);
     return res.json(successResponse(root));
   } catch (error) {
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };

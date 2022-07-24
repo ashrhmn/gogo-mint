@@ -20,7 +20,8 @@ export const get721CompiledContract = async (
     // console.log("Code : ", code);
 
     const initCode = getAbiEvmCodeFromSolidity(normalizeString(name), code);
-    if (!initCode) return res.json(errorResponse("Error compiling"));
+    if (!initCode)
+      return res.status(400).json(errorResponse("Error compiling"));
     return res.json(successResponse(initCode));
   } catch (error) {
     console.log(error);

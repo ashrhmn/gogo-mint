@@ -10,6 +10,7 @@ import { RPC_URLS } from "../../constants/RPC_URL";
 import { getTokenUri } from "../../constants/tokenUri";
 import { service } from "../../service";
 import { NftExtended } from "../../types";
+import { resolveIPFS } from "../../utils/Request.utils";
 
 const OverviewSection = ({
   nfts,
@@ -17,12 +18,18 @@ const OverviewSection = ({
   projectChainId,
   collectionType,
   ownerAddress,
+  nftCount,
+  claimedSupply,
+  unclaimedSupply,
 }: {
   nfts: NftExtended[];
   address: string | null;
   projectChainId: number | null;
   collectionType: string | null;
   ownerAddress: string | null;
+  nftCount: number;
+  claimedSupply: number;
+  unclaimedSupply: number;
 }) => {
   const { account, library } = useEthers();
   const router = useRouter();
@@ -95,21 +102,22 @@ const OverviewSection = ({
       <div className="flex justify-start w-full gap-4 p-4 overflow-x-auto">
         <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
           <h1>Total Supply</h1>
-          <h2>{nfts.length}</h2>
+          <h2>{nftCount}</h2>
         </div>
         <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
           <h1>Claimed Supply</h1>
-          <h2>{nfts.filter((nft) => nft.tokenId !== null).length}</h2>
+          <h2>{claimedSupply}</h2>
         </div>
         <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
           <h1>Unclaimed Supply</h1>
-          <h2>{nfts.filter((nft) => nft.tokenId === null).length}</h2>
+          <h2>{unclaimedSupply}</h2>
         </div>
       </div>
       <div className="overflow-y-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b-2 border-t-2 border-gray-600 bg-gray-200">
+              <th>ID</th>
               <th>Token ID</th>
               <th>Media</th>
               <th>Name</th>
@@ -124,13 +132,18 @@ const OverviewSection = ({
               .sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0))
               .map((nft) => (
                 <tr className="border-b-2 border-gray-500" key={nft.id}>
+                  <td className="p-4 text-center min-w-[100px]">{nft.id}</td>
                   <td className="p-4 text-center min-w-[100px]">
                     {nft.tokenId}
                   </td>
                   <td className="p-4 text-center min-w-[100px]">
                     {nft.imageUrl && (
                       <div className="h-20 w-20 relative">
-                        <Image layout="fill" src={nft.imageUrl} alt="" />
+                        <Image
+                          layout="fill"
+                          src={resolveIPFS(nft.imageUrl)}
+                          alt=""
+                        />
                       </div>
                     )}
                   </td>

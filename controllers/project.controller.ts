@@ -9,21 +9,24 @@ export const getAllProjectsByDiscordId = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
-  const { username, discriminator } = req.query;
-  if (
-    !username ||
-    typeof username !== "string" ||
-    !discriminator ||
-    typeof discriminator !== "string"
-  )
-    return res.json(errorResponse("Invalid Params"));
+  try {
+    const { username, discriminator } = req.query;
+    if (
+      !username ||
+      typeof username !== "string" ||
+      !discriminator ||
+      typeof discriminator !== "string"
+    )
+      return res.status(400).json(errorResponse("Invalid Params"));
+    const projects = await ProjectService.getAllProjectsByDiscordId(
+      username,
+      discriminator
+    );
 
-  const projects = await ProjectService.getAllProjectsByDiscordId(
-    username,
-    discriminator
-  );
-
-  return res.json(successResponse(projects));
+    return res.json(successResponse(projects));
+  } catch (error) {
+    return res.status(500).json(errorResponse(error));
+  }
 };
 
 export const addNewProject = async (
@@ -42,7 +45,7 @@ export const addNewProject = async (
       signerAddress,
     } = req.body;
     if (!name || typeof name !== "string")
-      return res.json(errorResponse("Name is required"));
+      return res.status(400).json(errorResponse("Name is required"));
 
     const project = await ProjectService.createProjectForCookieWalletUser(
       name,
@@ -59,7 +62,7 @@ export const addNewProject = async (
   } catch (error) {
     console.log("Error Saving project : ", error);
 
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -73,15 +76,15 @@ export const updateProjectOwner = async (
     typeof projectAddress != "string" ||
     !isAddress(projectAddress)
   )
-    return res.json(errorResponse("Invalid project address"));
+    return res.status(400).json(errorResponse("Invalid project address"));
   if (!projectChainId || typeof projectChainId != "number")
-    return res.json(errorResponse("Invalid project chain ID"));
+    return res.status(400).json(errorResponse("Invalid project chain ID"));
   if (
     !ownerAddress ||
     typeof ownerAddress !== "string" ||
     !isAddress(ownerAddress)
   )
-    return res.json(errorResponse("Invalid owner address"));
+    return res.status(400).json(errorResponse("Invalid owner address"));
   try {
     return res.json(
       successResponse(
@@ -93,7 +96,7 @@ export const updateProjectOwner = async (
       )
     );
   } catch (error) {
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -104,10 +107,10 @@ export const getProjectById = async (
   try {
     const id = req.query.id;
     if (!id || typeof id !== "string" || isNaN(+id))
-      return res.json(errorResponse("Invalid ID"));
+      return res.status(400).json(errorResponse("Invalid ID"));
     return res.json(successResponse(await ProjectService.getProjectById(+id)));
   } catch (error) {
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -118,7 +121,7 @@ export const updateProjectById = async (
   try {
     const id = req.query.id;
     if (!id || typeof id !== "string" || isNaN(+id))
-      return res.json(errorResponse("Invalid ID"));
+      return res.status(400).json(errorResponse("Invalid ID"));
     const {
       address,
       chainId,
@@ -159,13 +162,13 @@ export const projectExistsWithUid = async (
   try {
     const uid = req.query.uid;
     if (!uid || typeof uid !== "string")
-      return res.json(errorResponse("Invalid Project UID"));
+      return res.status(400).json(errorResponse("Invalid Project UID"));
     return res.json(
       successResponse(await ProjectService.projectExistsWithUid(uid))
     );
   } catch (error) {
     console.log("Error : ", error);
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -176,10 +179,10 @@ export const getProjectByUid = async (
   try {
     const uid = req.query.uid;
     if (!uid || typeof uid !== "string")
-      return res.json(errorResponse("Invalid UID"));
+      return res.status(400).json(errorResponse("Invalid UID"));
     return res.json(successResponse(await ProjectService.getProjectByUid(uid)));
   } catch (error) {
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -190,17 +193,19 @@ export const getProofFromProjectId = async (
   try {
     const { id, address } = req.query;
     if (!id || typeof id !== "string")
-      return res.json(errorResponse("Invalid ID"));
+      return res.status(400).json(errorResponse("Invalid ID"));
     if (!address || typeof address !== "string")
-      return res.json(errorResponse("Invalid Address"));
+      return res.status(400).json(errorResponse("Invalid Address"));
     const project = await ProjectService.getProjectById(+id);
     if (!project)
-      return res.json(errorResponse(`Project not found with id ${id}`));
+      return res
+        .status(404)
+        .json(errorResponse(`Project not found with id ${id}`));
     const proof = MerkleService.getWhitelistProof(project.whitelist, address);
     return res.json(successResponse(proof));
   } catch (error) {
     console.log(error);
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
 
@@ -211,12 +216,12 @@ export const getContractUri = async (
   try {
     const { address, network } = req.query;
     if (!address || typeof address !== "string" || !isAddress(address))
-      return res.json(errorResponse("Invalid address"));
+      return res.status(400).json(errorResponse("Invalid address"));
     if (!network || typeof network !== "string" || isNaN(+network))
-      return res.json(errorResponse("Invalid address"));
+      return res.status(400).json(errorResponse("Invalid address"));
     return res.json(await ProjectService.getProjectMetadata(address, +network));
   } catch (error) {
     console.log("Error getting contract URI : ", error);
-    return res.json(errorResponse(error));
+    return res.status(500).json(errorResponse(error));
   }
 };
