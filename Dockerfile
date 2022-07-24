@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json .
 COPY yarn.lock .
 
-RUN apk add git
+# RUN apk add git
 RUN yarn
 
 COPY . .
