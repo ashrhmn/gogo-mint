@@ -119,7 +119,7 @@ const OverviewSection = ({
       </div>
       <div className="flex flex-col sm:flex-row w-full items-center justify-end my-3 gap-4">
         <button
-          disabled={page === 1}
+          disabled={page === 1 || Math.ceil(nftCount / view) === 0}
           onClick={async () => {
             if (page === 1) return;
             await router.push({
@@ -156,7 +156,10 @@ const OverviewSection = ({
           of {Math.ceil(nftCount / view)}
         </div>
         <button
-          disabled={page === Math.ceil(nftCount / view)}
+          disabled={
+            page === Math.ceil(nftCount / view) ||
+            Math.ceil(nftCount / view) === 0
+          }
           onClick={async () => {
             if (page === Math.ceil(nftCount / view)) return;
             await router.push({

@@ -88,7 +88,7 @@ model NFTMetadataProperties {
   id    Int    @id @default(autoincrement())
   type  String
   value String
-  NFT   NFT?   @relation(fields: [nFTId], references: [id])
+  NFT   NFT?   @relation(fields: [nFTId], references: [id], onDelete: Cascade)
   nFTId Int?
 
   @@map("nft_metadata_properties")

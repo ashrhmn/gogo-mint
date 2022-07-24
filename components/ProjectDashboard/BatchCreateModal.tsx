@@ -23,6 +23,7 @@ const BatchCreateModal = ({
   setIsBatchCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isBatchCreateModalOpen: boolean;
 }) => {
+  const [parseBgProc, setParseBgProc] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [nftsAdded, setNftsAdded] = useState<INFTCreateType[]>([]);
   const router = useRouter();
@@ -112,6 +113,7 @@ const BatchCreateModal = ({
             .split(".")
             [file.name.split(".").length - 1].toLowerCase();
           if (extension === "json") {
+            setParseBgProc((v) => v + 1);
             const reader = new FileReader();
             reader.onload = async (event) => {
               try {
@@ -164,7 +166,9 @@ const BatchCreateModal = ({
                     })),
                   })),
                 ]);
+                setParseBgProc((v) => v - 1);
               } catch (error) {
+                setParseBgProc((v) => v - 1);
                 console.log("Error parsing json : ", error);
                 toast.error("Error parsing JSON");
                 if (typeof error === "string") toast.error(error);
@@ -172,6 +176,7 @@ const BatchCreateModal = ({
             };
             reader.readAsText(file);
           } else if (extension === "csv") {
+            setParseBgProc((v) => v + 1);
             parseCsv(file, {
               header: true,
               complete: async (results) => {
@@ -217,7 +222,9 @@ const BatchCreateModal = ({
                         })),
                     })),
                   ]);
+                  setParseBgProc((v) => v - 1);
                 } catch (error) {
+                  setParseBgProc((v) => v - 1);
                   console.log(error);
                   toast.error("Error loading csv data");
                 }
@@ -233,10 +240,14 @@ const BatchCreateModal = ({
         type="file"
       />
       <div
-        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+        onClick={() =>
+          parseBgProc === 0 &&
+          fileInputRef.current &&
+          fileInputRef.current.click()
+        }
         className="h-28 bg-gray-500 rounded text-white m-4 flex justify-center items-center text-3xl cursor-pointer select-none font-bold"
       >
-        Select CSV or JSON
+        {parseBgProc > 0 ? "Parsing..." : "Select CSV or JSON"}
       </div>
       <div className="flex justify-end items-center gap-4">
         <button
