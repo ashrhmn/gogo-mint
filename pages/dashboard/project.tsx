@@ -27,6 +27,8 @@ interface Props {
   cookieAddress: string;
   unclaimedSupply: number;
   claimedSupply: number;
+  page: number;
+  view: number;
 }
 
 const ProjectPage: NextPage<Props> = ({
@@ -34,6 +36,8 @@ const ProjectPage: NextPage<Props> = ({
   cookieAddress,
   claimedSupply,
   unclaimedSupply,
+  page,
+  view,
 }) => {
   const router = useRouter();
   const { account } = useEthers();
@@ -133,6 +137,8 @@ const ProjectPage: NextPage<Props> = ({
               nftCount={project._count.nfts}
               claimedSupply={claimedSupply}
               unclaimedSupply={unclaimedSupply}
+              page={page}
+              view={view}
             />
           )}
         </div>
@@ -215,7 +221,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     const { page, view } = context.query;
     const pageNo = typeof page === "string" && !isNaN(+page) ? +page : 1;
-    const take = typeof view === "string" && !isNaN(+view) ? +view : 10;
+    const take =
+      typeof view === "string" && !isNaN(+view)
+        ? +view > 100
+          ? 100
+          : +view
+        : 10;
     const skip = (pageNo - 1) * take;
 
     const project = await getProjectByChainAddress(
@@ -241,7 +252,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     ]);
 
     return {
-      props: { project, cookieAddress, claimedSupply, unclaimedSupply },
+      props: {
+        project,
+        cookieAddress,
+        claimedSupply,
+        unclaimedSupply,
+        page: pageNo,
+        view: take,
+      },
     };
   } catch (error) {
     cookies.set(

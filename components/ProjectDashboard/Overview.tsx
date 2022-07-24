@@ -21,6 +21,8 @@ const OverviewSection = ({
   nftCount,
   claimedSupply,
   unclaimedSupply,
+  page,
+  view,
 }: {
   nfts: NftExtended[];
   address: string | null;
@@ -30,6 +32,8 @@ const OverviewSection = ({
   nftCount: number;
   claimedSupply: number;
   unclaimedSupply: number;
+  page: number;
+  view: number;
 }) => {
   const { account, library } = useEthers();
   const router = useRouter();
@@ -111,6 +115,81 @@ const OverviewSection = ({
         <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
           <h1>Unclaimed Supply</h1>
           <h2>{unclaimedSupply}</h2>
+        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row w-full items-center justify-end my-3 gap-4">
+        <button
+          disabled={page === 1}
+          onClick={async () => {
+            if (page === 1) return;
+            await router.push({
+              ...router,
+              query: { ...router.query, page: page - 1 },
+            });
+            router.reload();
+          }}
+          className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+        >
+          Prev
+        </button>
+        <div className="bg-gray-100 py-1 px-3 rounded">
+          Page{" "}
+          <select
+            className="rounded p-1"
+            value={page}
+            onChange={async (e) => {
+              await router.push({
+                ...router,
+                query: { ...router.query, page: e.target.value },
+              });
+              router.reload();
+            }}
+          >
+            {Array(Math.ceil(nftCount / view))
+              .fill(0)
+              .map((_, i) => (
+                <option key={i} value={i + 1}>
+                  {i + 1}
+                </option>
+              ))}
+          </select>{" "}
+          of {Math.ceil(nftCount / view)}
+        </div>
+        <button
+          disabled={page === Math.ceil(nftCount / view)}
+          onClick={async () => {
+            if (page === Math.ceil(nftCount / view)) return;
+            await router.push({
+              ...router,
+              query: { ...router.query, page: page + 1 },
+            });
+            router.reload();
+          }}
+          className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+        >
+          Next
+        </button>
+        <div className="bg-gray-100 py-1 px-3 rounded">
+          View Per Page{" "}
+          <select
+            className="rounded p-1"
+            value={view}
+            onChange={async (e) => {
+              await router.push({
+                ...router,
+                query: { ...router.query, view: e.target.value, page: 1 },
+              });
+              router.reload();
+            }}
+          >
+            {Array(10)
+              .fill(0)
+              .map((_, i) => (
+                <option key={i} value={(i + 1) * 10}>
+                  {(i + 1) * 10}
+                </option>
+              ))}
+          </select>
         </div>
       </div>
       <div className="overflow-y-auto">
