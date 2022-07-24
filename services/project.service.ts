@@ -201,7 +201,6 @@ export const updateProjectById = async (
   imageUrl: string,
   name: string,
   userId: number,
-  whitelist: string[],
   uid: string,
   cookies: Cookies
 ) => {
@@ -222,7 +221,6 @@ export const updateProjectById = async (
       imageUrl,
       name,
       userId,
-      whitelist,
       uid,
     },
   });

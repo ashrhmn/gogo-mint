@@ -1,6 +1,6 @@
 import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { ContractFactory } from "ethers";
-import { isAddress, parseEther } from "ethers/lib/utils";
+import { isAddress } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -12,7 +12,6 @@ import { BASE_API_URL } from "../../constants/configuration";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
-import { isCreator } from "../../services/creators.service";
 import { getUserByWalletAddress } from "../../services/user.service";
 import { IDeployConfigSet } from "../../types";
 import { getHttpCookie } from "../../utils/Request.utils";

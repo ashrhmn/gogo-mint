@@ -29,7 +29,6 @@ model Project {
   imageUrl       String?
   owner          User         @relation(fields: [userId], references: [id])
   address        String?
-  whitelist      String[]
   nfts           NFT[]
   chainId        Int?
   collectionType String?
@@ -51,19 +50,10 @@ model SaleConfig {
   whitelist        String[]
   maxMintPerWallet Int
   maxMintInSale    Int
-  Project          Project? @relation(fields: [projectId], references: [id])
+  Project          Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId        Int?
 
   @@map("sale_configs")
-}
-
-model CreatorDiscord {
-  id            Int    @id @default(autoincrement())
-  username      String
-  discriminator Int
-
-  @@unique([username, discriminator])
-  @@map("creator_discords")
 }
 
 model NFT {

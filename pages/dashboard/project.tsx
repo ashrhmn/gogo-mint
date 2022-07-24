@@ -10,8 +10,7 @@ import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
 import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
-import { authorizeProject, getCookieWallet } from "../../services/auth.service";
-import { isCreator } from "../../services/creators.service";
+import { getCookieWallet } from "../../services/auth.service";
 import {
   getClaimedSupplyCountByProjectChainAddress,
   getProjectByChainAddress,

@@ -130,7 +130,6 @@ export const updateProjectById = async (
       imageUrl,
       name,
       userId,
-      whitelist,
       uid,
     } = req.body;
     return res.json(
@@ -144,7 +143,6 @@ export const updateProjectById = async (
           imageUrl,
           name,
           userId,
-          whitelist,
           uid,
           getHttpCookie(req, res)
         )
@@ -186,28 +184,28 @@ export const getProjectByUid = async (
   }
 };
 
-export const getProofFromProjectId = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  try {
-    const { id, address } = req.query;
-    if (!id || typeof id !== "string")
-      return res.status(400).json(errorResponse("Invalid ID"));
-    if (!address || typeof address !== "string")
-      return res.status(400).json(errorResponse("Invalid Address"));
-    const project = await ProjectService.getProjectById(+id);
-    if (!project)
-      return res
-        .status(404)
-        .json(errorResponse(`Project not found with id ${id}`));
-    const proof = MerkleService.getWhitelistProof(project.whitelist, address);
-    return res.json(successResponse(proof));
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json(errorResponse(error));
-  }
-};
+// export const getProofFromProjectId = async (
+//   req: NextApiRequest,
+//   res: NextApiResponse
+// ) => {
+//   try {
+//     const { id, address } = req.query;
+//     if (!id || typeof id !== "string")
+//       return res.status(400).json(errorResponse("Invalid ID"));
+//     if (!address || typeof address !== "string")
+//       return res.status(400).json(errorResponse("Invalid Address"));
+//     const project = await ProjectService.getProjectById(+id);
+//     if (!project)
+//       return res
+//         .status(404)
+//         .json(errorResponse(`Project not found with id ${id}`));
+//     const proof = MerkleService.getWhitelistProof(project.whitelist, address);
+//     return res.json(successResponse(proof));
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json(errorResponse(error));
+//   }
+// };
 
 export const getContractUri = async (
   req: NextApiRequest,

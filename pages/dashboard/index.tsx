@@ -1,22 +1,14 @@
-import { getNetwork } from "@ethersproject/networks";
 import { Project } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import { GetServerSideProps, NextApiRequest, NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import { getCookieWallet } from "../../services/auth.service";
-import { isCreator } from "../../services/creators.service";
-import { getUserByAccessToken } from "../../services/discord.service";
-import {
-  getAllProjectByOwnerAddress,
-  getAllProjectsByDiscordId,
-} from "../../services/project.service";
+
+import { getAllProjectByOwnerAddress } from "../../services/project.service";
 import { getUserByWalletAddress } from "../../services/user.service";
-import {
-  getAccessTokenFromCookie,
-  getHttpCookie,
-} from "../../utils/Request.utils";
+import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
 
 interface Props {
@@ -122,22 +114,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    // if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
-    //   return {
-    //     props: {},
-    //     redirect: {
-    //       destination: authPageUrlWithMessage("No discord account is linked"),
-    //     },
-    //   };
-    // if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
-    //   return {
-    //     props: {},
-    //     redirect: {
-    //       destination: authPageUrlWithMessage(
-    //         "You are not creator, are you logged in with and/or linked the correct creator account?"
-    //       ),
-    //     },
-    //   };
     const projects = await getAllProjectByOwnerAddress(cookieAddress);
     return { props: { projects, cookieAddress } };
   } catch (error) {
