@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { v4 } from "uuid";
 import SaleConfigInput from "../../components/Projects/SaleConfigInput";
+import { BASE_API_URL } from "../../constants/configuration";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
@@ -20,9 +21,10 @@ import { normalizeString } from "../../utils/String.utils";
 
 interface Props {
   cookieAddress: string;
+  baseUri: string;
 }
 
-const NewProject: NextPage<Props> = ({ cookieAddress }) => {
+const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
   const { account, library, chainId } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
@@ -153,7 +155,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress }) => {
           configSet.feeToAddress,
           saleConfigRoot.data,
           platformSignerAddress.data,
-          "https://gogomint.ashrhmn.com/api/v1/"
+          baseUri
         ),
         {
           success: "Transaction sent",
@@ -362,23 +364,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    // if (!dbUser.discordUsername || !dbUser.discordDiscriminator)
-    //   return {
-    //     props: {},
-    //     redirect: {
-    //       destination: authPageUrlWithMessage("No discord account is linked"),
-    //     },
-    //   };
-    // if (!(await isCreator(dbUser.discordUsername, dbUser.discordDiscriminator)))
-    //   return {
-    //     props: {},
-    //     redirect: {
-    //       destination: authPageUrlWithMessage(
-    //         "You are not creator, are you logged in with the correct account?"
-    //       ),
-    //     },
-    //   };
-    return { props: { cookieAddress } };
+    return { props: { cookieAddress, baseUri: BASE_API_URL } };
   } catch (error) {
     cookie.set(
       "auth_page_message",
