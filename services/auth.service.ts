@@ -2,7 +2,6 @@ import Cookies from "cookies";
 import { GetServerSidePropsContext, PreviewData } from "next";
 import { ParsedUrlQuery } from "querystring";
 import {
-  getMessageToSignOnAuth,
   WALLET_ADDRESS_COOKIE_KEY,
   WALLET_SIGN_COOKIE_KEY,
 } from "../constants/configuration";
@@ -12,7 +11,7 @@ import {
 } from "../utils/Request.utils";
 import { getUserByAccessToken } from "./discord.service";
 import { getProjectByChainAddress } from "./project.service";
-import { recoverSignerAddress, verifySignature } from "./solidity.service";
+import { verifySignature } from "./solidity.service";
 import { getUserByDiscordIdentifiers } from "./user.service";
 import { prisma } from "../lib/db";
 import { decryptString, encryptString } from "../utils/String.utils";
@@ -42,7 +41,7 @@ export const authorizeProject = async (
     cookie.set("auth_page_message", "You must login to continue");
     return { props: {}, redirect: { destination: "/authenticate" } };
   }
-  const project = await getProjectByChainAddress(contract, network);
+  const project = await getProjectByChainAddress(contract, network, 0, 10);
   if (!project) return { props: {}, redirect: { destination: `/404` } };
   if (project.userId !== dbUser.id) {
     cookie.set(
