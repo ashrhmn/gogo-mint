@@ -11,3 +11,7 @@ services:
       - ${PORT:-3001}:${PORT:-3001}
     container_name: gogo-mint
     restart: always
+networks:
+  default:
+    external: true
+    name: nginx
