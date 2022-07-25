@@ -1807,13 +1807,14 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
         onlyValidMint(saleConfigProof, whitelistProof, numberOfMint, config)
         onlyPlatformSigned(message, signature)
     {
+        require(numberOfMint > 0, "Number of mints is 0");
         for (uint256 i = 0; i < numberOfMint; ++i) {
             _mint(msg.sender, tokenId + i);
         }
         tokenId = tokenId + numberOfMint;
         isSignatureRedeemed[signature] = true;
         payable(feeDestination).transfer(msg.value);
-        emit Mint(msg.sender, tokenId - numberOfMint, tokenId);
+        emit Mint(msg.sender, tokenId - numberOfMint, tokenId-1);
     }
 
     function tokenURI(uint256 _tokenId)

@@ -35,13 +35,9 @@ export const addNftToProject = async (
   if (project.owner.walletAddress !== cookieAddress)
     throw "Logged in user is not project owner";
 
-  const messageSignature =
-    await PlatformSignerService.getRandomMessageSignature();
   return await prisma.nFT.create({
     data: {
       projectId,
-      signature: messageSignature.signature,
-      message: messageSignature.message,
       tokenId,
       name,
       backgroundColor,
@@ -88,17 +84,10 @@ export const addBatchNftsToProject = async (
   if (project.owner.walletAddress !== cookieAddress)
     throw "Logged in user is not project owner";
 
-  const messageSignatures =
-    await PlatformSignerService.getMultipleRandomMessageSignature(
-      nftsData.length
-    );
-
   const promises = nftsData.map((data, index) => {
     return prisma.nFT.create({
       data: {
         projectId,
-        signature: messageSignatures[index].signature,
-        message: messageSignatures[index].message,
         tokenId: data.tokenId,
         name: data.name,
         backgroundColor: data.backgroundColor,
@@ -149,12 +138,12 @@ export const getNftsByProjectId = async (
   });
 };
 
-export const updateNftCreationSignature = async (
-  id: number,
-  signature: string
-) => {
-  return await prisma.nFT.update({ where: { id }, data: { signature } });
-};
+// export const updateNftCreationSignature = async (
+//   id: number,
+//   signature: string
+// ) => {
+//   return await prisma.nFT.update({ where: { id }, data: { signature } });
+// };
 
 export const getMetadata = async (nftId: number) => {
   const nft = await prisma.nFT.findFirstOrThrow({
@@ -177,4 +166,65 @@ export const getMetadata = async (nftId: number) => {
 
 export const updateTokenId = async (id: number, tokenId: number) => {
   return await prisma.nFT.update({ where: { id }, data: { tokenId } });
+};
+
+export const getRandomUnclaimedNftByProjectId = async (
+  projectId: number,
+  n: number = 1
+) => {
+  const itemCount = await prisma.nFT.count({
+    where: { projectId, tokenId: null },
+  });
+  const skip = Math.max(0, Math.floor(Math.random() * itemCount) - n);
+  return await prisma.nFT.findMany({
+    where: { projectId, tokenId: null },
+    skip,
+    take: n,
+    orderBy: { imageUrl: "desc" },
+  });
+};
+
+export const updateTokenIdToRandom = async (
+  fromTokenId: number,
+  toTokenId: number,
+  projectId: number
+) => {
+  if (fromTokenId > toTokenId) throw "fromTokeenId is less than toTokenId";
+  const existingNftsWithTokenIdsCount = await prisma.nFT.count({
+    where: {
+      tokenId: {
+        in: Array(toTokenId - fromTokenId + 1)
+          .fill(0)
+          .map((_, i) => i + fromTokenId),
+      },
+      projectId,
+    },
+  });
+
+  if (existingNftsWithTokenIdsCount !== 0) throw "TokenId already exists";
+
+  const nfts = await getRandomUnclaimedNftByProjectId(
+    projectId,
+    toTokenId - fromTokenId + 1
+  );
+  const updatedNfts = await Promise.all(
+    (
+      await getRandomUnclaimedNftByProjectId(
+        projectId,
+        toTokenId - fromTokenId + 1
+      )
+    ).map((nft, index) =>
+      prisma.nFT.update({
+        where: { id: nft.id },
+        data: { tokenId: fromTokenId + index },
+      })
+    )
+  );
+  console.log(
+    nfts.map((nft, index) => ({
+      where: { id: nft.id },
+      data: { tokenId: fromTokenId + index },
+    }))
+  );
+  return updatedNfts;
 };

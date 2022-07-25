@@ -255,14 +255,7 @@ const OverviewSection = ({
                     )}
                   </td>
                   <td className="p-4 text-center min-w-[100px]">
-                    <div>
-                      {nft.tokenId === null && <button>Delete</button>}
-                      {!nft.signature && (
-                        <button onClick={() => handleSignClick(nft.id)}>
-                          Sign
-                        </button>
-                      )}
-                    </div>
+                    <div>{nft.tokenId === null && <button>Delete</button>}</div>
                   </td>
                 </tr>
               ))}

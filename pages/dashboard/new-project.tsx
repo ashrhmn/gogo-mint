@@ -110,9 +110,12 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           service.post(`sale-config/root`, {
             saleConfigs: configSet.saleWaves.map((sw) => ({
               ...sw,
-              whitelistAddresses: sw.whitelistAddresses.includes(account)
-                ? sw.whitelistAddresses
-                : [...sw.whitelistAddresses, account],
+              whitelistAddresses:
+                sw.saleType === "public"
+                  ? []
+                  : sw.whitelistAddresses.includes(account)
+                  ? sw.whitelistAddresses
+                  : [...sw.whitelistAddresses, account],
             })),
           }),
           service.get(`contract/collection721?name=${configSet.name}`),

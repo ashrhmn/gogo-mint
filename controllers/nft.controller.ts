@@ -86,30 +86,30 @@ export const addBatchNftsAsCookieWallet = async (
   }
 };
 
-export const updateNftCreationSignature = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  try {
-    const accessToken = getAccessTokenFromCookie(req);
-    if (!accessToken)
-      return res.status(403).json(errorResponse("Access Token not provided"));
-    const { id, signature } = req.body;
-    if (!id || typeof id !== "number")
-      return res.status(400).json(errorResponse("Invalid id"));
-    if (!signature || typeof signature !== "string")
-      return res.status(400).json(errorResponse("Invalid Signature"));
-    const user = await getUserByAccessToken(accessToken);
-    if (!user)
-      return res.status(403).json(errorResponse("Invalid Access token"));
+// export const updateNftCreationSignature = async (
+//   req: NextApiRequest,
+//   res: NextApiResponse
+// ) => {
+//   try {
+//     const accessToken = getAccessTokenFromCookie(req);
+//     if (!accessToken)
+//       return res.status(403).json(errorResponse("Access Token not provided"));
+//     const { id, signature } = req.body;
+//     if (!id || typeof id !== "number")
+//       return res.status(400).json(errorResponse("Invalid id"));
+//     if (!signature || typeof signature !== "string")
+//       return res.status(400).json(errorResponse("Invalid Signature"));
+//     const user = await getUserByAccessToken(accessToken);
+//     if (!user)
+//       return res.status(403).json(errorResponse("Invalid Access token"));
 
-    const result = await NftService.updateNftCreationSignature(id, signature);
-    return res.json(successResponse(result));
-  } catch (error) {
-    console.log("Updating signature error : ", error);
-    return res.status(500).json(errorResponse(error));
-  }
-};
+//     const result = await NftService.updateNftCreationSignature(id, signature);
+//     return res.json(successResponse(result));
+//   } catch (error) {
+//     console.log("Updating signature error : ", error);
+//     return res.status(500).json(errorResponse(error));
+//   }
+// };
 
 export const getNftMetadata = async (
   req: NextApiRequest,
@@ -142,5 +142,53 @@ export const updateTokenId = async (
   } catch (error) {
     console.log("Error updating token ID");
     return res.json(errorResponse(error));
+  }
+};
+
+export const getRandomUnclaimedNftByProjectId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const { projectId, n } = req.query;
+    if (!projectId || typeof projectId !== "string" || isNaN(+projectId))
+      return res.status(400).json(errorResponse("Invalid project ID"));
+    if (!n || typeof n !== "string" || isNaN(+n))
+      return res.status(400).json(errorResponse("Invalid project NFT Count"));
+    return res.json(
+      successResponse(
+        await NftService.getRandomUnclaimedNftByProjectId(+projectId, +n)
+      )
+    );
+  } catch (error) {
+    console.log("Error getting random unclaimed nft : ", error);
+    return res.status(500).json(error);
+  }
+};
+
+export const updateTokenIdToRandom = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const { projectId, fromTokenId, toTokenId } = req.body;
+    if (!projectId || typeof projectId !== "number")
+      return res.status(400).json(errorResponse("Invalid Project ID"));
+    if (!fromTokenId || typeof fromTokenId !== "number")
+      return res.status(400).json(errorResponse("Invalid FromTokenId"));
+    if (!toTokenId || typeof toTokenId !== "number")
+      return res.status(400).json(errorResponse("Invalid ToTokenId"));
+    return res.json(
+      successResponse(
+        await NftService.updateTokenIdToRandom(
+          fromTokenId,
+          toTokenId,
+          projectId
+        )
+      )
+    );
+  } catch (error) {
+    console.log("Error updateing token id : ", error);
+    return res.status(500).json(errorResponse(error));
   }
 };

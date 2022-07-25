@@ -4,7 +4,6 @@ import { prisma } from "../lib/db";
 import { ISaleConfigInput } from "../types";
 import { getCookieWallet } from "./auth.service";
 import { getUserByAccessToken } from "./discord.service";
-import { getUserByDiscordIdentifiers } from "./user.service";
 
 export const getAllProjectsByDiscordId = async (
   username: string,
@@ -47,6 +46,14 @@ export const getClaimedSupplyCountByProjectChainAddress = async (
 ) => {
   return await prisma.nFT.count({
     where: { project: { address, chainId }, tokenId: { not: null } },
+  });
+};
+export const getTotalSupplyCountByProjectChainAddress = async (
+  address: string,
+  chainId: number
+) => {
+  return await prisma.nFT.count({
+    where: { project: { address, chainId } },
   });
 };
 
@@ -234,7 +241,8 @@ export const getProjectByUid = async (uid: string) => {
   return await prisma.project.findFirst({
     where: { uid },
     include: {
-      nfts: true,
+      // nfts: true,
+      owner: true,
     },
   });
 };

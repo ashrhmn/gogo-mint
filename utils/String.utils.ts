@@ -52,9 +52,9 @@ export const getSaleConfigFromResponse = (data: { [x: string]: any }) => ({
 });
 
 export const getMintEventArgsMapping = (data: { [x: string]: any }) => ({
-  msgSender: data["msgSender"],
-  tokenId: +data["tokenId"].toString(),
-  tokenUri: data["tokenUri"],
+  msgSender: data["msgSender"].toString(),
+  fromTokenId: +data["fromTokenId"].toString(),
+  toTokenId: +data["toTokenId"].toString(),
 });
 
 function forceTwo(inp: number) {

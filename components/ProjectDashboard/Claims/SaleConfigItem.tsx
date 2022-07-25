@@ -14,9 +14,11 @@ const SaleConfigItem = ({
   setSaleConfigs,
   index,
 }: {
-  saleWaveConfig: Omit<SaleConfig, "id" | "projectId">;
+  saleWaveConfig: Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean };
   setSaleConfigs: React.Dispatch<
-    React.SetStateAction<Omit<SaleConfig, "id" | "projectId">[]>
+    React.SetStateAction<
+      (Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean })[]
+    >
   >;
   index: number;
 }) => {
@@ -32,6 +34,14 @@ const SaleConfigItem = ({
           <span className="font-light mx-2 text-xs">
             {normalizeString(saleWaveConfig.saleType)}
           </span>
+          <span className="font-light mx-2 text-xs hidden sm:inline">
+            {saleWaveConfig.saleIdentifier.substring(0, 8)}
+          </span>
+          {saleWaveConfig.invalid && (
+            <span className="font-light text-red-800 mx-2 text-xs hidden sm:inline">
+              This Sale Will end before the end of previous sale
+            </span>
+          )}
         </span>
         <button
           onClick={() =>
@@ -48,6 +58,11 @@ const SaleConfigItem = ({
       </summary>
       <div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
+          {saleWaveConfig.invalid && (
+            <div className="font-light text-red-800 text-center mx-2 text-xs sm:hidden">
+              This Sale Will end before the end of previous sale
+            </div>
+          )}
           <div className="w-full font-medium">Status</div>
           <div className="w-full bg-gray-100 p-1 rounded">
             <select
@@ -377,7 +392,7 @@ const SaleConfigItem = ({
                         );
                         setTempWhitelistAddress("");
                       }}
-                      className="bg-blue-600 text-white h-14 w-full sm:w-28 rounded"
+                      className="bg-blue-600 text-white h-8 sm:h-14 w-full sm:w-28 rounded"
                     >
                       Add
                     </button>

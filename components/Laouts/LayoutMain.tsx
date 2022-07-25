@@ -10,9 +10,9 @@ const LayoutMain = ({ children }: { children: React.ReactNode }) => {
         <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-16">
           <div className="w-0 sm:w-auto overflow-hidden">Logo</div>
           <div className="flex overflow-auto">
-            <Link href={`/`}>
+            <Link href={`/mint`}>
               <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                Home
+                Mint
               </a>
             </Link>
             <Link href={`/dashboard`}>

@@ -25,7 +25,7 @@ const ClaimsSection = ({
 }) => {
   const { account, library, chainId } = useEthers();
   const [saleConfigs, setSaleConfigs] = useState<
-    Omit<SaleConfig, "id" | "projectId">[]
+    (Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean })[]
   >([]);
   const [bgProcess, setBgProcess] = useState(0);
   const [refetcher, setRefetcher] = useState(false);
@@ -122,6 +122,10 @@ const ClaimsSection = ({
               ...sc,
               id: undefined,
               projectId: undefined,
+              invalid: undefined,
+              whitelist: sc.whitelist.includes(account)
+                ? sc.whitelist
+                : [...sc.whitelist, account],
             })),
           }),
           (updateSaleConfigRootTx as any).wait(),
@@ -140,7 +144,7 @@ const ClaimsSection = ({
   };
   return (
     <div>
-      <div className="flex justify-end gap-4 m-4 items-center">
+      <div className="flex flex-col sm:flex-row justify-end gap-4 m-4 items-center overflow-x-auto">
         {bgProcess > 0 && (
           <div className="scale-150">
             <LoaderIcon />
@@ -148,19 +152,19 @@ const ClaimsSection = ({
         )}
         <button
           onClick={() => setRefetcher((v) => !v)}
-          className="bg-teal-500 text-white rounded p-2 hover:bg-teal-700 transition-colors"
+          className="bg-teal-500 text-white rounded p-2 hover:bg-teal-700 transition-colors w-full sm:w-auto"
         >
-          Reload
+          Reload Waves
         </button>
         <button
           disabled={bgProcess > 0}
-          className="bg-green-500 text-white rounded p-2 hover:bg-green-700 transition-colors"
+          className="bg-green-500 text-white rounded p-2 hover:bg-green-700 transition-colors min-w-max w-full sm:w-auto"
           onClick={() =>
             setSaleConfigs((prev) => [
               ...prev,
               {
                 enabled: true,
-                startTime: 0,
+                startTime: +(Date.now() / 1000).toFixed(0),
                 endTime: 0,
                 maxMintInSale: 0,
                 maxMintPerWallet: 0,
@@ -172,14 +176,14 @@ const ClaimsSection = ({
             ])
           }
         >
-          Add Sale Wave
+          Add New Sale Wave
         </button>
         <button
           disabled={bgProcess > 0}
-          className="bg-blue-500 text-white rounded p-2 hover:bg-blue-700 transition-colors"
+          className="bg-blue-500 text-white rounded p-2 hover:bg-blue-700 transition-colors w-full sm:w-auto"
           onClick={handleUpdateClick}
         >
-          Update
+          Save Sale Waves
         </button>
       </div>
       {saleConfigs.map((sc, index) => (

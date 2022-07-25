@@ -60,8 +60,6 @@ model NFT {
   id              Int                     @id @default(autoincrement())
   projectId       Int
   project         Project                 @relation(fields: [projectId], references: [id])
-  signature       String?
-  message         String?
   tokenId         Int?
   name            String
   description     String?
