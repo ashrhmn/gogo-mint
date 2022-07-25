@@ -3,6 +3,7 @@ import { useEthers } from "@usedapp/core";
 import { Contract, getDefaultProvider } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
@@ -53,12 +54,42 @@ const MintPage: NextPage<Props> = ({
   randomMsgSign,
 }) => {
   const { account, chainId, library } = useEthers();
+  const [mintBgProc, setMintBgProc] = useState(0);
   const [config, setConfig] = useState({
     userBalance: -1,
     totalMintInSale: -1,
   });
   const router = useRouter();
   const [mintCount, setMintCount] = useState(1);
+  useEffect(() => {
+    (async () => {
+      if (
+        !project.address ||
+        !project.chainId ||
+        !RPC_URLS[project.chainId] ||
+        !account ||
+        !chainId
+      )
+        return;
+      setConfig((c) => ({ ...c, userBalance: -1 }));
+      const contract = new Contract(
+        project.address,
+        project.collectionType === "721" ? ABI721 : ABI1155,
+        getDefaultProvider(RPC_URLS[project.chainId])
+      );
+      const [userBalance] = (
+        await Promise.all([contract.balanceOf(account)])
+      ).map((v) => +v.toString());
+      setConfig((c) => ({ ...c, userBalance }));
+    })();
+  }, [
+    account,
+    chainId,
+    currentSale,
+    project.address,
+    project.chainId,
+    project.collectionType,
+  ]);
   useEffect(() => {
     (async () => {
       if (
@@ -75,13 +106,12 @@ const MintPage: NextPage<Props> = ({
         project.collectionType === "721" ? ABI721 : ABI1155,
         getDefaultProvider(RPC_URLS[project.chainId])
       );
-      const [userBalance, totalMintInSale] = (
+      const [totalMintInSale] = (
         await Promise.all([
-          contract.balanceOf(account),
           contract.mintCountByIdentifier(currentSale.saleIdentifier),
         ])
       ).map((v) => +v.toString());
-      setConfig((c) => ({ ...c, userBalance, totalMintInSale }));
+      setConfig((c) => ({ ...c, totalMintInSale }));
     })();
   }, [
     account,
@@ -141,6 +171,7 @@ const MintPage: NextPage<Props> = ({
       return;
     }
     try {
+      setMintBgProc((v) => v + 1);
       const { data: whitelistProof } = await service.get(
         `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
       );
@@ -209,6 +240,7 @@ const MintPage: NextPage<Props> = ({
       );
       router.reload();
     } catch (error) {
+      setMintBgProc((v) => v - 1);
       toast.error("Error minting");
       console.log("Minting error : ", error);
     }
@@ -216,13 +248,18 @@ const MintPage: NextPage<Props> = ({
 
   return (
     <div>
-      <h1 className="font-bold text-3xl text-center">{project.name}</h1>
+      <div className="relative h-40 rounded mx-auto aspect-square">
+        {project.imageUrl && (
+          <Image src={project.imageUrl} layout="fill" alt="" />
+        )}
+      </div>
+      <h1 className="font-bold text-4xl text-center">{project.name}</h1>
       {chainId !== project.chainId && (
         <h2 className="text-center text-red-600">
           Please Switch to network ID : {project.chainId}
         </h2>
       )}
-      <div className="mx-auto max-w-md border-2 border-gray-400 bg-gray-200 rounded-xl p-4">
+      <div className="mx-auto max-w-md border-2 border-gray-400 bg-gray-200 rounded-xl p-4 mt-10">
         <div className="flex justify-between items-center">
           <h1>Total Supply</h1>
           <h1>{totalSupply}</h1>
@@ -248,19 +285,49 @@ const MintPage: NextPage<Props> = ({
           <h1>
             {!!currentSale
               ? normalizeString(currentSale.saleType)
-              : "No sale is running"}
+              : !!nextSale
+              ? `${normalizeString(
+                  nextSale.saleType
+                )} Sale starts at ${new Date(
+                  nextSale.startTime * 1000
+                ).toLocaleString()}`
+              : "No Sale is running"}
           </h1>
         </div>
-        <div className="flex gap-4 justify-center select-none">
+        <div className="flex gap-4 justify-center select-none bg-gray-700 my-4 py-3 text-gray-200 rounded p-2">
           <div className="flex gap-4 justify-center items-center">
-            <button onClick={() => setMintCount((v) => (v === 1 ? 1 : v - 1))}>
+            <button
+              className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
+              onClick={() => setMintCount((v) => (v === 1 ? 1 : v - 1))}
+              disabled={mintBgProc > 0}
+            >
               -
             </button>
-            <span>{mintCount}</span>
-            <button onClick={() => setMintCount((v) => v + 1)}>+</button>
+            <span className="w-10 text-center text-2xl">{mintCount}</span>
+            <button
+              className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
+              onClick={() => setMintCount((v) => v + 1)}
+              disabled={mintBgProc > 0}
+            >
+              +
+            </button>
           </div>
-          <button onClick={handleMintClick}>Mint</button>
+
+          <button
+            className="border-2 border-gray-400 rounded py-1 px-2 hover:bg-gray-400 hover:text-black transition-colors text-xs disabled:cursor-not-allowed"
+            onClick={() => setMintCount(1)}
+            disabled={mintBgProc > 0}
+          >
+            Reset
+          </button>
         </div>
+        <button
+          className="bg-teal-500 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
+          onClick={handleMintClick}
+          disabled={mintBgProc > 0}
+        >
+          Mint
+        </button>
       </div>
     </div>
   );
@@ -276,7 +343,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const [currentSale, nextSale, totalSupply, claimedSupply, randomMsgSign] =
     await Promise.all([
       getCurrentSale(project.id).catch((err) => {
-        console.log("Error getting current sale", err);
+        // console.log("Error getting current sale", err);
         return null;
       }),
       getNextSale(project.id).catch((err) => {

@@ -145,28 +145,43 @@ export const getCurrentSale = async (projectId: number) => {
 
 export const getNextSale = async (projectId: number) => {
   const now = +(Date.now() / 1000).toFixed(0);
-  const currentSale = await getCurrentSale(projectId);
-  if (currentSale.endTime === 0)
-    throw new Error("Current sale is never ending");
-  const scs = await prisma.saleConfig.findFirstOrThrow({
-    where: {
-      projectId,
-      // startTime: { gte: currentSale.endTime },
-      OR: [
-        { endTime: { equals: 0 } },
-        {
-          AND: [
-            { endTime: { gte: now } },
-            { endTime: { gt: currentSale.endTime } },
-          ],
-        },
-      ],
-      enabled: true,
-      NOT: [{ saleIdentifier: { equals: currentSale.saleIdentifier } }],
-    },
-    orderBy: { startTime: "asc" },
+  const currentSale = await getCurrentSale(projectId).catch((err) => {
+    return null;
   });
-  return scs;
+  if (!!currentSale && currentSale.endTime === 0)
+    throw new Error("Current sale is never ending");
+  return !!currentSale
+    ? await prisma.saleConfig.findFirstOrThrow({
+        where: {
+          projectId,
+          OR: [
+            { endTime: { equals: 0 } },
+            {
+              AND: [
+                { endTime: { gte: now } },
+                { endTime: { gt: currentSale.endTime } },
+              ],
+            },
+          ],
+          enabled: true,
+          NOT: [{ saleIdentifier: { equals: currentSale.saleIdentifier } }],
+        },
+        orderBy: { startTime: "asc" },
+      })
+    : await prisma.saleConfig.findFirstOrThrow({
+        where: {
+          projectId,
+          startTime: { gte: now },
+          OR: [
+            { endTime: { equals: 0 } },
+            {
+              AND: [{ endTime: { gte: now } }],
+            },
+          ],
+          enabled: true,
+        },
+        orderBy: { startTime: "asc" },
+      });
 };
 
 export const getWhitelistProofBySaleConfig = async (

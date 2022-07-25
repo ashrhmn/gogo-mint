@@ -203,10 +203,6 @@ export const updateTokenIdToRandom = async (
 
   if (existingNftsWithTokenIdsCount !== 0) throw "TokenId already exists";
 
-  const nfts = await getRandomUnclaimedNftByProjectId(
-    projectId,
-    toTokenId - fromTokenId + 1
-  );
   const updatedNfts = await Promise.all(
     (
       await getRandomUnclaimedNftByProjectId(
@@ -219,12 +215,6 @@ export const updateTokenIdToRandom = async (
         data: { tokenId: fromTokenId + index },
       })
     )
-  );
-  console.log(
-    nfts.map((nft, index) => ({
-      where: { id: nft.id },
-      data: { tokenId: fromTokenId + index },
-    }))
   );
   return updatedNfts;
 };
