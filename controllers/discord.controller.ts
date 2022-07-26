@@ -18,10 +18,7 @@ export const discordRedirectGet = async (
 ) => {
   try {
     if (req.query.code && typeof req.query.code == "string") {
-      const { user, creds } = await getDiscordUsersCreds(
-        req.query.code,
-        req.headers.host as string
-      );
+      const { user, creds } = await getDiscordUsersCreds(req.query.code);
       const encryptedToken = encryptToken(creds.access_token);
       const cookie = new Cookies(req, res);
       cookie.set(ACCESS_TOKEN_COOKIE_KEY, encryptedToken, {

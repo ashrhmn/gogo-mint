@@ -3,6 +3,7 @@ import Cookies from "cookies";
 import { NextApiResponse, NextApiRequest } from "next";
 import {
   ACCESS_TOKEN_COOKIE_KEY,
+  BASE_API_URL,
   DISCORD_OAUTH_CLIENT_ID,
   DISCORD_OAUTH_CLIENT_SECRET,
   ENV_PROTOCOL,
@@ -35,13 +36,13 @@ export const getUserByAccessToken = async (accessToken: string) => {
   }
 };
 
-export const getDiscordUsersCreds = async (code: string, host: string) => {
+export const getDiscordUsersCreds = async (code: string) => {
   const payload = new URLSearchParams({
     client_id: DISCORD_OAUTH_CLIENT_ID,
     client_secret: DISCORD_OAUTH_CLIENT_SECRET,
     grant_type: "authorization_code",
     code,
-    redirect_uri: `${ENV_PROTOCOL}://${host}/api/v1/auth/discord/redirect`,
+    redirect_uri: `${BASE_API_URL}auth/discord/redirect`,
   }).toString();
   const { data: creds }: { data: DiscordAccessTokenResponse } =
     await axios.post("https://discord.com/api/v8/oauth2/token", payload, {
