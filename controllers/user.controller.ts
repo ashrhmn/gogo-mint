@@ -78,7 +78,7 @@ export const getUserByIdentifiers = async (
       .json(errorResponse("At least one identifier required"));
   }
   if (!user) return res.json(errorResponse("User not found"));
-  return res.status(500).json(successResponse(user));
+  return res.json(successResponse(user));
 };
 
 export const linkWalletToDiscord = async (
@@ -102,5 +102,5 @@ export const linkWalletToDiscord = async (
     +discriminator,
     address
   );
-  return res.status(500).json(successResponse(user));
+  return res.json(successResponse(user));
 };
