@@ -1,6 +1,6 @@
 import { NextApiResponse } from "next";
 import { errorResponse } from "./Response.utils";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 
 export const handleControllerError = (res: NextApiResponse, error: unknown) => {
   console.log(
@@ -10,4 +10,10 @@ export const handleControllerError = (res: NextApiResponse, error: unknown) => {
   return res
     .status(500)
     .json(errorResponse(error instanceof ZodError ? error.flatten() : error));
+};
+
+export const errorHasMessage = (
+  error: unknown
+): error is { message: string } => {
+  return z.object({ message: z.string() }).safeParse(error).success;
 };

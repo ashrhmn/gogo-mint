@@ -18,6 +18,7 @@ import {
 } from "../../services/project.service";
 import { getUserByWalletAddress } from "../../services/user.service";
 import { ProjectExtended } from "../../types";
+import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
 
@@ -261,13 +262,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (error) {
-    cookies.set(
-      "auth_page_message",
-      (error as any).message && typeof (error as any).message === "string"
-        ? (error as any).message
-        : "Error authenticating user"
-    );
-    return { props: {}, redirect: { destination: "/authenticate" } };
+    return {
+      props: {},
+      redirect: {
+        destination: authPageUrlWithMessage(
+          errorHasMessage(error) ? error.message : "Error authenticating user"
+        ),
+      },
+    };
   }
 };
 

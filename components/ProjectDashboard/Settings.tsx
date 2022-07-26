@@ -2,6 +2,7 @@ import { useEthers } from "@usedapp/core";
 import { Contract, getDefaultProvider } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
@@ -34,23 +35,37 @@ const SettingsSection = ({
     description: "",
     feeToAddress: "",
     logo: null,
+    banner: null,
     symbol: "",
     uid: "",
     saleWaves: [],
   });
-  const [imageBase64, setImageBase64] = useState("");
-  const imgInputRef = useRef<HTMLInputElement | null>(null);
+  const [imageBase64Logo, setImageBase64Logo] = useState("");
+  const logoImgInputRef = useRef<HTMLInputElement | null>(null);
+  const [imageBase64Banner, setImageBase64Banner] = useState("");
+  const bannerImgInputRef = useRef<HTMLInputElement | null>(null);
   const [currentUid, setCurrentUid] = useState("");
-  const onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onSelectLogoImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.addEventListener("load", (ev) => {
+    reader.onload = (ev) => {
       if (ev.target && typeof ev.target.result === "string")
-        setImageBase64(ev.target.result);
-    });
+        setImageBase64Logo(ev.target.result);
+    };
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, logo: file }));
+  };
+  const onSelectBannerImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target && typeof ev.target.result === "string")
+        setImageBase64Banner(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+    setConfigSet((c) => ({ ...c, banner: file }));
   };
   useEffect(() => {
     try {
@@ -92,12 +107,12 @@ const SettingsSection = ({
             console.log(project.error);
             return;
           }
-          setImageBase64(project.data.imageUrl);
+          setImageBase64Logo(project.data.imageUrl);
+          setImageBase64Banner(project.data.bannerUrl);
           setConfigSet((c) => ({
             ...c,
             description: project.data.description,
             name: project.data.name,
-            // whitelistAddresses: project.data.whitelist,
             uid: project.data.uid || "",
           }));
           setCurrentUid(project.data.uid || "");
@@ -133,11 +148,23 @@ const SettingsSection = ({
           success: "Image uploaded successfully",
         });
       }
+      let bannerUrl: string | null = null;
+      if (configSet.banner) {
+        bannerUrl = await toast.promise(
+          uploadFileToFirebase(configSet.banner),
+          {
+            error: "Error uploading image",
+            loading: "Uploading image...",
+            success: "Image uploaded successfully",
+          }
+        );
+      }
       const { data: project } = await toast.promise(
         service.put(`/projects/${projectId}`, {
           name: configSet.name,
           description: configSet.description,
-          imageUrl: imageUrl ? imageUrl : imageBase64,
+          imageUrl: imageUrl ? imageUrl : imageBase64Logo,
+          bannerUrl: bannerUrl ? bannerUrl : imageBase64Banner,
           uid: configSet.uid === "" ? null : configSet.uid,
         }),
         {
@@ -219,31 +246,75 @@ const SettingsSection = ({
   );
   return (
     <div className="mt-4">
-      <div className="bg-gray-200 p-4 rounded relative">
+      <div className="bg-gray-200 p-4 rounded relative overflow-hidden">
         {!!basicDataBgProc && (
           <div className="absolute right-5 top-5 z-10 scale-150">
             <LoaderIcon />
           </div>
         )}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-          <div
-            onClick={() => {
-              if (imgInputRef && imgInputRef.current)
-                imgInputRef.current.click();
-            }}
-            className="relative aspect-square sm:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+        <div className="absolute top-0 right-0 left-0 text-gray-700 bg-white text-3xl font-medium text-center py-1 shadow-2xl z-10">
+          <h1>Mint Page Preview</h1>
+          <Link
+            href={`https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}
+            passHref
           >
-            <input
-              ref={imgInputRef}
-              onChange={onSelectImage}
-              type="file"
-              hidden
-            />
-            {!!imageBase64 ? (
-              <Image src={imageBase64} alt="" layout="fill" />
-            ) : (
-              <span className="text-2xl">+</span>
-            )}
+            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors">{`🌐 https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}</div>
+          </Link>
+        </div>
+        <div className="flex flex-col">
+          <div className="border-2 border-gray-500 p-4 rounded-2xl">
+            <div
+              onClick={() => {
+                if (bannerImgInputRef && bannerImgInputRef.current)
+                  bannerImgInputRef.current.click();
+              }}
+              className="relative w-full h-60 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer translate-y-16"
+            >
+              <input
+                ref={bannerImgInputRef}
+                onChange={onSelectBannerImage}
+                type="file"
+                hidden
+              />
+              {!!imageBase64Banner ? (
+                <Image
+                  src={imageBase64Banner}
+                  alt=""
+                  layout="fill"
+                  objectFit="cover"
+                />
+              ) : (
+                <span className="text-2xl">+</span>
+              )}
+            </div>
+            <div
+              onClick={() => {
+                if (logoImgInputRef && logoImgInputRef.current)
+                  logoImgInputRef.current.click();
+              }}
+              className="relative aspect-square w-40 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer shadow-xl"
+            >
+              <input
+                ref={logoImgInputRef}
+                onChange={onSelectLogoImage}
+                type="file"
+                hidden
+              />
+              {!!imageBase64Logo ? (
+                <Image
+                  src={imageBase64Logo}
+                  alt=""
+                  layout="fill"
+                  objectFit="cover"
+                />
+              ) : (
+                <span className="text-2xl">+</span>
+              )}
+            </div>
+            <h1 className="font-bold text-4xl text-center my-4">
+              {configSet.name}
+            </h1>
+            <p className="text-center font-medium">{configSet.description}</p>
           </div>
           <div className="w-full">
             <div className="mt-4 space-y-2">

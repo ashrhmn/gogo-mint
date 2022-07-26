@@ -170,6 +170,17 @@ const MintPage: NextPage<Props> = ({
       toast.error("Max limit for sale exceeds");
       return;
     }
+
+    if (totalSupply === null || claimedSupply === null) {
+      toast.error("Error getting supply informations");
+      return;
+    }
+
+    if (totalSupply - claimedSupply < mintCount) {
+      toast.error("Not enough supply");
+      return;
+    }
+
     try {
       setMintBgProc((v) => v + 1);
       const { data: whitelistProof } = await service.get(
@@ -247,13 +258,35 @@ const MintPage: NextPage<Props> = ({
   };
 
   return (
-    <div>
-      <div className="relative h-40 rounded mx-auto aspect-square">
-        {project.imageUrl && (
-          <Image src={project.imageUrl} layout="fill" alt="" />
+    <div className="relative">
+      <div className="fixed h-60 top-16 right-0 left-0 -z-10 rounded mx-auto">
+        {!!project.bannerUrl && (
+          <Image
+            src={project.bannerUrl}
+            layout="fill"
+            alt=""
+            objectFit="cover"
+          />
         )}
       </div>
-      <h1 className="font-bold text-4xl text-center">{project.name}</h1>
+      <div
+        className={`relative h-40 rounded mx-auto aspect-square ${
+          !!project.bannerUrl ? "mt-32" : ""
+        }`}
+      >
+        {!!project.imageUrl ? (
+          <Image
+            src={project.imageUrl}
+            layout="fill"
+            alt=""
+            objectFit="cover"
+          />
+        ) : (
+          <span></span>
+        )}
+      </div>
+      <h1 className="font-bold text-4xl text-center my-4">{project.name}</h1>
+      <p className="text-center font-medium">{project.description}</p>
       {chainId !== project.chainId && (
         <h2 className="text-center text-red-600">
           Please Switch to network ID : {project.chainId}
@@ -268,7 +301,7 @@ const MintPage: NextPage<Props> = ({
           <h1>Already Claimed</h1>
           <h1>{claimedSupply}</h1>
         </div>
-        {!!totalSupply && !!claimedSupply && (
+        {totalSupply !== null && claimedSupply !== null && (
           <div className="flex justify-between items-center">
             <h1>Unclaimed</h1>
             <h1>{totalSupply - claimedSupply}</h1>
@@ -329,6 +362,7 @@ const MintPage: NextPage<Props> = ({
           Mint
         </button>
       </div>
+      <div className="h-20"></div>
     </div>
   );
 };
@@ -337,7 +371,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { uid } = context.query;
   if (!uid || typeof uid !== "string")
     return { props: {}, redirect: { destination: "/404" } };
-  const project = await getProjectByUid(uid);
+  const project = await getProjectByUid(uid).catch((err) => null);
   if (!project || !project.address || !project.chainId)
     return { props: {}, redirect: { destination: "/404" } };
   const [currentSale, nextSale, totalSupply, claimedSupply, randomMsgSign] =

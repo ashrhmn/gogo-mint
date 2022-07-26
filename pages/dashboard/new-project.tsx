@@ -14,6 +14,7 @@ import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
 import { getUserByWalletAddress } from "../../services/user.service";
 import { IDeployConfigSet } from "../../types";
+import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
 import { normalizeString } from "../../utils/String.utils";
@@ -33,6 +34,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     description: "",
     feeToAddress: "",
     logo: null,
+    banner: null,
     symbol: "",
     saleWaves: [],
     uid: "",
@@ -369,13 +371,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     return { props: { cookieAddress, baseUri: BASE_API_URL } };
   } catch (error) {
-    cookie.set(
-      "auth_page_message",
-      (error as any).message && typeof (error as any).message === "string"
-        ? (error as any).message
-        : "Error authenticating user"
-    );
-    return { props: {}, redirect: { destination: "/authenticate" } };
+    return {
+      props: {},
+      redirect: {
+        destination: authPageUrlWithMessage(
+          errorHasMessage(error) ? error.message : "Error authenticating user"
+        ),
+      },
+    };
   }
 };
 

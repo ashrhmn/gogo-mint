@@ -8,6 +8,7 @@ import { getCookieWallet } from "../../services/auth.service";
 
 import { getAllProjectByOwnerAddress } from "../../services/project.service";
 import { getUserByWalletAddress } from "../../services/user.service";
+import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
 
@@ -117,13 +118,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const projects = await getAllProjectByOwnerAddress(cookieAddress);
     return { props: { projects, cookieAddress } };
   } catch (error) {
-    cookie.set(
-      "auth_page_message",
-      (error as any).message && typeof (error as any).message === "string"
-        ? (error as any).message
-        : "Error authenticating user"
-    );
-    return { props: {}, redirect: { destination: "/authenticate" } };
+    console.log(error);
+    return {
+      props: {},
+      redirect: {
+        destination: authPageUrlWithMessage(
+          errorHasMessage(error) ? error.message : "Error authenticating user"
+        ),
+      },
+    };
   }
 };
 
