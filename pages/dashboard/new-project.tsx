@@ -176,6 +176,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             chainId,
             collectionType: "721",
             signerAddress: account,
+            uid: v4(),
             saleConfigs: configSet.saleWaves.map((sw) => ({
               ...sw,
               whitelistAddresses:

@@ -78,7 +78,8 @@ export const addNewProject = async (
   saleConfigs: ISaleConfigInput[],
   userId: number,
   chainId: number,
-  collectionType: string
+  collectionType: string,
+  uid: string
 ) => {
   return await prisma.project.create({
     data: {
@@ -89,6 +90,7 @@ export const addNewProject = async (
       imageUrl,
       chainId,
       collectionType,
+      uid,
       saleConfigs: {
         createMany: {
           skipDuplicates: true,
@@ -118,6 +120,7 @@ export const createProjectForCookieWalletUser = async (
   chainId: number,
   collectionType: string,
   signerAddress: string,
+  uid: string,
   cookies: Cookies
 ) => {
   const cookieWallet = getCookieWallet(cookies);
@@ -134,7 +137,8 @@ export const createProjectForCookieWalletUser = async (
     saleConfigs,
     dbUser.id,
     chainId,
-    collectionType
+    collectionType,
+    uid
   );
 };
 
@@ -210,6 +214,7 @@ export const updateProjectById = async (
   collectionType: string,
   description: string,
   imageUrl: string,
+  bannerUrl: string,
   name: string,
   userId: number,
   uid: string,
@@ -230,6 +235,7 @@ export const updateProjectById = async (
       collectionType,
       description,
       imageUrl,
+      bannerUrl,
       name,
       userId,
       uid,

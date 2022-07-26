@@ -43,6 +43,7 @@ export const addNewProject = async (
       chainId,
       collectionType,
       signerAddress,
+      uid,
     } = req.body;
     if (!name || typeof name !== "string")
       return res.status(400).json(errorResponse("Name is required"));
@@ -56,6 +57,7 @@ export const addNewProject = async (
       chainId,
       collectionType,
       signerAddress,
+      uid,
       getHttpCookie(req, res)
     );
     return res.json(successResponse(project));
@@ -128,6 +130,7 @@ export const updateProjectById = async (
       collectionType,
       description,
       imageUrl,
+      bannerUrl,
       name,
       userId,
       uid,
@@ -141,6 +144,7 @@ export const updateProjectById = async (
           collectionType,
           description,
           imageUrl,
+          bannerUrl,
           name,
           userId,
           uid,

@@ -39,7 +39,10 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
     console.log(
       uug.map((u) => ({
         guild: u.guild.name,
-        member: u.members.map((m) => m.guildMember.user.username),
+        member: u.members.map(
+          (m) =>
+            `${m.guildMember.user.username} #${m.guildMember.user.discriminator}`
+        ),
         roles: u.roles.map((r) => r.role.name),
       }))
     );

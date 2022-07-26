@@ -268,7 +268,7 @@ const MintPage: NextPage<Props> = ({
           <h1>Already Claimed</h1>
           <h1>{claimedSupply}</h1>
         </div>
-        {totalSupply && claimedSupply && (
+        {!!totalSupply && !!claimedSupply && (
           <div className="flex justify-between items-center">
             <h1>Unclaimed</h1>
             <h1>{totalSupply - claimedSupply}</h1>

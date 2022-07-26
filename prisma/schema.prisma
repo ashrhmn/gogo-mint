@@ -27,6 +27,7 @@ model Project {
   name           String
   description    String?
   imageUrl       String?
+  bannerUrl      String?
   owner          User         @relation(fields: [userId], references: [id])
   address        String?
   nfts           NFT[]
