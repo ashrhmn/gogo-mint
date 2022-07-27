@@ -1687,7 +1687,11 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
         baseURI = _baseURI;
     }
 
-    function updateSaleConfigRoot(bytes32 _saleConfigRoot) public {
+    function updateBaseURI(string memory _baseURI) public onlyOwner {
+        baseURI = _baseURI;
+    }
+
+    function updateSaleConfigRoot(bytes32 _saleConfigRoot) public onlyOwner {
         saleConfigsRoot = _saleConfigRoot;
     }
 

@@ -18,19 +18,24 @@ const SettingsSection = ({
   projectAddress,
   projectChainId,
   collectionType,
+  projectOwner,
 }: {
   projectId: number;
   projectChainId: number | null;
   projectAddress: string | null;
   collectionType: string | null;
+  projectOwner: string | null;
 }) => {
   const { account, library, chainId } = useEthers();
   const router = useRouter();
   const [basicDataBgProc, setBasicDataBgProc] = useState(0);
   const [feeAddressBgProc, setFeeAddressBgProc] = useState(0);
+  const [baseURIBgProc, setBaseURIBgProc] = useState(0);
   const [isUidUnavailable, setIsUidUnavailable] = useState(false);
 
-  const [configSet, setConfigSet] = useState<IDeployConfigSet>({
+  const [configSet, setConfigSet] = useState<
+    IDeployConfigSet & { baseURI: string }
+  >({
     name: "",
     description: "",
     feeToAddress: "",
@@ -39,6 +44,7 @@ const SettingsSection = ({
     symbol: "",
     uid: "",
     saleWaves: [],
+    baseURI: "",
   });
   const [imageBase64Logo, setImageBase64Logo] = useState("");
   const logoImgInputRef = useRef<HTMLInputElement | null>(null);
@@ -78,22 +84,27 @@ const SettingsSection = ({
           getDefaultProvider(RPC_URLS[projectChainId])
         );
         setFeeAddressBgProc((v) => v + 1);
-        const [feeToAddress, curi] = await Promise.all([
+        setBaseURIBgProc((v) => v + 1);
+        const [feeToAddress, curi, baseURI] = await Promise.all([
           contract.feeDestination(),
           contract.contractURI(),
+          contract.baseURI(),
         ]);
         console.log("CURi : ", curi);
 
         setConfigSet((c) => ({
           ...c,
           feeToAddress,
+          baseURI,
         }));
         setFeeAddressBgProc((v) => v - 1);
+        setBaseURIBgProc((v) => v - 1);
       })();
     } catch (error) {
+      setBaseURIBgProc((v) => v - 1);
       setFeeAddressBgProc((v) => v - 1);
-      console.log("Error fetching fee to address : ", error);
-      toast.error("Error fetching fee to address");
+      console.log("Error fetching fee to address, base URI : ", error);
+      toast.error("Error fetching fee to address, base URI");
     }
   }, [collectionType, projectAddress, projectChainId]);
   useEffect(() => {
@@ -180,6 +191,51 @@ const SettingsSection = ({
       console.log("Error updating data : ", error);
     }
   };
+
+  const handleBaseUriUpdate = async () => {
+    if (!account || !library || !chainId) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+      toast.error("Error loading project");
+      return;
+    }
+    if (chainId !== projectChainId) {
+      toast.error(`Please switch to network id ${projectChainId}`);
+      return;
+    }
+    if (account !== projectOwner) {
+      toast.error("You are not project owner");
+    }
+    try {
+      const contract = new Contract(
+        projectAddress,
+        collectionType === "721" ? ABI721 : ABI1155,
+        library.getSigner(account)
+      );
+      setBaseURIBgProc((v) => v + 1);
+      const tx = await toast.promise(
+        contract.updateBaseURI(configSet.baseURI),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setBaseURIBgProc((v) => v - 1);
+    } catch (error) {
+      setBaseURIBgProc((v) => v - 1);
+      console.log("Error updating base URI : ", error);
+      toast.error("Error updating Base URI");
+    }
+  };
+
   const handleFeetoAddressUpdate = async () => {
     if (!account || !library || !chainId) {
       toast.error("Please connect your wallet");
@@ -192,6 +248,9 @@ const SettingsSection = ({
     if (chainId !== projectChainId) {
       toast.error(`Please switch to network id ${projectChainId}`);
       return;
+    }
+    if (account !== projectOwner) {
+      toast.error("You are not project owner");
     }
     if (!isAddress(configSet.feeToAddress)) {
       toast.error("Invalid address");
@@ -395,6 +454,34 @@ const SettingsSection = ({
             disabled={!!feeAddressBgProc}
             className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
             onClick={handleFeetoAddressUpdate}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="bg-gray-200 rounded p-4 my-6 relative">
+        {!!baseURIBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">Base URI</label>
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="text"
+            disabled={!!baseURIBgProc}
+            value={configSet.baseURI}
+            onChange={(e) =>
+              setConfigSet((c) => ({ ...c, baseURI: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <button
+            disabled={!!baseURIBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+            onClick={handleBaseUriUpdate}
           >
             Update
           </button>

@@ -168,6 +168,7 @@ const ProjectPage: NextPage<Props> = ({
               projectAddress={project.address}
               projectChainId={project.chainId}
               collectionType={project.collectionType}
+              projectOwner={project.owner.walletAddress}
             />
           )}
         </div>

@@ -715,6 +715,19 @@ export const ABI721 = [
   {
     inputs: [
       {
+        internalType: "string",
+        name: "_baseURI",
+        type: "string",
+      },
+    ],
+    name: "updateBaseURI",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_feeDestination",
         type: "address",

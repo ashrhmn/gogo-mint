@@ -305,7 +305,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   maxMintInSale: 0,
                   maxMintPerWallet: 0,
                   mintCharge: 0,
-                  startTime: 0,
+                  startTime: +(Date.now() / 1000).toFixed(0),
                   uuid: v4(),
                   whitelistAddresses: [],
                   saleType: "private",
@@ -369,7 +369,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    return { props: { cookieAddress, baseUri: BASE_API_URL } };
+    const baseUri = process.env.NEXT_PUBLIC_BASE_URI || BASE_API_URL;
+    return { props: { cookieAddress, baseUri } };
   } catch (error) {
     return {
       props: {},
