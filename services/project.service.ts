@@ -280,6 +280,6 @@ export const getProjectMetadata = async (address: string, chainId: number) => {
     image: project.imageUrl,
     external_link: project.uid,
     seller_fee_basis_points: 500,
-    fee_recipient: project.owner.walletAddress,
+    fee_recipient: "0xDaa503Bb46582a30cBbb8fA9AC2288744781CF1d",
   };
 };
