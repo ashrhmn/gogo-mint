@@ -141,27 +141,16 @@ const BatchCreateModal = ({
                   })
                   .array()
                   .parse(nftsJson);
-                // const { data: messageSignaturesResponse } = await service.get(
-                //   `platform-signer/random-sign/${nfts.length}`
-                // );
-
-                // const messageSignatures = z
-                //   .object({ message: z.string(), signature: z.string() })
-                //   .array()
-                //   .length(nfts.length)
-                //   .parse(messageSignaturesResponse.data);
 
                 setNftsAdded((prev) => [
                   ...prev,
-                  ...nfts.map((nft, index) => ({
+                  ...nfts.map((nft) => ({
                     name: nft.name,
                     backgroundColor: nft.background_color || null,
                     description: nft.description || null,
                     externalUrl: nft.external_url || null,
                     imageUrl: nft.image_url || null,
                     projectId: projectId,
-                    // message: messageSignatures[index].message,
-                    // signature: messageSignatures[index].signature,
                     properties: nft.properties.map((p) => ({
                       trait_type: p.trait_type || null,
                       value: p.value,
@@ -187,16 +176,6 @@ const BatchCreateModal = ({
                   z.string()
                     .array()
                     .parse(results.data.map((d: any) => d.name));
-
-                  // const { data: messageSignaturesResponse } = await service.get(
-                  //   `platform-signer/random-sign/${results.data.length}`
-                  // );
-                  // const messageSignatures = z
-                  //   .object({ message: z.string(), signature: z.string() })
-                  //   .array()
-                  //   .length(results.data.length)
-                  //   .parse(messageSignaturesResponse.data);
-
                   setNftsAdded((prev) => [
                     ...prev,
                     ...results.data.map((r: any, index) => ({
@@ -205,10 +184,8 @@ const BatchCreateModal = ({
                       backgroundColor: r.background_color || null,
                       externalUrl: r.external_url || null,
                       imageUrl: r.image || null,
-                      // message: null,
                       projectId,
                       uid: v4(),
-                      // signature: messageSignatures[index].signature,
                       properties: Object.keys(r)
                         .filter(
                           (key) =>

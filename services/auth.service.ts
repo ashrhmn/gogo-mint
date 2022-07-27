@@ -41,7 +41,13 @@ export const authorizeProject = async (
     cookie.set("auth_page_message", "You must login to continue");
     return { props: {}, redirect: { destination: "/authenticate" } };
   }
-  const project = await getProjectByChainAddress(contract, network, 0, 10);
+  const project = await getProjectByChainAddress(
+    contract,
+    network,
+    0,
+    10,
+    "all"
+  );
   if (!project) return { props: {}, redirect: { destination: `/404` } };
   if (project.userId !== dbUser.id) {
     cookie.set(

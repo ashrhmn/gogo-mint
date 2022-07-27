@@ -23,6 +23,7 @@ const OverviewSection = ({
   unclaimedSupply,
   page,
   view,
+  filterStatus,
 }: {
   nfts: NftExtended[];
   address: string | null;
@@ -34,6 +35,7 @@ const OverviewSection = ({
   unclaimedSupply: number;
   page: number;
   view: number;
+  filterStatus: "all" | "minted" | "unminted";
 }) => {
   const { account, library } = useEthers();
   const router = useRouter();
@@ -118,6 +120,25 @@ const OverviewSection = ({
         </div>
       </div>
       <div className="flex flex-col sm:flex-row w-full items-center justify-end my-3 gap-4">
+        <div className="flex justify-center items-center gap-4">
+          <select
+            value={filterStatus}
+            onChange={(e) => {
+              router
+                .push({
+                  ...router,
+                  query: { ...router.query, status: e.target.value },
+                })
+                .then(() => router.reload());
+            }}
+          >
+            {["All", "Minted", "Unminted"].map((v) => (
+              <option key={v} value={v.toLowerCase()}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </div>
         <button
           disabled={page === 1 || Math.ceil(nftCount / view) === 0}
           onClick={async () => {

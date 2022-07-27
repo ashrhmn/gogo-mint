@@ -29,6 +29,7 @@ interface Props {
   claimedSupply: number;
   page: number;
   view: number;
+  mintStatus: "all" | "minted" | "unminted";
 }
 
 const ProjectPage: NextPage<Props> = ({
@@ -38,6 +39,7 @@ const ProjectPage: NextPage<Props> = ({
   unclaimedSupply,
   page,
   view,
+  mintStatus,
 }) => {
   const router = useRouter();
   const { account } = useEthers();
@@ -139,6 +141,7 @@ const ProjectPage: NextPage<Props> = ({
               unclaimedSupply={unclaimedSupply}
               page={page}
               view={view}
+              filterStatus={mintStatus}
             />
           )}
         </div>
@@ -220,7 +223,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    const { page, view } = context.query;
+    const { page, view, status } = context.query;
+    const mintStatus =
+      typeof status === "string" &&
+      ["all", "minted", "unminted"].includes(status)
+        ? status
+        : "all";
     const pageNo = typeof page === "string" && !isNaN(+page) ? +page : 1;
     const take =
       typeof view === "string" && !isNaN(+view)
@@ -234,7 +242,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       contract,
       +network,
       skip,
-      take
+      take,
+      mintStatus as "all" | "minted" | "unminted"
     );
     if (!project) return { props: {}, redirect: { destination: `/404` } };
     if (project.owner.walletAddress !== cookieAddress)
@@ -260,6 +269,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         unclaimedSupply,
         page: pageNo,
         view: take,
+        mintStatus,
       },
     };
   } catch (error) {
