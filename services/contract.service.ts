@@ -1696,7 +1696,7 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
             string(
                 string.concat(
                     baseURI,
-                    "contractUri?address=",
+                    "contract-uri?address=",
                     Strings.toHexString(uint256(uint160(address(this))), 20),
                     "&network=",
                     Strings.toString(block.chainid)
@@ -1827,7 +1827,7 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
             string(
                 string.concat(
                     baseURI,
-                    "tokenURI?address=",
+                    "token-uri?address=",
                     Strings.toHexString(uint256(uint160(address(this))), 20),
                     "&network=",
                     Strings.toString(block.chainid),

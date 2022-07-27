@@ -164,6 +164,32 @@ export const getMetadata = async (nftId: number) => {
   };
 };
 
+export const getOnChainMetadata = async (
+  address: string,
+  chainId: number,
+  tokenId: number
+) => {
+  const nft = await prisma.nFT.findFirstOrThrow({
+    where: {
+      project: { address: { mode: "insensitive", equals: address }, chainId },
+      tokenId,
+    },
+    include: { properties: true },
+  });
+  return {
+    name: nft.name,
+    description: nft.description,
+    external_link: nft.externalUrl,
+    traits: nft.properties.map((p) => ({ trait_type: p.type, value: p.value })),
+    attributes: nft.properties.map((p) => ({
+      trait_type: p.type,
+      value: p.value,
+    })),
+    image: nft.imageUrl,
+    background_color: nft.backgroundColor,
+  };
+};
+
 export const updateTokenId = async (id: number, tokenId: number) => {
   return await prisma.nFT.update({ where: { id }, data: { tokenId } });
 };

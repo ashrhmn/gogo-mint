@@ -6,6 +6,8 @@ import {
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as NftService from "../services/nft.service";
 import { getUserByAccessToken } from "../services/discord.service";
+import { z } from "zod";
+import { isAddress } from "ethers/lib/utils";
 
 export const addNftAsCookieWallet = async (
   req: NextApiRequest,
@@ -116,10 +118,29 @@ export const getNftMetadata = async (
   res: NextApiResponse
 ) => {
   try {
-    const id = req.query.item;
-    if (!id || typeof id != "string" || isNaN(+id))
-      return res.json(errorResponse("Invalid ID"));
-    return res.json(await NftService.getMetadata(+id));
+    const {
+      address,
+      network: chainId,
+      tokenId,
+    } = z
+      .object({
+        address: z.string().refine(isAddress, "Not a valid address"),
+        network: z
+          .string()
+          .refine((v) => !isNaN(+v), "Not a number")
+          .transform((v) => +v),
+        tokenId: z
+          .string()
+          .refine((v) => !isNaN(+v), "Not a number")
+          .transform((v) => +v),
+      })
+      .parse(req.query);
+
+    console.log({ address, chainId, tokenId });
+
+    return res.json(
+      await NftService.getOnChainMetadata(address, chainId, tokenId)
+    );
   } catch (error) {
     console.log("Get metadata error : ", error);
     return res.json(errorResponse(error));

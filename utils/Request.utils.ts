@@ -1,4 +1,5 @@
 import Cookies from "cookies";
+import { z } from "zod";
 import { ACCESS_TOKEN_COOKIE_KEY } from "../constants/configuration";
 import { NextOrIncomingMessage, NextOrServerResponse } from "../types";
 import { decryptAccessToken } from "./String.utils";
@@ -22,3 +23,9 @@ export function resolveIPFS(input: string) {
   // return `https://ipfs.io/ipfs/${input.substring(7)}`;
   return input;
 }
+
+export const isQueryItemNumber = (
+  item: string | string[] | undefined
+): item is string => {
+  return z.number().safeParse(item).success;
+};
