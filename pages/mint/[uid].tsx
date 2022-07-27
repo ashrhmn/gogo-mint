@@ -381,7 +381,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return null;
       }),
       getNextSale(project.id).catch((err) => {
-        console.log("Error getting next sale", err);
+        // console.log("Error getting next sale", err);
         return null;
       }),
       getTotalSupplyCountByProjectChainAddress(

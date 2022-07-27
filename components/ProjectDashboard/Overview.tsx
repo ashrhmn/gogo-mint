@@ -18,7 +18,7 @@ const OverviewSection = ({
   projectChainId,
   collectionType,
   ownerAddress,
-  nftCount,
+  nftCount: allNftCount,
   claimedSupply,
   unclaimedSupply,
   page,
@@ -37,6 +37,12 @@ const OverviewSection = ({
   view: number;
   filterStatus: "all" | "minted" | "unminted";
 }) => {
+  const nftCount =
+    filterStatus === "all"
+      ? allNftCount
+      : filterStatus === "minted"
+      ? claimedSupply
+      : unclaimedSupply;
   const { account, library } = useEthers();
   const router = useRouter();
   const [nftsWithOwner, setNftsWithOwner] =
@@ -108,7 +114,7 @@ const OverviewSection = ({
       <div className="flex justify-start w-full gap-4 p-4 overflow-x-auto">
         <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
           <h1>Total Supply</h1>
-          <h2>{nftCount}</h2>
+          <h2>{allNftCount}</h2>
         </div>
         <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
           <h1>Claimed Supply</h1>
@@ -127,7 +133,7 @@ const OverviewSection = ({
               router
                 .push({
                   ...router,
-                  query: { ...router.query, status: e.target.value },
+                  query: { ...router.query, status: e.target.value, page: 1 },
                 })
                 .then(() => router.reload());
             }}
