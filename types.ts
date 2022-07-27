@@ -39,6 +39,8 @@ export interface IDeployConfigSet {
   description: string;
   feeToAddress: string;
   saleWaves: ISaleConfigInput[];
+  roayltyReceiver: string;
+  roayltyPercentage: number;
   uid: string;
 }
 

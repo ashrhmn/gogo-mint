@@ -38,9 +38,16 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     symbol: "",
     saleWaves: [],
     uid: "",
+    roayltyPercentage: 0,
+    roayltyReceiver: "",
   });
   useEffect(() => {
-    if (account) setConfigSet((c) => ({ ...c, feeToAddress: account }));
+    if (account)
+      setConfigSet((c) => ({
+        ...c,
+        feeToAddress: account,
+        roayltyReceiver: account,
+      }));
     if (account && account !== cookieAddress)
       router.push(
         authPageUrlWithMessage(
@@ -95,6 +102,14 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
       toast.error("Invalid fee recipient address");
       return;
     }
+    if (
+      configSet.roayltyReceiver !== "" &&
+      !isAddress(configSet.roayltyReceiver)
+    ) {
+      toast.error("Invalid royalty receiver address");
+      return;
+    }
+
     if (!configSet.symbol) {
       toast.error("Symbol is required");
       return;
@@ -179,6 +194,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             collectionType: "721",
             signerAddress: account,
             uid: v4(),
+            royaltyReceiver: configSet.roayltyReceiver,
+            royaltyPercentage: configSet.roayltyPercentage,
             saleConfigs: configSet.saleWaves.map((sw) => ({
               ...sw,
               whitelistAddresses:
@@ -332,20 +349,51 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           />
         ))}
 
-        <div>
-          <div className="mt-4 space-y-2">
-            <label className="font-bold">
-              Recipient Address <span className="text-red-700">*</span>
-            </label>
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">
+            Recipient Address <span className="text-red-700">*</span>
+          </label>
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="text"
+            value={configSet.feeToAddress}
+            onChange={(e) =>
+              setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
+            }
+          />
+        </div>
+
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">Royalty Receiver Address</label>
+          <div className="flex items-center gap-4">
             <input
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="text"
-              value={configSet.feeToAddress}
+              value={configSet.roayltyReceiver}
               onChange={(e) =>
-                setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
+                setConfigSet((c) => ({ ...c, roayltyReceiver: e.target.value }))
               }
             />
+            <div className="flex items-center gap-2 bg-gray-100 rounded">
+              <input
+                type="number"
+                min={0}
+                max={10}
+                step={0.01}
+                className="bg-gray-100 h-14 p-3 focus:bg-white transition-colors rounded"
+                value={configSet.roayltyPercentage}
+                onChange={(e) =>
+                  setConfigSet((prev) => ({
+                    ...prev,
+                    roayltyPercentage: e.target.valueAsNumber,
+                  }))
+                }
+              />
+              <span className="p-2">%</span>
+            </div>
           </div>
+        </div>
+        <div>
           <button
             disabled={!!bgProcessRunning}
             className="bg-indigo-600 text-white p-3 w-full my-4 rounded-xl hover:bg-blue-800 transition-colors cursor-pointer disabled:text-gray-400 disabled:bg-indigo-300 disabled:cursor-not-allowed"

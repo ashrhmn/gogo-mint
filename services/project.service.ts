@@ -86,7 +86,9 @@ export const addNewProject = async (
   userId: number,
   chainId: number,
   collectionType: string,
-  uid: string
+  uid: string,
+  royaltyReceiver: string,
+  royaltyPercentage: number
 ) => {
   return await prisma.project.create({
     data: {
@@ -98,6 +100,8 @@ export const addNewProject = async (
       chainId,
       collectionType,
       uid,
+      royaltyPercentage,
+      royaltyReceiver,
       saleConfigs: {
         createMany: {
           skipDuplicates: true,
@@ -128,6 +132,8 @@ export const createProjectForCookieWalletUser = async (
   collectionType: string,
   signerAddress: string,
   uid: string,
+  royaltyReceiver: string,
+  royaltyPercentage: number,
   cookies: Cookies
 ) => {
   const cookieWallet = getCookieWallet(cookies);
@@ -145,7 +151,9 @@ export const createProjectForCookieWalletUser = async (
     dbUser.id,
     chainId,
     collectionType,
-    uid
+    uid,
+    royaltyReceiver,
+    royaltyPercentage
   );
 };
 
@@ -225,6 +233,8 @@ export const updateProjectById = async (
   name: string,
   userId: number,
   uid: string,
+  royaltyReceiver: string,
+  royaltyPercentage: number,
   cookies: Cookies
 ) => {
   const cookieAddress = getCookieWallet(cookies);
@@ -246,6 +256,8 @@ export const updateProjectById = async (
       name,
       userId,
       uid,
+      royaltyPercentage,
+      royaltyReceiver,
     },
   });
 };
@@ -286,7 +298,7 @@ export const getProjectMetadata = async (address: string, chainId: number) => {
     description: project.description,
     image: project.imageUrl,
     external_link: project.uid,
-    seller_fee_basis_points: 500,
-    fee_recipient: "0xDaa503Bb46582a30cBbb8fA9AC2288744781CF1d",
+    seller_fee_basis_points: +(project.royaltyPercentage * 100).toFixed(0),
+    fee_recipient: project.royaltyReceiver || project.owner.walletAddress,
   };
 };

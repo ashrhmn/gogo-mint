@@ -126,25 +126,25 @@ const OverviewSection = ({
         </div>
       </div>
       <div className="flex flex-col sm:flex-row w-full items-center justify-end my-3 gap-4">
-        <div className="flex justify-center items-center gap-4">
-          <select
-            value={filterStatus}
-            onChange={(e) => {
-              router
-                .push({
-                  ...router,
-                  query: { ...router.query, status: e.target.value, page: 1 },
-                })
-                .then(() => router.reload());
-            }}
-          >
-            {["All", "Minted", "Unminted"].map((v) => (
-              <option key={v} value={v.toLowerCase()}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          className="bg-gray-100 rounded p-2"
+          value={filterStatus}
+          onChange={(e) => {
+            router
+              .push({
+                ...router,
+                query: { ...router.query, status: e.target.value, page: 1 },
+              })
+              .then(() => router.reload());
+          }}
+        >
+          {["All", "Minted", "Unminted"].map((v) => (
+            <option key={v} value={v.toLowerCase()}>
+              {v}
+            </option>
+          ))}
+        </select>
+
         <button
           disabled={page === 1 || Math.ceil(nftCount / view) === 0}
           onClick={async () => {

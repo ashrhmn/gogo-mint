@@ -44,6 +44,8 @@ export const addNewProject = async (
       collectionType,
       signerAddress,
       uid,
+      royaltyReceiver,
+      royaltyPercentage,
     } = req.body;
     if (!name || typeof name !== "string")
       return res.status(400).json(errorResponse("Name is required"));
@@ -58,6 +60,8 @@ export const addNewProject = async (
       collectionType,
       signerAddress,
       uid,
+      royaltyReceiver,
+      royaltyPercentage,
       getHttpCookie(req, res)
     );
     return res.json(successResponse(project));
@@ -134,6 +138,8 @@ export const updateProjectById = async (
       name,
       userId,
       uid,
+      royaltyReceiver,
+      royaltyPercentage,
     } = req.body;
     return res.json(
       successResponse(
@@ -148,6 +154,8 @@ export const updateProjectById = async (
           name,
           userId,
           uid,
+          royaltyReceiver,
+          royaltyPercentage,
           getHttpCookie(req, res)
         )
       )

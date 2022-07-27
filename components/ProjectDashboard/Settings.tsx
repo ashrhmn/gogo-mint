@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
+import { v4 } from "uuid";
 import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
 import useDebounce from "../../hooks/useDebounce";
@@ -45,6 +46,8 @@ const SettingsSection = ({
     uid: "",
     saleWaves: [],
     baseURI: "",
+    roayltyPercentage: 0,
+    roayltyReceiver: "",
   });
   const [imageBase64Logo, setImageBase64Logo] = useState("");
   const logoImgInputRef = useRef<HTMLInputElement | null>(null);
@@ -125,6 +128,8 @@ const SettingsSection = ({
             description: project.data.description,
             name: project.data.name,
             uid: project.data.uid || "",
+            roayltyPercentage: project.data.royaltyPercentage || 0,
+            roayltyReceiver: project.data.royaltyReceiver || "",
           }));
           setCurrentUid(project.data.uid || "");
           setBasicDataBgProc((v) => v - 1);
@@ -148,6 +153,13 @@ const SettingsSection = ({
       }
       if (isUidUnavailable) {
         toast.error("UID is not available, please choose something else");
+        return;
+      }
+      if (
+        configSet.roayltyReceiver !== "" &&
+        !isAddress(configSet.roayltyReceiver)
+      ) {
+        toast.error("Invalid royalty receiver address");
         return;
       }
       setBasicDataBgProc((v) => v + 1);
@@ -176,7 +188,9 @@ const SettingsSection = ({
           description: configSet.description,
           imageUrl: imageUrl ? imageUrl : imageBase64Logo,
           bannerUrl: bannerUrl ? bannerUrl : imageBase64Banner,
-          uid: configSet.uid === "" ? null : configSet.uid,
+          uid: configSet.uid.trim() || v4(),
+          royaltyReceiver: configSet.roayltyReceiver,
+          royaltyPercentage: configSet.roayltyPercentage,
         }),
         {
           error: "Error updating data",
@@ -292,9 +306,11 @@ const SettingsSection = ({
       (async () => {
         try {
           const { data: isExist } = await service.get(
-            `/projects/uid/exists?uid=${configSet.uid}`
+            `/projects/uid/exists?uid=${configSet.uid.trim()}`
           );
-          setIsUidUnavailable(isExist.data && configSet.uid !== currentUid);
+          setIsUidUnavailable(
+            isExist.data && configSet.uid.trim() !== currentUid.trim()
+          );
         } catch (error) {
           console.log("Error fetching uid availability : ", error);
         }
@@ -317,7 +333,9 @@ const SettingsSection = ({
             href={`https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}
             passHref
           >
-            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors">{`🌐 https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}</div>
+            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogo-mint.ashrhmn.com/mint/${
+              configSet.uid.trim().replaceAll(" ", "%20") || "<random-string>"
+            }`}</div>
           </Link>
         </div>
         <div className="flex flex-col">
@@ -418,6 +436,41 @@ const SettingsSection = ({
                   UID is not available, please choose something else
                 </span>
               )}
+            </div>
+            <div className="mt-4 space-y-2">
+              <label className="font-bold">Royalty Receiver</label>
+              <div className="flex items-center gap-4">
+                <input
+                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  type="text"
+                  disabled={!!basicDataBgProc}
+                  value={configSet.roayltyReceiver}
+                  placeholder={account}
+                  onChange={(e) =>
+                    setConfigSet((c) => ({
+                      ...c,
+                      roayltyReceiver: e.target.value,
+                    }))
+                  }
+                />
+                <div className="flex items-center bg-gray-100 rounded">
+                  <input
+                    className="rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    type="number"
+                    max={10}
+                    min={0}
+                    step={0.01}
+                    value={configSet.roayltyPercentage}
+                    onChange={(e) =>
+                      setConfigSet((p) => ({
+                        ...p,
+                        roayltyPercentage: e.target.valueAsNumber,
+                      }))
+                    }
+                  />
+                  <span className="p-2">%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
