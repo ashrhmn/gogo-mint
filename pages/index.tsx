@@ -1,10 +1,9 @@
-import { NextPage } from 'next'
-import React from 'react'
+import { NextPage } from "next";
+import React from "react";
+import Layout from "../components/Layout";
 
 const HomePage: NextPage = () => {
-    return (
-        <div>HomePage</div>
-    )
-}
+  return <Layout mint>HomePage</Layout>;
+};
 
-export default HomePage
+export default HomePage;

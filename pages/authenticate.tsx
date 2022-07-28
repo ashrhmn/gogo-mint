@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { getSigner } from "../services/ethereum.service";
 import assert from "assert";
 import { getCookieWallet } from "../services/auth.service";
+import Layout from "../components/Layout";
 
 interface Props {
   user?: DiscordUserResponse;
@@ -155,7 +156,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
   };
 
   return (
-    <>
+    <Layout mint>
       <div className="flex flex-col lg:flex-row text-3xl justify-center mt-10">
         {account ? (
           <div className="flex flex-col gap-6 items-center w-full">
@@ -281,7 +282,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           Link Discord and Wallet
         </button>
       </div>
-    </>
+    </Layout>
   );
 };
 
