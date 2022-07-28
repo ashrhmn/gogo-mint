@@ -1,8 +1,8 @@
-import { shortenIfAddress, useEthers } from "@usedapp/core";
+import { useEthers, shortenIfAddress } from "@usedapp/core";
 import Link from "next/link";
-import React, { Children } from "react";
+import React from "react";
 
-const LayoutMain = ({ children }: { children: React.ReactNode }) => {
+const LayoutMint = ({ children }: { children: React.ReactNode }) => {
   const { activateBrowserWallet, account, deactivate } = useEthers();
   return (
     <>
@@ -10,14 +10,14 @@ const LayoutMain = ({ children }: { children: React.ReactNode }) => {
         <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-16">
           <div className="w-0 sm:w-auto overflow-hidden">Logo</div>
           <div className="flex overflow-auto">
-            <Link href={`/mint`}>
-              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                Mint
-              </a>
-            </Link>
             <Link href={`/dashboard`}>
               <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                Dashboard
+                temp
+              </a>
+            </Link>
+            <Link href={`/mint`}>
+              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
+                All Projects
               </a>
             </Link>
             <Link href={`/authenticate`}>
@@ -47,9 +47,9 @@ const LayoutMain = ({ children }: { children: React.ReactNode }) => {
           </div>
         </nav>
       </div>
-      <main className="max-w-7xl mx-auto mt-20 p-4">{children}</main>
+      <main className="mx-auto mt-20">{children}</main>
     </>
   );
 };
 
-export default LayoutMain;
+export default LayoutMint;

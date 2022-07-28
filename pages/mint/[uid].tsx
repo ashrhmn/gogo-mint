@@ -1,16 +1,16 @@
 import { Project, NFT, SaleConfig, User } from "@prisma/client";
-import { useEthers } from "@usedapp/core";
+import { shortenIfAddress, useEtherBalance, useEthers } from "@usedapp/core";
 import { Contract, getDefaultProvider } from "ethers";
-import { parseEther } from "ethers/lib/utils";
+import { formatEther, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
+import Layout from "../../components/Layout";
 import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
 import { service } from "../../service";
-import { getRandomUnclaimedNftByProjectId } from "../../services/nft.service";
 import { getRandomMessageSignature } from "../../services/platformSigner.service";
 import {
   getClaimedSupplyCountByProjectChainAddress,
@@ -53,7 +53,7 @@ const MintPage: NextPage<Props> = ({
   totalSupply,
   randomMsgSign,
 }) => {
-  const { account, chainId, library } = useEthers();
+  const { account, chainId, library, activateBrowserWallet } = useEthers();
   const [mintBgProc, setMintBgProc] = useState(0);
   const [config, setConfig] = useState({
     userBalance: -1,
@@ -61,6 +61,8 @@ const MintPage: NextPage<Props> = ({
   });
   const router = useRouter();
   const [mintCount, setMintCount] = useState(1);
+  const userEtherBalance = useEtherBalance(account);
+
   useEffect(() => {
     (async () => {
       if (
@@ -140,6 +142,11 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
+    if (chainId !== project.chainId) {
+      toast.error(`Please connect to network ID : ${project.chainId}`);
+      return;
+    }
+
     if (!randomMsgSign) {
       toast.error("Error getting platform signature");
       return;
@@ -178,6 +185,18 @@ const MintPage: NextPage<Props> = ({
 
     if (totalSupply - claimedSupply < mintCount) {
       toast.error("Not enough supply");
+      return;
+    }
+    if (!userEtherBalance) {
+      toast.error("Error getting user balance");
+      return;
+    }
+
+    if (
+      userEtherBalance.toNumber() <
+      +parseEther((currentSale.mintCharge * mintCount).toFixed(18))
+    ) {
+      toast.error("You do not have enough balance");
       return;
     }
 
@@ -226,7 +245,7 @@ const MintPage: NextPage<Props> = ({
 
       const receipt = await toast.promise((tx as any).wait(), {
         error: "Error completing transaction",
-        loading: "Mining...",
+        loading: "Mining... (Do not close this window)",
         success: "Transaction Completed",
       });
       console.log(
@@ -258,112 +277,157 @@ const MintPage: NextPage<Props> = ({
   };
 
   return (
-    <div className="relative">
-      <div className="fixed h-60 top-16 right-0 left-0 -z-10 rounded mx-auto">
-        {!!project.bannerUrl && (
-          <Image
-            src={project.bannerUrl}
-            layout="fill"
-            alt=""
-            objectFit="cover"
-          />
-        )}
-      </div>
-      <div
-        className={`relative h-40 rounded mx-auto aspect-square ${
-          !!project.bannerUrl ? "mt-32" : ""
-        }`}
-      >
-        {!!project.imageUrl ? (
-          <Image
-            src={project.imageUrl}
-            layout="fill"
-            alt=""
-            objectFit="cover"
-          />
-        ) : (
-          <span></span>
-        )}
-      </div>
-      <h1 className="font-bold text-4xl text-center my-4">{project.name}</h1>
-      <p className="text-center font-medium">{project.description}</p>
-      {chainId !== project.chainId && (
-        <h2 className="text-center text-red-600">
-          Please Switch to network ID : {project.chainId}
-        </h2>
-      )}
-      <div className="mx-auto max-w-md border-2 border-gray-400 bg-gray-200 rounded-xl p-4 mt-10">
-        <div className="flex justify-between items-center">
-          <h1>Total Supply</h1>
-          <h1>{totalSupply}</h1>
+    <Layout mint>
+      <div className="-translate-y-24">
+        <div className="relative h-40 sm:h-60 md:h-80 mx-auto translate-y-20 transition-all">
+          {!!project.bannerUrl && (
+            <Image
+              src={project.bannerUrl}
+              layout="fill"
+              alt=""
+              objectFit="cover"
+            />
+          )}
+          {!project.bannerUrl && <div className="h-full w-full bg-gray-200" />}
         </div>
-        <div className="flex justify-between items-center">
-          <h1>Already Claimed</h1>
-          <h1>{claimedSupply}</h1>
-        </div>
-        {totalSupply !== null && claimedSupply !== null && (
-          <div className="flex justify-between items-center">
-            <h1>Unclaimed</h1>
-            <h1>{totalSupply - claimedSupply}</h1>
-          </div>
-        )}
-        <div className="flex justify-between items-center">
-          <h1>Balance</h1>
-          <h1>
-            {config.userBalance === -1 ? <LoaderIcon /> : config.userBalance}
-          </h1>
-        </div>
-        <div className="flex justify-between items-center">
-          <h1>Sale Status</h1>
-          <h1>
-            {!!currentSale
-              ? normalizeString(currentSale.saleType)
-              : !!nextSale
-              ? `${normalizeString(
-                  nextSale.saleType
-                )} Sale starts at ${new Date(
-                  nextSale.startTime * 1000
-                ).toLocaleString()}`
-              : "No Sale is running"}
-          </h1>
-        </div>
-        <div className="flex gap-4 justify-center select-none bg-gray-700 my-4 py-3 text-gray-200 rounded p-2">
-          <div className="flex gap-4 justify-center items-center">
-            <button
-              className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
-              onClick={() => setMintCount((v) => (v === 1 ? 1 : v - 1))}
-              disabled={mintBgProc > 0}
-            >
-              -
-            </button>
-            <span className="w-10 text-center text-2xl">{mintCount}</span>
-            <button
-              className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
-              onClick={() => setMintCount((v) => v + 1)}
-              disabled={mintBgProc > 0}
-            >
-              +
-            </button>
-          </div>
-
-          <button
-            className="border-2 border-gray-400 rounded py-1 px-2 hover:bg-gray-400 hover:text-black transition-colors text-xs disabled:cursor-not-allowed"
-            onClick={() => setMintCount(1)}
-            disabled={mintBgProc > 0}
-          >
-            Reset
-          </button>
-        </div>
-        <button
-          className="bg-teal-500 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
-          onClick={handleMintClick}
-          disabled={mintBgProc > 0}
+        <div
+          className={`relative h-40 rounded overflow-hidden mx-auto aspect-square shadow-xl transition-all ${
+            !!project.bannerUrl ? "" : ""
+          }`}
         >
-          Mint
-        </button>
+          {!!project.imageUrl ? (
+            <Image
+              src={project.imageUrl}
+              layout="fill"
+              alt=""
+              objectFit="cover"
+            />
+          ) : (
+            <div className="h-full w-full bg-gray-200 border-2 border-gray-300 rounded" />
+          )}
+        </div>
+        <h1 className="font-bold text-4xl text-center my-4 p-1">
+          {project.name}
+        </h1>
+        <p className="text-center font-medium p-1">{project.description}</p>
+        {!!account && chainId !== project.chainId && (
+          <h2 className="text-center text-red-600 p-1">
+            Please Switch to network ID : {project.chainId}
+          </h2>
+        )}
+        <div className="mx-4">
+          <div className="mx-auto max-w-md border-2 border-gray-400 bg-gray-200 rounded-xl p-4 mt-10">
+            <div className="divide-y-2 divide-gray-300 space-y-2">
+              {account ? (
+                <div className="flex justify-between items-center">
+                  <h1>Wallet</h1>
+                  <div className="flex">
+                    {shortenIfAddress(account)}
+                    <span className="flex items-center">
+                      ({" "}
+                      {!!userEtherBalance ? (
+                        (+formatEther(userEtherBalance)).toFixed(2)
+                      ) : (
+                        <LoaderIcon />
+                      )}{" "}
+                      ETH )
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="w-full bg-blue-500 rounded text-white min-h-[2.5rem] hover:bg-blue-600 transition-colors"
+                  onClick={activateBrowserWallet}
+                >
+                  Connect Wallet
+                </button>
+              )}
+              <div className="flex justify-between items-center">
+                <h1>Total Supply</h1>
+                <h1>{totalSupply}</h1>
+              </div>
+              <div className="flex justify-between items-center">
+                <h1>Already Claimed</h1>
+                <h1>{claimedSupply}</h1>
+              </div>
+              {totalSupply !== null && claimedSupply !== null && (
+                <div className="flex justify-between items-center">
+                  <h1>Unclaimed</h1>
+                  <h1>{totalSupply - claimedSupply}</h1>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <h1>You own from this collection</h1>
+                <h1>
+                  {!account ? (
+                    "-"
+                  ) : config.userBalance === -1 ? (
+                    <LoaderIcon />
+                  ) : (
+                    config.userBalance
+                  )}
+                </h1>
+              </div>
+              <div className="flex justify-between items-center">
+                <h1>Sale Status</h1>
+                <h1>
+                  {!!currentSale
+                    ? normalizeString(currentSale.saleType)
+                    : !!nextSale
+                    ? `${normalizeString(
+                        nextSale.saleType
+                      )} Sale starts at ${new Date(
+                        nextSale.startTime * 1000
+                      ).toLocaleString()}`
+                    : "No Sale is running"}
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex gap-4 justify-center select-none bg-gray-700 my-4 py-3 text-gray-200 rounded p-2">
+              <div className="flex gap-4 justify-center items-center">
+                <button
+                  className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
+                  onClick={() => setMintCount((v) => (v === 1 ? 1 : v - 1))}
+                  disabled={mintBgProc > 0}
+                >
+                  -
+                </button>
+                <span className="w-10 text-center text-2xl">{mintCount}</span>
+                <button
+                  className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
+                  onClick={() => setMintCount((v) => v + 1)}
+                  disabled={mintBgProc > 0}
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                className="border-2 border-gray-400 rounded py-1 px-2 hover:bg-gray-400 hover:text-black transition-colors text-xs disabled:cursor-not-allowed"
+                onClick={() => setMintCount(1)}
+                disabled={mintBgProc > 0}
+              >
+                Reset
+              </button>
+            </div>
+            <button
+              className="bg-teal-500 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
+              onClick={handleMintClick}
+              disabled={mintBgProc > 0}
+            >
+              Mint{" "}
+              {!!currentSale && (
+                <span className="text-lg">
+                  ({+(currentSale.mintCharge * mintCount).toFixed(8)} ETH)
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="h-20"></div>
       </div>
-      <div className="h-20"></div>
-    </div>
+    </Layout>
   );
 };
 

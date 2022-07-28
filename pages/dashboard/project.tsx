@@ -4,6 +4,7 @@ import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import Layout from "../../components/Layout";
 import BatchCreateModal from "../../components/ProjectDashboard/BatchCreateModal";
 import ClaimsSection from "../../components/ProjectDashboard/Claims";
 import CreateModal from "../../components/ProjectDashboard/CreateModal";
@@ -65,7 +66,7 @@ const ProjectPage: NextPage<Props> = ({
       ? router.query.tab
       : "overview";
   return (
-    <div>
+    <Layout dashboard>
       <div className="flex flex-col sm:flex-row justify-between my-4">
         <div className="flex gap-4">
           {project.imageUrl && (
@@ -199,7 +200,7 @@ const ProjectPage: NextPage<Props> = ({
         projectId={project.id}
         setIsBatchCreateModalOpen={setIsBatchCreateModalOpen}
       />
-    </div>
+    </Layout>
   );
 };
 

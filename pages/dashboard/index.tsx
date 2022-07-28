@@ -4,6 +4,7 @@ import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
+import Layout from "../../components/Layout";
 import { getCookieWallet } from "../../services/auth.service";
 
 import { getAllProjectByOwnerAddress } from "../../services/project.service";
@@ -33,7 +34,7 @@ const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
       );
   }, [account, cookieAddress, router]);
   return (
-    <div>
+    <Layout dashboard>
       <div className="flex justify-between my-4 items-center">
         <h1 className="text-4xl font-medium">Your Projects</h1>
         <button
@@ -101,7 +102,7 @@ const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
           </Link>
         </div>
       )}
-    </div>
+    </Layout>
   );
 };
 

@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { v4 } from "uuid";
+import Layout from "../../components/Layout";
 import SaleConfigInput from "../../components/Projects/SaleConfigInput";
 import { BASE_API_URL } from "../../constants/configuration";
 import { uploadFileToFirebase } from "../../lib/firebase";
@@ -238,172 +239,178 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
   };
 
   return (
-    <div className="text-xl border-2 rounded-xl p-4">
-      <h1 className="text-4xl my-3 font-bold">NFT Drop</h1>
-      <h1 className="text-2xl font-medium my-1">Contract Information</h1>
-      <h2>Customize your new project</h2>
-      <div>
-        <div>
-          <div
-            onClick={() => {
-              if (imgInputRef && imgInputRef.current)
-                imgInputRef.current.click();
-            }}
-            className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
-          >
-            <input
-              ref={imgInputRef}
-              onChange={onSelectImage}
-              type="file"
-              hidden
-            />
-            {!!imageBase64 ? (
-              <Image src={imageBase64} alt="" layout="fill" />
-            ) : (
-              <span className="text-2xl">+</span>
-            )}
-          </div>
-        </div>
+    <Layout dashboard>
+      <div className="text-xl border-2 rounded-xl p-4">
+        <h1 className="text-4xl my-3 font-bold">NFT Drop</h1>
+        <h1 className="text-2xl font-medium my-1">Contract Information</h1>
+        <h2>Customize your new project</h2>
         <div>
           <div>
-            <div className="mt-4 space-y-2">
-              <label className="font-bold">
-                Name <span className="text-red-700">*</span>
-              </label>
+            <div
+              onClick={() => {
+                if (imgInputRef && imgInputRef.current)
+                  imgInputRef.current.click();
+              }}
+              className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+            >
               <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                type="text"
-                value={configSet.name}
-                onChange={(e) =>
-                  setConfigSet((c) => ({ ...c, name: e.target.value }))
-                }
+                ref={imgInputRef}
+                onChange={onSelectImage}
+                type="file"
+                hidden
               />
+              {!!imageBase64 ? (
+                <Image src={imageBase64} alt="" layout="fill" />
+              ) : (
+                <span className="text-2xl">+</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <div>
+              <div className="mt-4 space-y-2">
+                <label className="font-bold">
+                  Name <span className="text-red-700">*</span>
+                </label>
+                <input
+                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  type="text"
+                  value={configSet.name}
+                  onChange={(e) =>
+                    setConfigSet((c) => ({ ...c, name: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="mt-4 space-y-2">
+                <label className="font-bold">
+                  Symbol <span className="text-red-700">*</span>
+                </label>
+                <input
+                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  type="text"
+                  value={configSet.symbol}
+                  onChange={(e) =>
+                    setConfigSet((c) => ({ ...c, symbol: e.target.value }))
+                  }
+                />
+              </div>
             </div>
             <div className="mt-4 space-y-2">
-              <label className="font-bold">
-                Symbol <span className="text-red-700">*</span>
+              <label
+                onClick={() => console.log(configSet.saleWaves)}
+                className="font-bold"
+              >
+                Description
               </label>
               <input
                 className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                 type="text"
-                value={configSet.symbol}
+                value={configSet.description}
                 onChange={(e) =>
-                  setConfigSet((c) => ({ ...c, symbol: e.target.value }))
+                  setConfigSet((c) => ({ ...c, description: e.target.value }))
                 }
               />
             </div>
           </div>
+          <button
+            onClick={() =>
+              setConfigSet((c) => ({
+                ...c,
+                saleWaves: [
+                  ...c.saleWaves,
+                  {
+                    enabled: true,
+                    endTime: 0,
+                    maxMintInSale: 0,
+                    maxMintPerWallet: 0,
+                    mintCharge: 0,
+                    startTime: +(Date.now() / 1000).toFixed(0),
+                    uuid: v4(),
+                    whitelistAddresses: [],
+                    saleType: "private",
+                    noDeadline: false,
+                  },
+                ],
+              }))
+            }
+            className="p-2 w-60 bg-blue-500 text-white hover:bg-blue-700 transition-colors rounded my-4"
+          >
+            Add Sale Wave
+          </button>
+          {configSet.saleWaves.length == 0 && (
+            <div className="bg-gray-200 rounded-xl text-center font-bold p-4">
+              No Sale Wave is set. Without a Sale Wave no one will be able to
+              mint
+            </div>
+          )}
+          {configSet.saleWaves.map((sw, idx) => (
+            <SaleConfigInput
+              key={sw.uuid}
+              saleWaveConfig={sw}
+              setConfigSet={setConfigSet}
+              index={idx}
+            />
+          ))}
+
           <div className="mt-4 space-y-2">
-            <label
-              onClick={() => console.log(configSet.saleWaves)}
-              className="font-bold"
-            >
-              Description
+            <label className="font-bold">
+              Recipient Address <span className="text-red-700">*</span>
             </label>
             <input
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="text"
-              value={configSet.description}
+              value={configSet.feeToAddress}
               onChange={(e) =>
-                setConfigSet((c) => ({ ...c, description: e.target.value }))
+                setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
               }
             />
           </div>
-        </div>
-        <button
-          onClick={() =>
-            setConfigSet((c) => ({
-              ...c,
-              saleWaves: [
-                ...c.saleWaves,
-                {
-                  enabled: true,
-                  endTime: 0,
-                  maxMintInSale: 0,
-                  maxMintPerWallet: 0,
-                  mintCharge: 0,
-                  startTime: +(Date.now() / 1000).toFixed(0),
-                  uuid: v4(),
-                  whitelistAddresses: [],
-                  saleType: "private",
-                  noDeadline: false,
-                },
-              ],
-            }))
-          }
-          className="p-2 w-60 bg-blue-500 text-white hover:bg-blue-700 transition-colors rounded my-4"
-        >
-          Add Sale Wave
-        </button>
-        {configSet.saleWaves.length == 0 && (
-          <div className="bg-gray-200 rounded-xl text-center font-bold p-4">
-            No Sale Wave is set. Without a Sale Wave no one will be able to mint
-          </div>
-        )}
-        {configSet.saleWaves.map((sw, idx) => (
-          <SaleConfigInput
-            key={sw.uuid}
-            saleWaveConfig={sw}
-            setConfigSet={setConfigSet}
-            index={idx}
-          />
-        ))}
 
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">
-            Recipient Address <span className="text-red-700">*</span>
-          </label>
-          <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-            type="text"
-            value={configSet.feeToAddress}
-            onChange={(e) =>
-              setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
-            }
-          />
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">Royalty Receiver Address</label>
-          <div className="flex items-center gap-4">
-            <input
-              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-              type="text"
-              value={configSet.roayltyReceiver}
-              onChange={(e) =>
-                setConfigSet((c) => ({ ...c, roayltyReceiver: e.target.value }))
-              }
-            />
-            <div className="flex items-center gap-2 bg-gray-100 rounded">
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Royalty Receiver Address</label>
+            <div className="flex items-center gap-4">
               <input
-                type="number"
-                min={0}
-                max={10}
-                step={0.01}
-                className="bg-gray-100 h-14 p-3 focus:bg-white transition-colors rounded"
-                value={configSet.roayltyPercentage}
+                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                type="text"
+                value={configSet.roayltyReceiver}
                 onChange={(e) =>
-                  setConfigSet((prev) => ({
-                    ...prev,
-                    roayltyPercentage: e.target.valueAsNumber,
+                  setConfigSet((c) => ({
+                    ...c,
+                    roayltyReceiver: e.target.value,
                   }))
                 }
               />
-              <span className="p-2">%</span>
+              <div className="flex items-center gap-2 bg-gray-100 rounded">
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  step={0.01}
+                  className="bg-gray-100 h-14 p-3 focus:bg-white transition-colors rounded"
+                  value={configSet.roayltyPercentage}
+                  onChange={(e) =>
+                    setConfigSet((prev) => ({
+                      ...prev,
+                      roayltyPercentage: e.target.valueAsNumber,
+                    }))
+                  }
+                />
+                <span className="p-2">%</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <button
-            disabled={!!bgProcessRunning}
-            className="bg-indigo-600 text-white p-3 w-full my-4 rounded-xl hover:bg-blue-800 transition-colors cursor-pointer disabled:text-gray-400 disabled:bg-indigo-300 disabled:cursor-not-allowed"
-            onClick={onDeployClick}
-          >
-            Deploy Contract
-          </button>
+          <div>
+            <button
+              disabled={!!bgProcessRunning}
+              className="bg-indigo-600 text-white p-3 w-full my-4 rounded-xl hover:bg-blue-800 transition-colors cursor-pointer disabled:text-gray-400 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+              onClick={onDeployClick}
+            >
+              Deploy Contract
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

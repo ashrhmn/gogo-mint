@@ -2,6 +2,7 @@ import { Project } from "@prisma/client";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import React from "react";
+import Layout from "../../components/Layout";
 import { getProjectsWithValidUid } from "../../services/project.service";
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 
 const MintHome: NextPage<Props> = ({ projects }) => {
   return (
-    <div>
+    <Layout mint>
       <h1 className="text-3xl text-center font-bold">Mint Projects</h1>
       {projects.map((p) => (
         <Link key={p.id} href={`/mint/${p.uid}`} passHref>
@@ -19,7 +20,7 @@ const MintHome: NextPage<Props> = ({ projects }) => {
           </a>
         </Link>
       ))}
-    </div>
+    </Layout>
   );
 };
 

@@ -2,7 +2,6 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { DAppProvider, DAppProviderProps } from "@usedapp/core";
 import { RPC_URLS } from "../constants/RPC_URL";
-import LayoutMain from "../components/Laouts/LayoutMain";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 
@@ -15,9 +14,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>GOGO-MINT</title>
       </Head>
-      <LayoutMain>
-        <Component {...pageProps} />
-      </LayoutMain>
+
+      <Component {...pageProps} />
+
       <Toaster position="top-right" />
     </DAppProvider>
   );
