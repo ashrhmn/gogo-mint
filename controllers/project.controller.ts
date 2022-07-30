@@ -229,6 +229,8 @@ export const getContractUri = async (
       return res.status(400).json(errorResponse("Invalid address"));
     if (!network || typeof network !== "string" || isNaN(+network))
       return res.status(400).json(errorResponse("Invalid address"));
+    console.log({ address, network, message: "Query for contract" });
+
     return res.json(await ProjectService.getProjectMetadata(address, +network));
   } catch (error) {
     console.log("Error getting contract URI : ", error);

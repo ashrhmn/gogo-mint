@@ -136,7 +136,7 @@ export const getNftMetadata = async (
       })
       .parse(req.query);
 
-    console.log({ address, chainId, tokenId });
+    console.log({ address, chainId, tokenId, message: "Query for token" });
 
     return res.json(
       await NftService.getOnChainMetadata(address, chainId, tokenId)
