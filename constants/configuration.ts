@@ -48,3 +48,5 @@ export const PUBLIC_HOST_ROOT =
 export const BASE_API_URL = `${
   isDevelopment ? "http" : "https"
 }://${PUBLIC_HOST_ROOT}/api/v1/`;
+
+export const BASE_URI = process.env.BASE_URI;

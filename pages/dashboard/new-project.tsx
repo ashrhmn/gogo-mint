@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { v4 } from "uuid";
 import Layout from "../../components/Layout";
 import SaleConfigInput from "../../components/Projects/SaleConfigInput";
-import { BASE_API_URL } from "../../constants/configuration";
+import { BASE_API_URL, BASE_URI } from "../../constants/configuration";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
@@ -26,6 +26,8 @@ interface Props {
 }
 
 const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
+  console.log({ baseUri });
+
   const { account, library, chainId } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
@@ -457,11 +459,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    const baseUri = process.env.BASE_URI || BASE_API_URL;
-    console.log({ BASE_API_URL, baseUri });
-    console.log({ base_uri: process.env.BASE_URI });
+    // const baseUri = process.env.BASE_URI || BASE_API_URL;
+    // console.log({ BASE_API_URL, baseUri });
+    // console.log({ base_uri: process.env.BASE_URI });
 
-    return { props: { cookieAddress, baseUri } };
+    return { props: { cookieAddress, baseUri: BASE_URI } };
   } catch (error) {
     return {
       props: {},
