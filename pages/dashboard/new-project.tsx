@@ -457,7 +457,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         props: {},
         redirect: { destination: authPageUrlWithMessage("Sign Required") },
       };
-    const baseUri = process.env.NEXT_PUBLIC_BASE_URI || BASE_API_URL;
+    const baseUri = process.env.BASE_URI || BASE_API_URL;
     return { props: { cookieAddress, baseUri } };
   } catch (error) {
     return {
