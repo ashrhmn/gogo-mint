@@ -519,11 +519,17 @@ const SettingsSection = ({
                     max={10}
                     min={0}
                     step={0.01}
-                    value={configSet.roayltyPercentage}
+                    defaultValue={configSet.roayltyPercentage}
+                    placeholder="0"
                     onChange={(e) =>
                       setConfigSet((p) => ({
                         ...p,
-                        roayltyPercentage: e.target.valueAsNumber,
+                        roayltyPercentage:
+                          isNaN(e.target.valueAsNumber) || e.target.value === ""
+                            ? 0
+                            : +e.target.valueAsNumber.toFixed(2) > 10
+                            ? 10
+                            : +e.target.valueAsNumber.toFixed(2),
                       }))
                     }
                   />

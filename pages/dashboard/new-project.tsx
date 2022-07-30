@@ -420,8 +420,10 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     setConfigSet((prev) => ({
                       ...prev,
                       roayltyPercentage:
-                        e.target.value === "" || isNaN(+e.target.value)
+                        isNaN(e.target.valueAsNumber) || e.target.value === ""
                           ? 0
+                          : +e.target.valueAsNumber.toFixed(2) > 10
+                          ? 10
                           : +e.target.valueAsNumber.toFixed(2),
                     }))
                   }
