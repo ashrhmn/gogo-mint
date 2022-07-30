@@ -32,6 +32,8 @@ const SettingsSection = ({
   const [basicDataBgProc, setBasicDataBgProc] = useState(0);
   const [feeAddressBgProc, setFeeAddressBgProc] = useState(0);
   const [baseURIBgProc, setBaseURIBgProc] = useState(0);
+  const [maxMintInTotalPerWalletBgProc, setMaxMintInTotalPerWalletBgProc] =
+    useState(0);
   const [isUidUnavailable, setIsUidUnavailable] = useState(false);
 
   const [configSet, setConfigSet] = useState<
@@ -48,6 +50,7 @@ const SettingsSection = ({
     baseURI: "",
     roayltyPercentage: 0,
     roayltyReceiver: "",
+    maxMintInTotalPerWallet: 0,
   });
   const [imageBase64Logo, setImageBase64Logo] = useState("");
   const logoImgInputRef = useRef<HTMLInputElement | null>(null);
@@ -87,23 +90,29 @@ const SettingsSection = ({
           getDefaultProvider(RPC_URLS[projectChainId])
         );
         setFeeAddressBgProc((v) => v + 1);
+        setMaxMintInTotalPerWalletBgProc((v) => v + 1);
         setBaseURIBgProc((v) => v + 1);
-        const [feeToAddress, curi, baseURI] = await Promise.all([
-          contract.feeDestination(),
-          contract.contractURI(),
-          contract.baseURI(),
-        ]);
+        const [feeToAddress, curi, baseURI, maxMintInTotalPerWallet] =
+          await Promise.all([
+            contract.feeDestination(),
+            contract.contractURI(),
+            contract.baseURI(),
+            contract.maxMintInTotalPerWallet(),
+          ]);
         console.log("CURi : ", curi);
 
         setConfigSet((c) => ({
           ...c,
           feeToAddress,
           baseURI,
+          maxMintInTotalPerWallet: +maxMintInTotalPerWallet.toString(),
         }));
         setFeeAddressBgProc((v) => v - 1);
         setBaseURIBgProc((v) => v - 1);
+        setMaxMintInTotalPerWalletBgProc((v) => v - 1);
       })();
     } catch (error) {
+      setMaxMintInTotalPerWalletBgProc((v) => v - 1);
       setBaseURIBgProc((v) => v - 1);
       setFeeAddressBgProc((v) => v - 1);
       console.log("Error fetching fee to address, base URI : ", error);
@@ -247,6 +256,56 @@ const SettingsSection = ({
       setBaseURIBgProc((v) => v - 1);
       console.log("Error updating base URI : ", error);
       toast.error("Error updating Base URI");
+    }
+  };
+
+  const handleMaxMintInTotalUpdate = async () => {
+    if (!account || !library || !chainId) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+      toast.error("Error loading project");
+      return;
+    }
+    if (chainId !== projectChainId) {
+      toast.error(`Please switch to network id ${projectChainId}`);
+      return;
+    }
+    if (account !== projectOwner) {
+      toast.error("You are not project owner");
+    }
+    if (!isAddress(configSet.feeToAddress)) {
+      toast.error("Invalid address");
+      return;
+    }
+    const contract = new Contract(
+      projectAddress,
+      collectionType === "721" ? ABI721 : ABI1155,
+      library.getSigner(account)
+    );
+    try {
+      setMaxMintInTotalPerWalletBgProc((v) => v + 1);
+      const tx = await toast.promise(
+        contract.updateMaxMintInTotalPerWallet(
+          configSet.maxMintInTotalPerWallet
+        ),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise((tx as any).wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setMaxMintInTotalPerWalletBgProc((v) => v - 1);
+    } catch (error) {
+      setMaxMintInTotalPerWalletBgProc((v) => v - 1);
+      console.log("Error updating max mint in total : ", error);
+      toast.error("Error updating max mint in total");
     }
   };
 
@@ -507,6 +566,41 @@ const SettingsSection = ({
             disabled={!!feeAddressBgProc}
             className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
             onClick={handleFeetoAddressUpdate}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="bg-gray-200 rounded p-4 my-6 relative">
+        {!!maxMintInTotalPerWalletBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">Max Mint Per Wallet in Total</label>
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="number"
+            disabled={!!maxMintInTotalPerWalletBgProc}
+            placeholder="Unlimited"
+            value={configSet.maxMintInTotalPerWallet || ""}
+            onChange={(e) =>
+              setConfigSet((c) => ({
+                ...c,
+                maxMintInTotalPerWallet:
+                  isNaN(+e.target.value) || e.target.value === ""
+                    ? 0
+                    : +e.target.valueAsNumber.toFixed(0),
+              }))
+            }
+          />
+        </div>
+        <div>
+          <button
+            disabled={!!maxMintInTotalPerWalletBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+            onClick={handleMaxMintInTotalUpdate}
           >
             Update
           </button>

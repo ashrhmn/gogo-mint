@@ -39,6 +39,7 @@ export interface IDeployConfigSet {
   description: string;
   feeToAddress: string;
   saleWaves: ISaleConfigInput[];
+  maxMintInTotalPerWallet: number;
   roayltyReceiver: string;
   roayltyPercentage: number;
   uid: string;

@@ -41,6 +41,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     uid: "",
     roayltyPercentage: 0,
     roayltyReceiver: "",
+    maxMintInTotalPerWallet: 0,
   });
   useEffect(() => {
     if (account)
@@ -173,6 +174,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           normalizeString(configSet.name),
           normalizeString(configSet.symbol),
           configSet.feeToAddress,
+          configSet.maxMintInTotalPerWallet,
           saleConfigRoot.data,
           platformSignerAddress.data,
           baseUri
@@ -281,18 +283,43 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   }
                 />
               </div>
-              <div className="mt-4 space-y-2">
-                <label className="font-bold">
-                  Symbol <span className="text-red-700">*</span>
-                </label>
-                <input
-                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                  type="text"
-                  value={configSet.symbol}
-                  onChange={(e) =>
-                    setConfigSet((c) => ({ ...c, symbol: e.target.value }))
-                  }
-                />
+              <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+                <div className="space-y-2 w-full">
+                  <label className="font-bold">
+                    Symbol <span className="text-red-700">*</span>
+                  </label>
+                  <input
+                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    type="text"
+                    value={configSet.symbol}
+                    onChange={(e) =>
+                      setConfigSet((c) => ({ ...c, symbol: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2 w-full">
+                  <label className="font-bold">
+                    Max Mint Per Wallet in Total
+                  </label>
+
+                  <input
+                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    type="text"
+                    value={configSet.maxMintInTotalPerWallet || ""}
+                    placeholder="Unlimited"
+                    onChange={(e) => {
+                      setConfigSet((c) => ({
+                        ...c,
+                        maxMintInTotalPerWallet:
+                          isNaN(+e.target.value) ||
+                          e.target.value === "" ||
+                          +e.target.value === 0
+                            ? 0
+                            : Math.abs(+(+e.target.value).toFixed(0)),
+                      }));
+                    }}
+                  />
+                </div>
               </div>
             </div>
             <div className="mt-4 space-y-2">
@@ -321,9 +348,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   {
                     enabled: true,
                     endTime: 0,
-                    maxMintInSale: 0,
-                    maxMintPerWallet: 0,
-                    mintCharge: 0,
+                    maxMintInSale: 1000,
+                    maxMintPerWallet: 5,
+                    mintCharge: 0.001,
                     startTime: +(Date.now() / 1000).toFixed(0),
                     uuid: v4(),
                     whitelistAddresses: [],
@@ -387,11 +414,15 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   max={10}
                   step={0.01}
                   className="bg-gray-100 h-14 p-3 focus:bg-white transition-colors rounded"
-                  value={configSet.roayltyPercentage}
+                  defaultValue={configSet.roayltyPercentage}
+                  placeholder="0"
                   onChange={(e) =>
                     setConfigSet((prev) => ({
                       ...prev,
-                      roayltyPercentage: e.target.valueAsNumber,
+                      roayltyPercentage:
+                        e.target.value === "" || isNaN(+e.target.value)
+                          ? 0
+                          : +e.target.valueAsNumber.toFixed(2),
                     }))
                   }
                 />

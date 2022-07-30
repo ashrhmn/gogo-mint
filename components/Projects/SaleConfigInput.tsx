@@ -223,14 +223,21 @@ const SaleConfigInput = ({
             type="number"
             min={0}
             step={0.00001}
-            value={saleWaveConfig.mintCharge}
+            defaultValue={saleWaveConfig.mintCharge}
+            placeholder="0 (Equivalent to Free-Mint)"
             onChange={(e) => {
               setConfigSet((prev) => ({
                 ...prev,
                 saleWaves: prev.saleWaves.map((sw) =>
                   sw.uuid !== saleWaveConfig.uuid
                     ? { ...sw }
-                    : { ...sw, mintCharge: e.target.valueAsNumber }
+                    : {
+                        ...sw,
+                        mintCharge:
+                          isNaN(+e.target.value) || e.target.value === ""
+                            ? 0
+                            : e.target.valueAsNumber,
+                      }
                 ),
               }));
             }}
@@ -244,14 +251,21 @@ const SaleConfigInput = ({
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
             min={0}
-            value={saleWaveConfig.maxMintPerWallet}
+            placeholder="0 (Equivalent to Mint-Disabled)"
+            value={saleWaveConfig.maxMintPerWallet || ""}
             onChange={(e) => {
               setConfigSet((prev) => ({
                 ...prev,
                 saleWaves: prev.saleWaves.map((sw) =>
                   sw.uuid !== saleWaveConfig.uuid
                     ? { ...sw }
-                    : { ...sw, maxMintPerWallet: e.target.valueAsNumber }
+                    : {
+                        ...sw,
+                        maxMintPerWallet:
+                          isNaN(+e.target.value) || e.target.value === ""
+                            ? 0
+                            : +e.target.valueAsNumber.toFixed(0),
+                      }
                 ),
               }));
             }}
@@ -265,14 +279,21 @@ const SaleConfigInput = ({
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
             min={0}
-            value={saleWaveConfig.maxMintInSale}
+            value={saleWaveConfig.maxMintInSale || ""}
+            placeholder="0 (Equivalent to Mint-Disabled)"
             onChange={(e) => {
               setConfigSet((prev) => ({
                 ...prev,
                 saleWaves: prev.saleWaves.map((sw) =>
                   sw.uuid !== saleWaveConfig.uuid
                     ? { ...sw }
-                    : { ...sw, maxMintInSale: e.target.valueAsNumber }
+                    : {
+                        ...sw,
+                        maxMintInSale:
+                          isNaN(+e.target.value) || e.target.value === ""
+                            ? 0
+                            : +e.target.valueAsNumber.toFixed(0),
+                      }
                 ),
               }));
             }}

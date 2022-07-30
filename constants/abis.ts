@@ -17,6 +17,11 @@ export const ABI721 = [
         type: "address",
       },
       {
+        internalType: "uint256",
+        name: "_maxMintInTotalPerWallet",
+        type: "uint256",
+      },
+      {
         internalType: "bytes32",
         name: "_saleConfigRoot",
         type: "bytes32",
@@ -170,6 +175,30 @@ export const ABI721 = [
     name: "approve",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "balanceByIdentifier",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -361,6 +390,19 @@ export const ABI721 = [
         internalType: "bool",
         name: "",
         type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "maxMintInTotalPerWallet",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -734,6 +776,19 @@ export const ABI721 = [
       },
     ],
     name: "updateFeeToAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_val",
+        type: "uint256",
+      },
+    ],
+    name: "updateMaxMintInTotalPerWallet",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

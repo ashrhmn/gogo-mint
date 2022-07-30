@@ -58,6 +58,8 @@ const MintPage: NextPage<Props> = ({
   const [config, setConfig] = useState({
     userBalance: -1,
     totalMintInSale: -1,
+    mintCountInSaleByUser: -1,
+    maxMintInTotalPerWallet: -1,
   });
   const router = useRouter();
   const [mintCount, setMintCount] = useState(1);
@@ -79,10 +81,13 @@ const MintPage: NextPage<Props> = ({
         project.collectionType === "721" ? ABI721 : ABI1155,
         getDefaultProvider(RPC_URLS[project.chainId])
       );
-      const [userBalance] = (
-        await Promise.all([contract.balanceOf(account)])
+      const [userBalance, maxMintInTotalPerWallet] = (
+        await Promise.all([
+          contract.balanceOf(account),
+          contract.maxMintInTotalPerWallet(),
+        ])
       ).map((v) => +v.toString());
-      setConfig((c) => ({ ...c, userBalance }));
+      setConfig((c) => ({ ...c, userBalance, maxMintInTotalPerWallet }));
     })();
   }, [
     account,
@@ -108,12 +113,13 @@ const MintPage: NextPage<Props> = ({
         project.collectionType === "721" ? ABI721 : ABI1155,
         getDefaultProvider(RPC_URLS[project.chainId])
       );
-      const [totalMintInSale] = (
+      const [totalMintInSale, mintCountInSaleByUser] = (
         await Promise.all([
           contract.mintCountByIdentifier(currentSale.saleIdentifier),
+          contract.balanceByIdentifier(currentSale.saleIdentifier, account),
         ])
       ).map((v) => +v.toString());
-      setConfig((c) => ({ ...c, totalMintInSale }));
+      setConfig((c) => ({ ...c, totalMintInSale, mintCountInSaleByUser }));
     })();
   }, [
     account,
@@ -125,6 +131,15 @@ const MintPage: NextPage<Props> = ({
   ]);
 
   const handleMintClick = async () => {
+    if (
+      config.maxMintInTotalPerWallet === -1 ||
+      config.mintCountInSaleByUser === -1 ||
+      config.totalMintInSale === -1 ||
+      config.userBalance === -1
+    ) {
+      toast.error("Error loading data");
+      return;
+    }
     if (!project.address || !project.chainId || !RPC_URLS[project.chainId]) {
       toast.error("Error loading project data");
       return;
@@ -168,7 +183,18 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
-    if (mintCount + config.userBalance > currentSale.maxMintPerWallet) {
+    if (
+      config.maxMintInTotalPerWallet !== 0 &&
+      mintCount + config.userBalance > config.maxMintInTotalPerWallet
+    ) {
+      toast.error("Max mint in total limit for your wallet exceeds");
+      return;
+    }
+
+    if (
+      mintCount + config.mintCountInSaleByUser >
+      currentSale.maxMintPerWallet
+    ) {
       toast.error("Max mint limit for your wallet exceeds");
       return;
     }
@@ -193,8 +219,9 @@ const MintPage: NextPage<Props> = ({
     }
 
     if (
-      userEtherBalance.toNumber() <
-      +parseEther((currentSale.mintCharge * mintCount).toFixed(18))
+      userEtherBalance.lt(
+        parseEther((currentSale.mintCharge * mintCount).toFixed(18))
+      )
     ) {
       toast.error("You do not have enough balance");
       return;
@@ -419,7 +446,13 @@ const MintPage: NextPage<Props> = ({
               Mint{" "}
               {!!currentSale && (
                 <span className="text-lg">
-                  ({+(currentSale.mintCharge * mintCount).toFixed(8)} ETH)
+                  {+(currentSale.mintCharge * mintCount).toFixed(8) === 0 ? (
+                    "(Free)"
+                  ) : (
+                    <>
+                      ({+(currentSale.mintCharge * mintCount).toFixed(8)} ETH)
+                    </>
+                  )}
                 </span>
               )}
             </button>

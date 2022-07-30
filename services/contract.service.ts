@@ -1668,6 +1668,8 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
     bytes32 public saleConfigsRoot;
     mapping(bytes => bool) public isSignatureRedeemed;
     mapping(string => uint256) public mintCountByIdentifier;
+    mapping(string => mapping(address => uint256)) public balanceByIdentifier;
+    uint256 public maxMintInTotalPerWallet;
     address public msgSigner;
     string public baseURI;
 
@@ -1677,6 +1679,7 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
         string memory _name,
         string memory _symbol,
         address _feeDestination,
+        uint256 _maxMintInTotalPerWallet,
         bytes32 _saleConfigRoot,
         address _msgSigner,
         string memory _baseURI
@@ -1685,17 +1688,22 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
         saleConfigsRoot = _saleConfigRoot;
         msgSigner = _msgSigner;
         baseURI = _baseURI;
+        maxMintInTotalPerWallet = _maxMintInTotalPerWallet;
     }
 
-    function updateBaseURI(string memory _baseURI) public onlyOwner {
+    function updateMaxMintInTotalPerWallet(uint256 _val) external onlyOwner {
+        maxMintInTotalPerWallet = _val;
+    }
+
+    function updateBaseURI(string memory _baseURI) external onlyOwner {
         baseURI = _baseURI;
     }
 
-    function updateSaleConfigRoot(bytes32 _saleConfigRoot) public onlyOwner {
+    function updateSaleConfigRoot(bytes32 _saleConfigRoot) external onlyOwner {
         saleConfigsRoot = _saleConfigRoot;
     }
 
-    function contractURI() public view returns (string memory) {
+    function contractURI() external view returns (string memory) {
         return
             string(
                 string.concat(
@@ -1708,7 +1716,7 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
             );
     }
 
-    function updateFeeToAddress(address _feeDestination) public onlyOwner {
+    function updateFeeToAddress(address _feeDestination) external onlyOwner {
         feeDestination = _feeDestination;
     }
 
@@ -1771,9 +1779,17 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
             "Max Sale Limit Exceeds"
         );
         require(
-            balanceOf(msg.sender) + numberOfMint <= config.maxMintPerWallet,
-            "MaxMint Per Wallet Limit Exceeds"
+            balanceByIdentifier[config.saleIdentifier][msg.sender] +
+                numberOfMint <=
+                config.maxMintPerWallet,
+            "MaxMintPerWalletSaleLimitExceeds"
         );
+        if (maxMintInTotalPerWallet != 0) {
+            require(
+                balanceOf(msg.sender) + numberOfMint <= maxMintInTotalPerWallet,
+                "MaxTotalMintWalletLimitExceeds"
+            );
+        }
         if (config.whitelistRoot != emptyRoot) {
             require(
                 MerkleProof.verify(
@@ -1806,7 +1822,7 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
         bytes memory signature,
         SaleConfig memory config
     )
-        public
+        external
         payable
         onlyValidMint(saleConfigProof, whitelistProof, numberOfMint, config)
         onlyPlatformSigned(message, signature)
@@ -1816,9 +1832,11 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
             _mint(msg.sender, tokenId + i);
         }
         tokenId = tokenId + numberOfMint;
+        balanceByIdentifier[config.saleIdentifier][msg.sender] += numberOfMint;
+        mintCountByIdentifier[config.saleIdentifier] += numberOfMint;
         isSignatureRedeemed[signature] = true;
         payable(feeDestination).transfer(msg.value);
-        emit Mint(msg.sender, tokenId - numberOfMint, tokenId-1);
+        emit Mint(msg.sender, tokenId - numberOfMint, tokenId - 1);
     }
 
     function tokenURI(uint256 _tokenId)
@@ -1841,6 +1859,6 @@ contract ${normalizeString(contractName)} is Ownable, ERC721 {
             );
     }
 }
-
+    
   `;
 };

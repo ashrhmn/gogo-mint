@@ -251,7 +251,8 @@ const SaleConfigItem = ({
             type="number"
             min={0}
             step={0.00001}
-            value={saleWaveConfig.mintCharge}
+            placeholder="0 (Equivalent to Free-Mint)"
+            defaultValue={saleWaveConfig.mintCharge}
             onChange={(e) =>
               setSaleConfigs((prev) =>
                 prev.map((sc) =>
@@ -259,7 +260,10 @@ const SaleConfigItem = ({
                     ? sc
                     : {
                         ...sc,
-                        mintCharge: e.target.valueAsNumber,
+                        mintCharge:
+                          isNaN(+e.target.value) || e.target.value === ""
+                            ? 0
+                            : e.target.valueAsNumber,
                       }
                 )
               )
@@ -274,7 +278,8 @@ const SaleConfigItem = ({
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
             min={0}
-            value={saleWaveConfig.maxMintPerWallet}
+            value={saleWaveConfig.maxMintPerWallet || ""}
+            placeholder="0 (Equivalent to Mint-Disabled)"
             onChange={(e) =>
               setSaleConfigs((prev) =>
                 prev.map((sc) =>
@@ -282,7 +287,10 @@ const SaleConfigItem = ({
                     ? sc
                     : {
                         ...sc,
-                        maxMintPerWallet: e.target.valueAsNumber,
+                        maxMintPerWallet:
+                          isNaN(+e.target.value) || e.target.value === ""
+                            ? 0
+                            : +e.target.valueAsNumber.toFixed(0),
                       }
                 )
               )
@@ -296,8 +304,9 @@ const SaleConfigItem = ({
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
+            placeholder="0 (Equivalent to Mint-Disabled)"
             min={0}
-            value={saleWaveConfig.maxMintInSale}
+            value={saleWaveConfig.maxMintInSale || ""}
             onChange={(e) =>
               setSaleConfigs((prev) =>
                 prev.map((sc) =>
@@ -305,7 +314,10 @@ const SaleConfigItem = ({
                     ? sc
                     : {
                         ...sc,
-                        maxMintInSale: e.target.valueAsNumber,
+                        maxMintInSale:
+                          isNaN(+e.target.value) || e.target.value === ""
+                            ? 0
+                            : +e.target.valueAsNumber.toFixed(0),
                       }
                 )
               )
