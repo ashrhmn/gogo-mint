@@ -243,7 +243,6 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
   return (
     <Layout dashboard>
       <div className="text-xl border-2 rounded-xl p-4">
-        <h1>BASE : {baseUri}</h1>
         <h1 className="text-4xl my-3 font-bold">NFT Drop</h1>
         <h1 className="text-2xl font-medium my-1">Contract Information</h1>
         <h2>Customize your new project</h2>
