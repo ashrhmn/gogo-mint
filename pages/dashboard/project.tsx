@@ -4,6 +4,7 @@ import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import CopyAddressToClipboard from "../../components/Common/CopyAddressToClipboard";
 import Layout from "../../components/Layout";
 import BatchCreateModal from "../../components/ProjectDashboard/BatchCreateModal";
 import ClaimsSection from "../../components/ProjectDashboard/Claims";
@@ -77,7 +78,9 @@ const ProjectPage: NextPage<Props> = ({
           <div>
             <h1 className="text-4xl font-bold">{project.name}</h1>
             <h2 className="text-2xl font-medium">
-              {shortenIfAddress(project.address)}
+              {!!project.address && (
+                <CopyAddressToClipboard address={project.address} shorten />
+              )}
             </h2>
           </div>
         </div>

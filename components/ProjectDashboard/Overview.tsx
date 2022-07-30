@@ -11,6 +11,7 @@ import { getTokenUri } from "../../constants/tokenUri";
 import { service } from "../../service";
 import { NftExtended } from "../../types";
 import { resolveIPFS } from "../../utils/Request.utils";
+import CopyAddressToClipboard from "../Common/CopyAddressToClipboard";
 
 const OverviewSection = ({
   nfts,
@@ -276,7 +277,7 @@ const OverviewSection = ({
                     {!!bgProcRunning ? (
                       <LoaderIcon />
                     ) : !!nft.owner ? (
-                      shortenIfAddress(nft.owner)
+                      <CopyAddressToClipboard address={nft.owner} shorten />
                     ) : (
                       "0x0000.....0000"
                     )}

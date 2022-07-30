@@ -8,6 +8,7 @@ import { parse as parseCsv } from "papaparse";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import CopyAddressToClipboard from "../../Common/CopyAddressToClipboard";
 
 const SaleConfigItem = ({
   saleWaveConfig,
@@ -466,7 +467,7 @@ const SaleConfigItem = ({
                       >
                         <div className="w-full overflow-hidden group">
                           <div className="overflow-hidden w-full">
-                            {address}
+                            <CopyAddressToClipboard address={address} />
                           </div>
                           {/* <div className="absolute -top-6 hidden group-hover:block text-sm rounded shdaow-xl bg-gray-500 p-1 text-white z-10">
                             {address}

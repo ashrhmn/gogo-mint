@@ -131,6 +131,14 @@ const MintPage: NextPage<Props> = ({
   ]);
 
   const handleMintClick = async () => {
+    if (!project.address || !project.chainId || !RPC_URLS[project.chainId]) {
+      toast.error("Error loading project data");
+      return;
+    }
+    if (!currentSale) {
+      toast.error("No Sale Running");
+      return;
+    }
     if (
       config.maxMintInTotalPerWallet === -1 ||
       config.mintCountInSaleByUser === -1 ||
@@ -138,14 +146,6 @@ const MintPage: NextPage<Props> = ({
       config.userBalance === -1
     ) {
       toast.error("Error loading data");
-      return;
-    }
-    if (!project.address || !project.chainId || !RPC_URLS[project.chainId]) {
-      toast.error("Error loading project data");
-      return;
-    }
-    if (!currentSale) {
-      toast.error("No Sale Running");
       return;
     }
     if (configProof === null) {
