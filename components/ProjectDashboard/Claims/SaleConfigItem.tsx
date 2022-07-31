@@ -35,9 +35,9 @@ const SaleConfigItem = ({
           <span className="font-light mx-2 text-xs">
             {normalizeString(saleWaveConfig.saleType)}
           </span>
-          <span className="font-light mx-2 text-xs hidden sm:inline">
+          {/* <span className="font-light mx-2 text-xs hidden sm:inline">
             {saleWaveConfig.saleIdentifier.substring(0, 8)}
-          </span>
+          </span> */}
           {saleWaveConfig.invalid && (
             <span className="font-light text-red-800 mx-2 text-xs hidden sm:inline">
               This Sale Will end before the end of previous sale
@@ -247,6 +247,9 @@ const SaleConfigItem = ({
           <label className="font-bold">
             Mint Charge <span className="text-red-700">*</span>
           </label>
+          <p className="text-sm text-gray-500">
+            Charge in ETH buyer will pay in this sale
+          </p>
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
@@ -275,6 +278,9 @@ const SaleConfigItem = ({
           <label className="font-bold">
             Max Mint Per Wallet <span className="text-red-700">*</span>
           </label>
+          <p className="text-sm text-gray-500">
+            Max a wallet can mint in this salewave
+          </p>
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
@@ -302,6 +308,9 @@ const SaleConfigItem = ({
           <label className="font-bold">
             Max Mint In Sale <span className="text-red-700">*</span>
           </label>
+          <p className="text-sm text-gray-500">
+            Max number of mint in this salewave
+          </p>
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
@@ -366,6 +375,10 @@ const SaleConfigItem = ({
                   }}
                 />
                 <label className="font-bold">Add Whitelist addresses</label>
+                <p className="text-sm text-gray-500">
+                  Only whitelisted addresses can mint in private sale. Add a
+                  signle wallet here or add in batch using CSV.
+                </p>
                 <div>
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <input
@@ -407,7 +420,7 @@ const SaleConfigItem = ({
                       }}
                       className="bg-blue-600 text-white h-8 sm:h-14 w-full sm:w-28 rounded"
                     >
-                      Add
+                      Add <span className="sm:hidden">Single^</span>
                     </button>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4 text-lg justify-end items-center my-4">

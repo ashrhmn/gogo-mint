@@ -126,7 +126,7 @@ const OverviewSection = ({
           <h2>{unclaimedSupply}</h2>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row w-full items-center justify-end my-3 gap-4">
+      <div className="flex flex-wrap items-center justify-center sm:justify-end my-3 gap-4">
         <select
           className="bg-gray-100 rounded p-2"
           value={filterStatus}
@@ -145,61 +145,62 @@ const OverviewSection = ({
             </option>
           ))}
         </select>
-
-        <button
-          disabled={page === 1 || Math.ceil(nftCount / view) === 0}
-          onClick={async () => {
-            if (page === 1) return;
-            await router.push({
-              ...router,
-              query: { ...router.query, page: page - 1 },
-            });
-            router.reload();
-          }}
-          className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
-        >
-          Prev
-        </button>
-        <div className="bg-gray-100 py-1 px-3 rounded">
-          Page{" "}
-          <select
-            className="rounded p-1"
-            value={page}
-            onChange={async (e) => {
+        <div className="flex gap-2">
+          <button
+            disabled={page === 1 || Math.ceil(nftCount / view) === 0}
+            onClick={async () => {
+              if (page === 1) return;
               await router.push({
                 ...router,
-                query: { ...router.query, page: e.target.value },
+                query: { ...router.query, page: page - 1 },
               });
               router.reload();
             }}
+            className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
           >
-            {Array(Math.ceil(nftCount / view))
-              .fill(0)
-              .map((_, i) => (
-                <option key={i} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-          </select>{" "}
-          of {Math.ceil(nftCount / view)}
+            Prev
+          </button>
+          <div className="bg-gray-100 py-1 px-3 rounded">
+            Page{" "}
+            <select
+              className="rounded p-1"
+              value={page}
+              onChange={async (e) => {
+                await router.push({
+                  ...router,
+                  query: { ...router.query, page: e.target.value },
+                });
+                router.reload();
+              }}
+            >
+              {Array(Math.ceil(nftCount / view))
+                .fill(0)
+                .map((_, i) => (
+                  <option key={i} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+            </select>{" "}
+            of {Math.ceil(nftCount / view)}
+          </div>
+          <button
+            disabled={
+              page === Math.ceil(nftCount / view) ||
+              Math.ceil(nftCount / view) === 0
+            }
+            onClick={async () => {
+              if (page === Math.ceil(nftCount / view)) return;
+              await router.push({
+                ...router,
+                query: { ...router.query, page: page + 1 },
+              });
+              router.reload();
+            }}
+            className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+          >
+            Next
+          </button>
         </div>
-        <button
-          disabled={
-            page === Math.ceil(nftCount / view) ||
-            Math.ceil(nftCount / view) === 0
-          }
-          onClick={async () => {
-            if (page === Math.ceil(nftCount / view)) return;
-            await router.push({
-              ...router,
-              query: { ...router.query, page: page + 1 },
-            });
-            router.reload();
-          }}
-          className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
-        >
-          Next
-        </button>
         <div className="bg-gray-100 py-1 px-3 rounded">
           View Per Page{" "}
           <select

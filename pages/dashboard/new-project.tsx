@@ -88,12 +88,12 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
       toast.error("Name is required");
       return;
     }
-    if (!/^[A-Za-z0-9 -_]+$/.test(configSet.name)) {
-      toast.error("Name must be alphanumeric");
+    if (!/[a-zA-Z -]+/g.test(configSet.name)) {
+      toast.error("Invalid Name");
       return;
     }
-    if (!/^[A-Za-z0-9 -_]+$/.test(configSet.symbol)) {
-      toast.error("Symbol must be alphanumeric");
+    if (!/[a-zA-Z -]+/g.test(configSet.symbol)) {
+      toast.error("Invalid Symbol");
       return;
     }
     if (!configSet.feeToAddress) {
@@ -274,6 +274,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 <label className="font-bold">
                   Name <span className="text-red-700">*</span>
                 </label>
+                <p className="text-sm text-gray-500">Name of the project</p>
                 <input
                   className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                   type="text"
@@ -288,6 +289,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   <label className="font-bold">
                     Symbol <span className="text-red-700">*</span>
                   </label>
+                  <p className="text-sm text-gray-500">Symbol of NFT tokens</p>
                   <input
                     className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                     type="text"
@@ -301,7 +303,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   <label className="font-bold">
                     Max Mint Per Wallet in Total
                   </label>
-
+                  <p className="text-sm text-gray-500">
+                    Max mint limit for a wallet in this collection
+                  </p>
                   <input
                     className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                     type="text"
@@ -329,6 +333,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               >
                 Description
               </label>
+              <p className="text-sm text-gray-500">Project Description</p>
               <input
                 className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                 type="text"
@@ -370,19 +375,31 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               mint
             </div>
           )}
-          {configSet.saleWaves.map((sw, idx) => (
-            <SaleConfigInput
-              key={sw.uuid}
-              saleWaveConfig={sw}
-              setConfigSet={setConfigSet}
-              index={idx}
-            />
-          ))}
+          {configSet.saleWaves.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <label className="font-bold">Sale Waves</label>
+              <p className="text-sm text-gray-500">
+                {configSet.saleWaves.length} salewave
+                {configSet.saleWaves.length > 1 && "s"} added
+              </p>
+              {configSet.saleWaves.map((sw, idx) => (
+                <SaleConfigInput
+                  key={sw.uuid}
+                  saleWaveConfig={sw}
+                  setConfigSet={setConfigSet}
+                  index={idx}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="mt-4 space-y-2">
             <label className="font-bold">
-              Recipient Address <span className="text-red-700">*</span>
+              Charge Recipient Address <span className="text-red-700">*</span>
             </label>
+            <p className="text-sm text-gray-500">
+              All the mint charges will go to this address
+            </p>
             <input
               className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
               type="text"
@@ -395,9 +412,13 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
 
           <div className="mt-4 space-y-2">
             <label className="font-bold">Royalty Receiver Address</label>
-            <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-500">
+              On every resale of an NFT from this collection a RoyaltyPercentage
+              will be sent to this address
+            </p>
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
               <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="flex-grow rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                 type="text"
                 value={configSet.roayltyReceiver}
                 onChange={(e) =>
@@ -440,6 +461,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             >
               Deploy Contract
             </button>
+            <p className="text-sm text-gray-500 text-center">
+              Requires Transaction on Deploy
+            </p>
           </div>
         </div>
       </div>

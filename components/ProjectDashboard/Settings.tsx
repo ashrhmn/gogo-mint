@@ -389,10 +389,10 @@ const SettingsSection = ({
         <div className="absolute top-0 right-0 left-0 text-gray-700 bg-white text-3xl font-medium text-center py-1 shadow-2xl z-10">
           <h1>Mint Page Preview</h1>
           <Link
-            href={`https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}
+            href={`https://gogomint.ashrhmn.com/mint/${configSet.uid}`}
             passHref
           >
-            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogo-mint.ashrhmn.com/mint/${
+            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogomint.ashrhmn.com/mint/${
               configSet.uid.trim().replaceAll(" ", "%20") || "<random-string>"
             }`}</div>
           </Link>
@@ -456,6 +456,7 @@ const SettingsSection = ({
             <div className="mt-4 space-y-2">
               <label className="font-bold">
                 Name <span className="text-red-700">*</span>
+                <p className="text-sm text-gray-500">Name of the project</p>
               </label>
               <input
                 className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
@@ -469,6 +470,9 @@ const SettingsSection = ({
             </div>
             <div className="mt-4 space-y-2">
               <label className="font-bold">Description</label>
+              <p className="text-sm text-gray-500">
+                Description of the project
+              </p>
               <input
                 className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                 type="text"
@@ -481,6 +485,10 @@ const SettingsSection = ({
             </div>
             <div className="mt-4 space-y-2">
               <label className="font-bold">Project UID</label>
+              <p className="text-sm text-gray-500">
+                This UID is set as the project mint page URL. See preview above
+                for reference.
+              </p>
               <input
                 className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                 type="text"
@@ -498,6 +506,10 @@ const SettingsSection = ({
             </div>
             <div className="mt-4 space-y-2">
               <label className="font-bold">Royalty Receiver</label>
+              <p className="text-sm text-gray-500">
+                On every resale of an NFT from this collection a
+                RoyaltyPercentage will be sent to this address
+              </p>
               <div className="flex items-center gap-4">
                 <input
                   className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
@@ -556,7 +568,11 @@ const SettingsSection = ({
           </div>
         )}
         <div className="mt-4 space-y-2">
-          <label className="font-bold">Fee Receiver Address</label>
+          <label className="font-bold">Charge Recipient Address</label>
+          <p className="text-sm text-gray-500">
+            All the mint charges will go to this address (Requires Transaction
+            on update)
+          </p>
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="text"
@@ -585,6 +601,10 @@ const SettingsSection = ({
         )}
         <div className="mt-4 space-y-2">
           <label className="font-bold">Max Mint Per Wallet in Total</label>
+          <p className="text-sm text-gray-500">
+            Max mint limit for a wallet in this collection (Requires Transaction
+            on update)
+          </p>
           <input
             className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
             type="number"
@@ -612,34 +632,52 @@ const SettingsSection = ({
           </button>
         </div>
       </div>
-      <div className="bg-gray-200 rounded p-4 my-6 relative">
-        {!!baseURIBgProc && (
-          <div className="absolute right-5 top-5 z-10 scale-150">
-            <LoaderIcon />
+
+      <details>
+        <summary className="text-xl font-medium cursor-pointer">
+          Advance Settings
+          <p className="text-sm text-gray-500">
+            Only change when you know what you are doing
+          </p>
+        </summary>
+        <div className="bg-gray-200 rounded p-4 my-6 relative">
+          {!!baseURIBgProc && (
+            <div className="absolute right-5 top-5 z-10 scale-150">
+              <LoaderIcon />
+            </div>
+          )}
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Base URI</label>
+            <p className="text-sm text-gray-500">
+              Base URL for token and contract metadata (Requires Transaction on
+              update)
+            </p>
+            <input
+              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+              type="text"
+              disabled={!!baseURIBgProc}
+              value={configSet.baseURI}
+              onChange={(e) =>
+                setConfigSet((c) => ({ ...c, baseURI: e.target.value }))
+              }
+            />
           </div>
-        )}
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">Base URI</label>
-          <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-            type="text"
-            disabled={!!baseURIBgProc}
-            value={configSet.baseURI}
-            onChange={(e) =>
-              setConfigSet((c) => ({ ...c, baseURI: e.target.value }))
-            }
-          />
+          <div>
+            <button
+              disabled={!!baseURIBgProc}
+              className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              onClick={handleBaseUriUpdate}
+            >
+              Update
+            </button>
+          </div>
         </div>
-        <div>
-          <button
-            disabled={!!baseURIBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
-            onClick={handleBaseUriUpdate}
-          >
-            Update
-          </button>
-        </div>
-      </div>
+      </details>
+      {/* <iframe
+        className="w-full h-[600px] border-2 border-gray-500 rounded-xl"
+        src={`https://gogomint.ashrhmn.com/mint/${configSet.uid}`}
+        frameBorder="0"
+      ></iframe> */}
     </div>
   );
 };

@@ -68,7 +68,7 @@ const ProjectPage: NextPage<Props> = ({
       : "overview";
   return (
     <Layout dashboard>
-      <div className="flex flex-col sm:flex-row justify-between my-4">
+      <div className="flex flex-col sm:flex-row gap-2 justify-between my-4">
         <div className="flex gap-4">
           {project.imageUrl && (
             <div className="h-20 w-20 relative hidden sm:block">

@@ -186,6 +186,9 @@ const ClaimsSection = ({
           Save Sale Waves
         </button>
       </div>
+      <p className="text-sm text-gray-500 text-center">
+        Requires Transaction on update
+      </p>
       {saleConfigs.map((sc, index) => (
         <SaleConfigItem
           index={index}
