@@ -75,7 +75,9 @@ const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
                       <td className="p-4 text-center min-w-[100px]">
                         {p.name}
                       </td>
-                      <td className="p-4 text-center min-w-[100px]">721</td>
+                      <td className="p-4 text-center min-w-[100px]">
+                        {p.collectionType}
+                      </td>
                       <td className="p-4 text-center min-w-[100px]">
                         {p.chainId}
                       </td>
@@ -124,7 +126,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       props: {},
       redirect: {
         destination: authPageUrlWithMessage(
-          errorHasMessage(error) ? error.message : "Error authenticating user"
+          typeof error === "string"
+            ? error
+            : errorHasMessage(error)
+            ? error.message
+            : "Error authenticating user"
         ),
       },
     };

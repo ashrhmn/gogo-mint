@@ -11,11 +11,13 @@ const CreateModal = ({
   projectId,
   isCreateModalOpen,
   setIsCreateModalOpen,
+  collectionType,
 }: {
   projectId: number;
   ownerAddress: string | null;
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isCreateModalOpen: boolean;
+  collectionType: string | null;
 }) => {
   const router = useRouter();
   const [configSet, setConfigSet] = useState<INftMetadata>({
@@ -41,10 +43,6 @@ const CreateModal = ({
   };
   const handleAddNft = async () => {
     try {
-      // const url = !configSet.file
-      //   ? null
-      //   : await uploadFileToFirebase(configSet.file);
-
       const [url] = await Promise.all([
         !configSet.file
           ? null
@@ -53,17 +51,7 @@ const CreateModal = ({
               loading: "Uploading image",
               success: "Image uploaded successfully",
             }),
-        // toast.promise(service.get(`/platform-signer/random-sign`), {
-        //   error: "Error generating signature",
-        //   loading: "Generating Signature",
-        //   success: "Signature Generated Successfully",
-        // }),
       ]);
-
-      // if (randomSignatureResponse.error) {
-      //   toast.error("Error getting signature");
-      //   return;
-      // }
 
       const { data: nft } = await toast.promise(
         service.post(`nft`, {
@@ -77,8 +65,7 @@ const CreateModal = ({
           backgroundColor: configSet.openSeaBgColor,
           externalUrl: configSet.openSeaExternalUrl,
           imageUrl: url,
-          // message: randomSignatureResponse.data.message,
-          // signature: randomSignatureResponse.data.signature,
+          tokenId: collectionType === "1155" ? 0 : undefined,
         }),
         {
           error: "Error saving NFT",

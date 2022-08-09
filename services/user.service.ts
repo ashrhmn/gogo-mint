@@ -11,17 +11,12 @@ import {
 } from "../types";
 import { getAccessTokenFromCookie } from "../utils/Request.utils";
 
-export const getLoggedInUser = async (req: NextOrIncomingMessage) => {
-  try {
-    const accessToken = getAccessTokenFromCookie(req);
-    if (!accessToken || typeof accessToken !== "string")
-      return { data: null, error: "Access Token Not Found" };
-    const user = await getUserByAccessToken(accessToken);
-    if (user) return successResponse(user);
-    return errorResponse("Error fetching user");
-  } catch (error) {
-    return errorResponse("Error fetching user : " + error);
-  }
+export const getLoggedInDiscordUser = async (req: NextOrIncomingMessage) => {
+  const accessToken = getAccessTokenFromCookie(req);
+  if (!accessToken || typeof accessToken !== "string")
+    throw "Access Token Not Found";
+  const user = await getUserByAccessToken(accessToken);
+  return user;
 };
 
 export const getUserByDiscordIdentifiers = async (

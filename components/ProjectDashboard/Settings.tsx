@@ -1,18 +1,21 @@
 import { useEthers } from "@usedapp/core";
-import { Contract, getDefaultProvider } from "ethers";
+import { getDefaultProvider } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { v4 } from "uuid";
-import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
+import {
+  Collection1155__factory,
+  Collection721__factory,
+} from "../../ContractFactory";
 import useDebounce from "../../hooks/useDebounce";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
-import { IDeployConfigSet } from "../../types";
+import { DiscordUserResponse, IDeployConfigSet, IGuild } from "../../types";
 
 const SettingsSection = ({
   projectId,
@@ -20,12 +23,16 @@ const SettingsSection = ({
   projectChainId,
   collectionType,
   projectOwner,
+  serverList,
+  discordUser,
 }: {
   projectId: number;
   projectChainId: number | null;
   projectAddress: string | null;
   collectionType: string | null;
   projectOwner: string | null;
+  serverList: IGuild[] | null;
+  discordUser: DiscordUserResponse | null;
 }) => {
   const { account, library, chainId } = useEthers();
   const router = useRouter();
@@ -51,12 +58,17 @@ const SettingsSection = ({
     roayltyPercentage: 0,
     roayltyReceiver: "",
     maxMintInTotalPerWallet: 0,
+    collectionType: collectionType === "721" ? "721" : "1155",
   });
+  console.log(serverList);
+
   const [imageBase64Logo, setImageBase64Logo] = useState("");
   const logoImgInputRef = useRef<HTMLInputElement | null>(null);
   const [imageBase64Banner, setImageBase64Banner] = useState("");
   const bannerImgInputRef = useRef<HTMLInputElement | null>(null);
   const [currentUid, setCurrentUid] = useState("");
+  const [selectedServer, setSelectedServer] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const onSelectLogoImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -84,22 +96,38 @@ const SettingsSection = ({
       (async () => {
         if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId])
           return;
-        const contract = new Contract(
-          projectAddress,
-          collectionType === "721" ? ABI721 : ABI1155,
-          getDefaultProvider(RPC_URLS[projectChainId])
-        );
+        // const contract = new Contract(
+        //   projectAddress,
+        //   collectionType === "721" ? ABI721 : ABI1155,
+        //   getDefaultProvider(RPC_URLS[projectChainId])
+        // );
+        const contract =
+          collectionType === "721"
+            ? Collection721__factory.connect(
+                projectAddress,
+                getDefaultProvider(RPC_URLS[projectChainId])
+              )
+            : Collection1155__factory.connect(
+                projectAddress,
+                getDefaultProvider(RPC_URLS[projectChainId])
+              );
         setFeeAddressBgProc((v) => v + 1);
         setMaxMintInTotalPerWalletBgProc((v) => v + 1);
         setBaseURIBgProc((v) => v + 1);
-        const [feeToAddress, curi, baseURI, maxMintInTotalPerWallet] =
-          await Promise.all([
-            contract.feeDestination(),
-            contract.contractURI(),
-            contract.baseURI(),
-            contract.maxMintInTotalPerWallet(),
-          ]);
-        console.log("CURi : ", curi);
+        const [
+          feeToAddress,
+          curi,
+          baseURI,
+          maxMintInTotalPerWallet,
+          token0uri,
+        ] = await Promise.all([
+          contract.feeDestination(),
+          contract.contractURI(),
+          contract.baseURI(),
+          contract.maxMintInTotalPerWallet(),
+          contract.tokenURI(0),
+        ]);
+        console.log({ curi, token0uri });
 
         setConfigSet((c) => ({
           ...c,
@@ -232,11 +260,14 @@ const SettingsSection = ({
       toast.error("You are not project owner");
     }
     try {
-      const contract = new Contract(
-        projectAddress,
-        collectionType === "721" ? ABI721 : ABI1155,
-        library.getSigner(account)
-      );
+      const contract =
+        collectionType === "721"
+          ? new Collection721__factory(library.getSigner(account)).attach(
+              projectAddress
+            )
+          : new Collection1155__factory(library.getSigner(account)).attach(
+              projectAddress
+            );
       setBaseURIBgProc((v) => v + 1);
       const tx = await toast.promise(
         contract.updateBaseURI(configSet.baseURI),
@@ -279,11 +310,15 @@ const SettingsSection = ({
       toast.error("Invalid address");
       return;
     }
-    const contract = new Contract(
-      projectAddress,
-      collectionType === "721" ? ABI721 : ABI1155,
-      library.getSigner(account)
-    );
+
+    const contract =
+      collectionType === "721"
+        ? new Collection721__factory(library.getSigner(account)).attach(
+            projectAddress
+          )
+        : new Collection1155__factory(library.getSigner(account)).attach(
+            projectAddress
+          );
     try {
       setMaxMintInTotalPerWalletBgProc((v) => v + 1);
       const tx = await toast.promise(
@@ -329,11 +364,14 @@ const SettingsSection = ({
       toast.error("Invalid address");
       return;
     }
-    const contract = new Contract(
-      projectAddress,
-      collectionType === "721" ? ABI721 : ABI1155,
-      library.getSigner(account)
-    );
+    const contract =
+      collectionType === "721"
+        ? new Collection721__factory(library.getSigner(account)).attach(
+            projectAddress
+          )
+        : new Collection1155__factory(library.getSigner(account)).attach(
+            projectAddress
+          );
     try {
       setFeeAddressBgProc((v) => v + 1);
       const tx = await toast.promise(
@@ -378,6 +416,25 @@ const SettingsSection = ({
     200,
     [configSet.uid]
   );
+
+  const selectedGuild = useMemo(() => {
+    if (serverList === null || selectedServer === null) return null;
+    const server = serverList.find((s) => s.guild.id === selectedServer);
+    return !server ? null : server;
+  }, [selectedServer, serverList]);
+
+  const selectedGuildRole = useMemo(() => {
+    if (selectedGuild === null || selectedRole === null) return null;
+    const role = selectedGuild.guildRoles.find((r) => r.id === selectedRole);
+    return !role ? null : role;
+  }, [selectedGuild, selectedRole]);
+
+  const selectedServerGuildMember = useMemo(() => {
+    if (selectedGuild === null || discordUser === null) return null;
+    const member = selectedGuild.members.find((m) => m.id === discordUser.id);
+    return !member ? null : member;
+  }, [discordUser, selectedGuild]);
+
   return (
     <div className="mt-4">
       <div className="bg-gray-200 p-4 rounded relative overflow-hidden">
@@ -630,6 +687,103 @@ const SettingsSection = ({
           >
             Update
           </button>
+        </div>
+      </div>
+      <div className="bg-gray-200 rounded p-4 my-6 relative">
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">Set Discord Roles</label>
+          <p className="text-sm text-gray-500">
+            Here you can set discord roles to be assigned to NFT holders from
+            this project
+          </p>
+          <Link
+            target="_blank"
+            href={`https://discord.com/oauth2/authorize?client_id=990705597953474590&scope=bot%20applications.commands&permissions=268435456`}
+            passHref
+          >
+            <a>Add VerifyBot to you server</a>
+          </Link>
+          {serverList === null ||
+            (discordUser === null && (
+              <h1>
+                Make sure to be log in from{" "}
+                <Link href={`/authenticate`} passHref>
+                  <a>Authenticate</a>
+                </Link>{" "}
+                Page
+              </h1>
+            ))}
+          {serverList !== null && discordUser !== null && (
+            <div>
+              <h1>
+                VerifyBot is added to {serverList.length} Discord Server(s) that
+                you are member of
+              </h1>
+              <div>
+                <label>Select Server</label>
+                <select
+                  onChange={(e) =>
+                    setSelectedServer(
+                      e.target.value !== "select" ? e.target.value : null
+                    )
+                  }
+                >
+                  <option value="select">Select</option>
+                  {serverList.map((s) => (
+                    <option
+                      // disabled={!s.botCanManageRole}
+                      key={s.guild.id}
+                      value={s.guild.id}
+                    >
+                      {s.guild.name}{" "}
+                      {!s.botCanManageRole &&
+                        "(Add the bot again with default permissions)"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label>Select Role</label>
+                <select
+                  onChange={(e) =>
+                    setSelectedRole(
+                      e.target.value !== "select" ? e.target.value : null
+                    )
+                  }
+                >
+                  {selectedGuild === null && (
+                    <option value={"select"}>Select a server</option>
+                  )}
+                  {selectedGuild !== null &&
+                    selectedGuild.guildRoles.map((role) => (
+                      <option value={role.id} key={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  {selectedGuild !== null &&
+                    selectedGuild.guildRoles.length === 0 && (
+                      <option value={"select"}>No roles found</option>
+                    )}
+                </select>
+              </div>
+              <div>
+                <h1>{selectedServer}</h1>
+                <h1>{selectedRole}</h1>
+                {selectedServerGuildMember !== null && (
+                  <>
+                    <h1>
+                      Has Admin Rights :{" "}
+                      {selectedServerGuildMember.isAdmin ? "Yes" : "No"}
+                    </h1>
+                    <h1>
+                      Can Manage Roles :{" "}
+                      {selectedServerGuildMember.canManageRole ? "Yes" : "No"}
+                    </h1>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

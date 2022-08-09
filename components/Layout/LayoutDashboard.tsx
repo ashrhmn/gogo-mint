@@ -8,7 +8,9 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
     <>
       <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-40 bg-white">
         <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-16">
-          <div className="w-0 sm:w-auto overflow-hidden">Logo</div>
+          <div className="w-0 sm:w-auto overflow-hidden text-3xl font-bold">
+            Logo
+          </div>
           <div className="flex overflow-auto">
             <Link href={`/mint`}>
               <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">

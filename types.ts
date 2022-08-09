@@ -43,6 +43,7 @@ export interface IDeployConfigSet {
   roayltyReceiver: string;
   roayltyPercentage: number;
   uid: string;
+  collectionType: "721" | "1155";
 }
 
 export type ContractFile = {
@@ -149,4 +150,27 @@ export interface ISaleConfigInput {
   whitelistAddresses: string[];
   maxMintPerWallet: number;
   maxMintInSale: number;
+}
+
+export interface IGuild {
+  guild: {
+    id: string;
+    name: string;
+  };
+  botCanManageRole: boolean | undefined;
+  guildRoles: {
+    id: string;
+    name: string;
+  }[];
+  members: {
+    id: string;
+    username: string;
+    discriminator: string;
+    isAdmin: boolean;
+    canManageRole: boolean;
+    roles: {
+      id: string;
+      name: string;
+    }[];
+  }[];
 }

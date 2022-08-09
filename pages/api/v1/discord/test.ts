@@ -14,12 +14,16 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
       "OTkwNzA1NTk3OTUzNDc0NTkw.G3Afl3.IfJlPlvey5ft_gS2i98PGksJeybRJeinhvvwvw"
     );
 
+    console.log(client.user?.id);
+
     const guilds = await client.guilds.fetch();
 
     const ug = await Promise.all(guilds.map((g) => g.fetch()));
 
     const uug = await Promise.all(
-      ug.map(async (guild) => {
+      (
+        await Promise.all((await client.guilds.fetch()).map((g) => g.fetch()))
+      ).map(async (guild) => {
         const members = await guild.members.fetch();
         const roles = await guild.roles.fetch();
         return {
@@ -36,36 +40,29 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
       })
     );
 
-    console.log(
+    console.log(client.user?.id);
+
+    client.destroy();
+    return res.json(
       uug.map((u) => ({
-        guild: u.guild.name,
-        member: u.members.map(
-          (m) =>
-            `${m.guildMember.user.username} #${m.guildMember.user.discriminator}`
-        ),
-        roles: u.roles.map((r) => r.role.name),
+        guild: { id: u.guild.id, name: u.guild.name },
+        botCanManageRole: u.members
+          .find((m) => m.id === client.user?.id)
+          ?.guildMember.permissions.has("MANAGE_ROLES"),
+        guildRoles: u.roles.map((r) => ({ id: r.id, name: r.role.name })),
+        members: u.members.map((m) => ({
+          id: m.guildMember.user.id,
+          username: m.guildMember.user.username,
+          discriminator: m.guildMember.user.discriminator,
+          isAdmin: m.guildMember.permissions.has("ADMINISTRATOR"),
+          canManageRole: m.guildMember.permissions.has("MANAGE_ROLES"),
+          // permissions: m.guildMember.permissions.toArray(),
+          roles: m.guildMember.roles.cache.map((r) => ({
+            id: r.id,
+            name: r.name,
+          })),
+        })),
       }))
     );
-
-    // console.log(
-    //   uug
-    //     .filter((u) => u.members.includes("592387527718207518"))
-    //     .map((u) => ({ guild: u.guild.name, member: u.members }))
-    // );
-
-    // const role = (
-    //   await (await client.guilds.fetch("878341574092804167")).roles.fetch()
-    // )
-    //   .filter((r) => r.name === "Holders Role")
-    //   .keyAt(0);
-
-    // const guilds = (
-    //   await (
-    //     await client.guilds.fetch("878341574092804167")
-    //   ).members.fetch("839116716344082432")
-    // ).roles.cache.filter((role) => role.name === "Holders Role");
-    // console.log(guilds);
-    client.destroy();
-    return res.json("Done");
   }
 );

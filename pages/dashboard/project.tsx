@@ -14,12 +14,19 @@ import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
 import { getCookieWallet } from "../../services/auth.service";
 import {
+  getServerListWithAdminOrManageRole,
+  getUserByAccessToken,
+} from "../../services/discord.service";
+import {
   getClaimedSupplyCountByProjectChainAddress,
   getProjectByChainAddress,
   getUnclaimedSupplyCountByProjectChainAddress,
 } from "../../services/project.service";
-import { getUserByWalletAddress } from "../../services/user.service";
-import { ProjectExtended } from "../../types";
+import {
+  getLoggedInDiscordUser,
+  getUserByWalletAddress,
+} from "../../services/user.service";
+import { DiscordUserResponse, IGuild, ProjectExtended } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
@@ -32,6 +39,8 @@ interface Props {
   page: number;
   view: number;
   mintStatus: "all" | "minted" | "unminted";
+  serverList: IGuild[] | null;
+  discordUser: DiscordUserResponse | null;
 }
 
 const ProjectPage: NextPage<Props> = ({
@@ -42,6 +51,8 @@ const ProjectPage: NextPage<Props> = ({
   page,
   view,
   mintStatus,
+  serverList,
+  discordUser,
 }) => {
   const router = useRouter();
   const { account } = useEthers();
@@ -85,18 +96,23 @@ const ProjectPage: NextPage<Props> = ({
           </div>
         </div>
         <div className="flex gap-4 items-center">
-          <button
-            className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            + Create
-          </button>
-          <button
-            className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
-            onClick={() => setIsBatchCreateModalOpen(true)}
-          >
-            + Create Batch
-          </button>
+          {project.collectionType === "721" ||
+            (project.collectionType === "1155" && project._count.nfts < 1 && (
+              <button
+                className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                + Create
+              </button>
+            ))}
+          {project.collectionType === "721" && (
+            <button
+              className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+              onClick={() => setIsBatchCreateModalOpen(true)}
+            >
+              + Create Batch
+            </button>
+          )}
         </div>
       </div>
       <div>
@@ -176,6 +192,8 @@ const ProjectPage: NextPage<Props> = ({
               projectChainId={project.chainId}
               collectionType={project.collectionType}
               projectOwner={project.owner.walletAddress}
+              serverList={serverList}
+              discordUser={discordUser}
             />
           )}
         </div>
@@ -196,6 +214,7 @@ const ProjectPage: NextPage<Props> = ({
         setIsCreateModalOpen={setIsCreateModalOpen}
         projectId={project.id}
         ownerAddress={project.owner.walletAddress}
+        collectionType={project.collectionType}
       />
       <BatchCreateModal
         isBatchCreateModalOpen={isBatchCreateModalOpen}
@@ -260,10 +279,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         },
       };
 
-    const [claimedSupply, unclaimedSupply] = await Promise.all([
-      getClaimedSupplyCountByProjectChainAddress(contract, +network),
-      getUnclaimedSupplyCountByProjectChainAddress(contract, +network),
-    ]);
+    const [claimedSupply, unclaimedSupply, serverList, discordUser] =
+      await Promise.all([
+        getClaimedSupplyCountByProjectChainAddress(contract, +network),
+        getUnclaimedSupplyCountByProjectChainAddress(contract, +network),
+        getServerListWithAdminOrManageRole(cookies).catch((e) => {
+          console.log("Error server list : ", e);
+          return null;
+        }),
+        getLoggedInDiscordUser(context.req).catch((err) => null),
+      ]);
+
+    console.log({ serverList });
 
     return {
       props: {
@@ -274,6 +301,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         page: pageNo,
         view: take,
         mintStatus,
+        serverList,
+        discordUser,
       },
     };
   } catch (error) {

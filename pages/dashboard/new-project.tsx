@@ -10,6 +10,10 @@ import { v4 } from "uuid";
 import Layout from "../../components/Layout";
 import SaleConfigInput from "../../components/Projects/SaleConfigInput";
 import { BASE_URI } from "../../constants/configuration";
+import {
+  Collection1155__factory,
+  Collection721__factory,
+} from "../../ContractFactory";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
@@ -42,6 +46,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     roayltyPercentage: 0,
     roayltyReceiver: "",
     maxMintInTotalPerWallet: 0,
+    collectionType: "721",
   });
   useEffect(() => {
     if (account)
@@ -72,6 +77,62 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     });
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, logo: file }));
+  };
+
+  const deploy721 = async (
+    name: string,
+    symbol: string,
+    feeToAddress: string,
+    maxMintInTotalPerWallet: number,
+    saleConfigRoot: string,
+    platformSignerAddress: string,
+    baseURI: string,
+    factory: Collection721__factory
+  ) => {
+    const contract = await toast.promise(
+      factory.deploy(
+        name,
+        symbol,
+        feeToAddress,
+        maxMintInTotalPerWallet,
+        saleConfigRoot,
+        platformSignerAddress,
+        baseURI
+      ),
+      {
+        success: "Transaction sent",
+        error: "Error sending transaction",
+        loading: "Sending transaction...",
+      }
+    );
+    return contract;
+  };
+
+  const deploy1155 = async (
+    name: string,
+    feeToAddress: string,
+    maxMintInTotalPerWallet: number,
+    saleConfigRoot: string,
+    platformSignerAddress: string,
+    baseURI: string,
+    factory: Collection1155__factory
+  ) => {
+    const contract = await toast.promise(
+      factory.deploy(
+        name,
+        feeToAddress,
+        maxMintInTotalPerWallet,
+        saleConfigRoot,
+        platformSignerAddress,
+        baseURI
+      ),
+      {
+        success: "Transaction sent",
+        error: "Error sending transaction",
+        loading: "Sending transaction...",
+      }
+    );
+    return contract;
   };
 
   const onDeployClick = async () => {
@@ -121,7 +182,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
       const [
         imageUrl,
         { data: saleConfigRoot },
-        { data: initCode },
+        // { data: initCode },
         { data: platformSignerAddress },
       ] = await toast.promise(
         Promise.all([
@@ -137,7 +198,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   : [...sw.whitelistAddresses, account],
             })),
           }),
-          service.get(`contract/collection721?name=${configSet.name}`),
+          // service.get(`contract/collection721?name=${configSet.name}`),
           service.get(`platform-signer/public-address`),
         ]),
         {
@@ -158,33 +219,72 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         setBgProcessRunning((v) => v - 1);
         return;
       }
-      if (initCode.error) {
-        toast.error("Error contract data");
-        setBgProcessRunning((v) => v - 1);
-        return;
-      }
-      const factory = new ContractFactory(
-        initCode.data.abi,
-        initCode.data.bytecode,
-        library.getSigner(account)
-      );
+      // if (initCode.error) {
+      //   toast.error("Error contract data");
+      //   setBgProcessRunning((v) => v - 1);
+      //   return;
+      // }
 
-      const contract = await toast.promise(
-        factory.deploy(
-          normalizeString(configSet.name),
-          normalizeString(configSet.symbol),
-          configSet.feeToAddress,
-          configSet.maxMintInTotalPerWallet,
-          saleConfigRoot.data,
-          platformSignerAddress.data,
-          baseUri
-        ),
-        {
-          success: "Transaction sent",
-          error: "Error sending transaction",
-          loading: "Sending transaction...",
-        }
-      );
+      // const factory = new ContractFactory(
+      //   initCode.data.abi,
+      //   initCode.data.bytecode,
+      //   library.getSigner(account)
+      // );
+
+      // const contract = await toast.promise(
+      //   new Collection721__factory(library.getSigner(account)).deploy(
+      //     normalizeString(configSet.name),
+      //     normalizeString(configSet.symbol),
+      //     configSet.feeToAddress,
+      //     configSet.maxMintInTotalPerWallet,
+      //     saleConfigRoot.data,
+      //     platformSignerAddress.data,
+      //     baseUri
+      //   ),
+      //   {
+      //     success: "Transaction sent",
+      //     error: "Error sending transaction",
+      //     loading: "Sending transaction...",
+      //   }
+      // );
+      // const contract = await toast.promise(
+      //   factory.deploy(
+      //     normalizeString(configSet.name),
+      //     normalizeString(configSet.symbol),
+      //     configSet.feeToAddress,
+      //     configSet.maxMintInTotalPerWallet,
+      //     saleConfigRoot.data,
+      //     platformSignerAddress.data,
+      //     baseUri
+      //   ),
+      //   {
+      //     success: "Transaction sent",
+      //     error: "Error sending transaction",
+      //     loading: "Sending transaction...",
+      //   }
+      // );
+
+      const contract =
+        configSet.collectionType === "721"
+          ? await deploy721(
+              normalizeString(configSet.name),
+              normalizeString(configSet.symbol),
+              configSet.feeToAddress,
+              configSet.maxMintInTotalPerWallet,
+              saleConfigRoot.data,
+              platformSignerAddress.data,
+              baseUri,
+              new Collection721__factory(library.getSigner(account))
+            )
+          : await deploy1155(
+              normalizeString(configSet.name),
+              configSet.feeToAddress,
+              configSet.maxMintInTotalPerWallet,
+              saleConfigRoot.data,
+              platformSignerAddress.data,
+              baseUri,
+              new Collection1155__factory(library.getSigner(account))
+            );
 
       const [newProject] = await toast.promise(
         Promise.all([
@@ -194,7 +294,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             description: configSet.description,
             imageUrl,
             chainId,
-            collectionType: "721",
+            collectionType: configSet.collectionType,
             signerAddress: account,
             uid: v4(),
             royaltyReceiver: configSet.roayltyReceiver,
@@ -270,19 +370,41 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           </div>
           <div>
             <div>
-              <div className="mt-4 space-y-2">
-                <label className="font-bold">
-                  Name <span className="text-red-700">*</span>
-                </label>
-                <p className="text-sm text-gray-500">Name of the project</p>
-                <input
-                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                  type="text"
-                  value={configSet.name}
-                  onChange={(e) =>
-                    setConfigSet((c) => ({ ...c, name: e.target.value }))
-                  }
-                />
+              <div className="mt-4 flex gap-2">
+                <div className="space-y-2 w-full">
+                  <label className="font-bold">
+                    Name <span className="text-red-700">*</span>
+                  </label>
+                  <p className="text-sm text-gray-500">Name of the project</p>
+                  <input
+                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    type="text"
+                    value={configSet.name}
+                    onChange={(e) =>
+                      setConfigSet((c) => ({ ...c, name: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2 w-full">
+                  <label className="font-bold">Collection Type</label>
+                  <p className="text-sm text-gray-500">
+                    Select the ERC Standard for your project
+                  </p>
+                  <select
+                    value={configSet.collectionType}
+                    onChange={(e) =>
+                      setConfigSet((c) => ({
+                        ...c,
+                        collectionType:
+                          e.target.value === "721" ? "721" : "1155",
+                      }))
+                    }
+                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  >
+                    <option value={"721"}>ERC721</option>
+                    <option value={"1155"}>ERC1155</option>
+                  </select>
+                </div>
               </div>
               <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
                 <div className="space-y-2 w-full">
@@ -354,8 +476,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     enabled: true,
                     endTime: 0,
                     maxMintInSale: 1000,
-                    maxMintPerWallet: 5,
-                    mintCharge: 0.001,
+                    maxMintPerWallet: c.collectionType === "721" ? 5 : 1000,
+                    mintCharge: c.collectionType === "721" ? 0.001 : 0.000001,
                     startTime: +(Date.now() / 1000).toFixed(0),
                     uuid: v4(),
                     whitelistAddresses: [],

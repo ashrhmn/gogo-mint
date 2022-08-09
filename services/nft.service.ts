@@ -16,8 +16,6 @@ export const addNftsInQueue = async (
 
 export const addNftToProject = async (
   projectId: number,
-  // signature: string,
-  // message: string,
   tokenId: number,
   name: string,
   description: string,

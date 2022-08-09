@@ -16,8 +16,6 @@ export const addNftAsCookieWallet = async (
   try {
     const {
       projectId,
-      // signature,
-      // message,
       tokenId,
       name,
       description,
@@ -34,8 +32,6 @@ export const addNftAsCookieWallet = async (
 
     const newNft = await NftService.addNftToProject(
       +projectId,
-      // signature,
-      // message,
       tokenId,
       name,
       description,

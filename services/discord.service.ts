@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "cookies";
+import { Client, GuildMember, Intents, Role } from "discord.js";
 import { NextApiResponse, NextApiRequest } from "next";
 import {
   ACCESS_TOKEN_COOKIE_KEY,
@@ -9,6 +10,7 @@ import {
   ENV_PROTOCOL,
 } from "../constants/configuration";
 import { DiscordAccessTokenResponse, DiscordUserResponse } from "../types";
+import { decryptAccessToken } from "../utils/String.utils";
 
 export const removeDiscordAccessToken = (
   req: NextApiRequest,
@@ -57,4 +59,71 @@ export const getDiscordUsersCreds = async (code: string) => {
     }
   );
   return { user, creds };
+};
+
+export const getDiscordClient = async () => {
+  const client = new Client({
+    intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS],
+  });
+  await client.login(process.env.BOT_CLIENT_SECRET);
+  return client;
+};
+
+export const getAllGuildDetails = async () => {
+  const client = await getDiscordClient();
+  return (
+    await Promise.all(
+      (
+        await Promise.all((await client.guilds.fetch()).map((g) => g.fetch()))
+      ).map(async (guild) => {
+        const members = await guild.members.fetch();
+        const roles = await guild.roles.fetch();
+        return {
+          guild,
+          members: Array.from(members.keys()).map((key) => ({
+            id: key,
+            guildMember: members.get(key) as GuildMember,
+          })),
+          roles: Array.from(roles.keys()).map((key) => ({
+            id: key,
+            role: roles.get(key) as Role,
+          })),
+        };
+      })
+    )
+  ).map((u) => ({
+    guild: { id: u.guild.id, name: u.guild.name },
+    botCanManageRole: u.members
+      .find((m) => m.id === client.user?.id)
+      ?.guildMember.permissions.has("MANAGE_ROLES"),
+    guildRoles: u.roles
+      .map((r) => ({ id: r.id, name: r.role.name }))
+      .filter((r) => !(r.name === "@everyone" || r.name === "verify-bot")),
+    members: u.members.map((m) => ({
+      id: m.guildMember.user.id,
+      username: m.guildMember.user.username,
+      discriminator: m.guildMember.user.discriminator,
+      isAdmin: m.guildMember.permissions.has("ADMINISTRATOR"),
+      canManageRole: m.guildMember.permissions.has("MANAGE_ROLES"),
+      // permissions: m.guildMember.permissions.toArray(),
+      roles: m.guildMember.roles.cache.map((r) => ({
+        id: r.id,
+        name: r.name,
+      })),
+    })),
+  }));
+};
+
+export const getServerListWithAdminOrManageRole = async (cookies: Cookies) => {
+  const encryptedAccessToken = cookies.get(ACCESS_TOKEN_COOKIE_KEY);
+  if (!encryptedAccessToken) throw "User not logged in";
+  const accessToken = decryptAccessToken(encryptedAccessToken);
+  const user = await getUserByAccessToken(accessToken);
+  if (!user) throw "Invalid Access Token";
+
+  const guilds = (await getAllGuildDetails()).filter((g) =>
+    g.members.map((m) => m.id).includes(user.id)
+  );
+
+  return guilds;
 };

@@ -51,7 +51,7 @@ export const getSaleConfigFromResponse = (data: { [x: string]: any }) => ({
   endTime: +data["endTime"].toString(),
 });
 
-export const getMintEventArgsMapping = (data: { [x: string]: any }) => ({
+export const get721MintEventArgsMapping = (data: { [x: string]: any }) => ({
   msgSender: data["msgSender"].toString(),
   fromTokenId: +data["fromTokenId"].toString(),
   toTokenId: +data["toTokenId"].toString(),

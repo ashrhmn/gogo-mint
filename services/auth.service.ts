@@ -103,15 +103,26 @@ export const updateDiscordInfo = async (
 export const getCookieWallet = (cookies: Cookies) => {
   const encryptedSignature = cookies.get(WALLET_SIGN_COOKIE_KEY);
   const encryptedAddress = cookies.get(WALLET_ADDRESS_COOKIE_KEY);
-  assert(
-    encryptedSignature &&
+  // assert(
+  //   encryptedSignature &&
+  //     typeof encryptedSignature === "string" &&
+  //     encryptedAddress &&
+  //     typeof encryptedAddress === "string",
+  //   "Sign Wallet Required"
+  // );
+  if (
+    !(
+      encryptedSignature &&
       typeof encryptedSignature === "string" &&
       encryptedAddress &&
-      typeof encryptedAddress === "string",
-    "Sign Wallet Required"
-  );
+      typeof encryptedAddress === "string"
+    )
+  )
+    throw "Sign Wallet required";
   const signature = decryptString(encryptedSignature);
   const address = decryptString(encryptedAddress);
-  assert(verifySignature(signature, address), "Signature Verification Failed");
+  // assert(verifySignature(signature, address), "Signature Verification Failed");
+  if (!verifySignature(signature, address))
+    throw "Signature Verification Failed";
   return address;
 };

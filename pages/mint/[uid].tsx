@@ -10,6 +10,11 @@ import toast, { LoaderIcon } from "react-hot-toast";
 import Layout from "../../components/Layout";
 import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
+import {
+  Collection1155__factory,
+  Collection721__factory,
+} from "../../ContractFactory";
+import type { Collection1155, Collection721 } from "../../ContractFactory";
 import { service } from "../../service";
 import { getRandomMessageSignature } from "../../services/platformSigner.service";
 import {
@@ -24,7 +29,7 @@ import {
 } from "../../services/saleConfig.service";
 import { getSolVersionConfig } from "../../utils/SaleCOnfig.utils";
 import {
-  getMintEventArgsMapping,
+  get721MintEventArgsMapping,
   normalizeString,
 } from "../../utils/String.utils";
 
@@ -76,14 +81,22 @@ const MintPage: NextPage<Props> = ({
       )
         return;
       setConfig((c) => ({ ...c, userBalance: -1 }));
-      const contract = new Contract(
-        project.address,
-        project.collectionType === "721" ? ABI721 : ABI1155,
-        getDefaultProvider(RPC_URLS[project.chainId])
-      );
+      const contract =
+        project.collectionType === "721"
+          ? Collection721__factory.connect(
+              project.address,
+              getDefaultProvider(RPC_URLS[project.chainId])
+            )
+          : Collection1155__factory.connect(
+              project.address,
+              getDefaultProvider(RPC_URLS[project.chainId])
+            );
       const [userBalance, maxMintInTotalPerWallet] = (
         await Promise.all([
-          contract.balanceOf(account),
+          // contract.balanceOf(account),
+          project.collectionType === "721"
+            ? (contract as Collection721).balanceOf(account)
+            : (contract as Collection1155).balanceOf(account, 0),
           contract.maxMintInTotalPerWallet(),
         ])
       ).map((v) => +v.toString());
@@ -108,11 +121,21 @@ const MintPage: NextPage<Props> = ({
         !currentSale
       )
         return;
-      const contract = new Contract(
-        project.address,
-        project.collectionType === "721" ? ABI721 : ABI1155,
-        getDefaultProvider(RPC_URLS[project.chainId])
-      );
+      // const contract = new Contract(
+      //   project.address,
+      //   project.collectionType === "721" ? ABI721 : ABI1155,
+      //   getDefaultProvider(RPC_URLS[project.chainId])
+      // );
+      const contract =
+        project.collectionType === "721"
+          ? Collection721__factory.connect(
+              project.address,
+              getDefaultProvider(RPC_URLS[project.chainId])
+            )
+          : Collection1155__factory.connect(
+              project.address,
+              getDefaultProvider(RPC_URLS[project.chainId])
+            );
       const [totalMintInSale, mintCountInSaleByUser] = (
         await Promise.all([
           contract.mintCountByIdentifier(currentSale.saleIdentifier),
@@ -184,6 +207,14 @@ const MintPage: NextPage<Props> = ({
     }
 
     if (
+      // config.maxMintInTotalPerWallet === 0 ||
+      currentSale.maxMintInSale === 0
+    ) {
+      toast.error("Minting Disabled");
+      return;
+    }
+
+    if (
       config.maxMintInTotalPerWallet !== 0 &&
       mintCount + config.userBalance > config.maxMintInTotalPerWallet
     ) {
@@ -209,7 +240,10 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
-    if (totalSupply - claimedSupply < mintCount) {
+    if (
+      project.collectionType === "721" &&
+      totalSupply - claimedSupply < mintCount
+    ) {
       toast.error("Not enough supply");
       return;
     }
@@ -233,11 +267,20 @@ const MintPage: NextPage<Props> = ({
         `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
       );
 
-      const contract = new Contract(
-        project.address,
-        project.collectionType === "721" ? ABI721 : ABI1155,
-        library.getSigner(account)
-      );
+      // const contract = new Contract(
+      //   project.address,
+      //   project.collectionType === "721" ? ABI721 : ABI1155,
+      //   library.getSigner(account)
+      // );
+
+      const contract =
+        project.collectionType === "721"
+          ? new Collection721__factory(library.getSigner(account)).attach(
+              project.address
+            )
+          : new Collection1155__factory(library.getSigner(account)).attach(
+              project.address
+            );
 
       const saleConfig = getSolVersionConfig({
         enabled: currentSale.enabled,
@@ -270,17 +313,23 @@ const MintPage: NextPage<Props> = ({
         }
       );
 
-      const receipt = await toast.promise((tx as any).wait(), {
+      const receipt = await toast.promise(tx.wait(), {
         error: "Error completing transaction",
         loading: "Mining... (Do not close this window)",
         success: "Transaction Completed",
       });
+
+      if (project.collectionType === "1155") {
+        router.reload();
+        return;
+      }
+
       console.log(
-        getMintEventArgsMapping(
+        get721MintEventArgsMapping(
           (receipt as any).events.find((e: any) => e.event === "Mint").args
         )
       );
-      const eventData = getMintEventArgsMapping(
+      const eventData = get721MintEventArgsMapping(
         (receipt as any).events.find((e: any) => e.event === "Mint").args
       );
       await toast.promise(
@@ -369,19 +418,23 @@ const MintPage: NextPage<Props> = ({
                   Connect Wallet
                 </button>
               )}
-              <div className="flex justify-between items-center">
-                <h1>Total Supply</h1>
-                <h1>{totalSupply}</h1>
-              </div>
-              <div className="flex justify-between items-center">
-                <h1>Already Claimed</h1>
-                <h1>{claimedSupply}</h1>
-              </div>
-              {totalSupply !== null && claimedSupply !== null && (
-                <div className="flex justify-between items-center">
-                  <h1>Unclaimed</h1>
-                  <h1>{totalSupply - claimedSupply}</h1>
-                </div>
+              {project.collectionType === "721" && (
+                <>
+                  <div className="flex justify-between items-center">
+                    <h1>Total Supply</h1>
+                    <h1>{totalSupply}</h1>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <h1>Already Claimed</h1>
+                    <h1>{claimedSupply}</h1>
+                  </div>
+                  {totalSupply !== null && claimedSupply !== null && (
+                    <div className="flex justify-between items-center">
+                      <h1>Unclaimed</h1>
+                      <h1>{totalSupply - claimedSupply}</h1>
+                    </div>
+                  )}
+                </>
               )}
               <div className="flex justify-between items-center">
                 <h1>You own from this collection</h1>
@@ -441,9 +494,20 @@ const MintPage: NextPage<Props> = ({
             <button
               className="bg-teal-500 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
               onClick={handleMintClick}
-              disabled={mintBgProc > 0}
+              disabled={
+                mintBgProc > 0 ||
+                config.maxMintInTotalPerWallet === -1 ||
+                config.mintCountInSaleByUser === -1 ||
+                config.totalMintInSale === -1 ||
+                config.userBalance === -1
+              }
             >
-              Mint{" "}
+              {config.maxMintInTotalPerWallet === -1 ||
+              config.mintCountInSaleByUser === -1 ||
+              config.totalMintInSale === -1 ||
+              config.userBalance === -1
+                ? "Loading... "
+                : "Mint "}
               {!!currentSale && (
                 <span className="text-lg">
                   {+(currentSale.mintCharge * mintCount).toFixed(8) === 0 ? (

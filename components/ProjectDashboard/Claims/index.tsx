@@ -6,6 +6,10 @@ import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { v4 } from "uuid";
 import { ABI1155, ABI721 } from "../../../constants/abis";
+import {
+  Collection1155__factory,
+  Collection721__factory,
+} from "../../../ContractFactory";
 import { service } from "../../../service";
 import { ISaleConfigInput } from "../../../types";
 import SaleConfigItem from "./SaleConfigItem";
@@ -100,11 +104,14 @@ const ClaimsSection = ({
         return;
       }
 
-      const contract = new Contract(
-        projectAddress,
-        collectionType === "721" ? ABI721 : ABI1155,
-        library.getSigner(account)
-      );
+      const contract =
+        collectionType === "721"
+          ? new Collection721__factory(library.getSigner(account)).attach(
+              projectAddress
+            )
+          : new Collection1155__factory(library.getSigner(account)).attach(
+              projectAddress
+            );
 
       const updateSaleConfigRootTx = await toast.promise(
         contract.updateSaleConfigRoot(saleConfigRoot.data),
@@ -128,7 +135,7 @@ const ClaimsSection = ({
                 : [...sc.whitelist, account],
             })),
           }),
-          (updateSaleConfigRootTx as any).wait(),
+          updateSaleConfigRootTx.wait(),
         ]),
         {
           error: "Error completing transaction",

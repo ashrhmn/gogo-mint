@@ -13,7 +13,7 @@ const CopyAddressToClipboard = ({
 }) => {
   const copyToClipBoard = () => {
     navigator.clipboard.writeText(address);
-    toast("Copied!");
+    toast.success("Copied!");
   };
   return (
     <div

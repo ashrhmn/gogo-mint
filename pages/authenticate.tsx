@@ -4,7 +4,6 @@ import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { service } from "../service";
-import { getLoggedInUser } from "../services/user.service";
 import { DiscordUserResponse } from "../types";
 import { randomIntFromInterval } from "../utils/Number.utils";
 import Image from "next/image";
@@ -19,6 +18,7 @@ import { getSigner } from "../services/ethereum.service";
 import assert from "assert";
 import { getCookieWallet } from "../services/auth.service";
 import Layout from "../components/Layout";
+import { getLoggedInDiscordUser } from "../services/user.service";
 
 interface Props {
   user?: DiscordUserResponse;
@@ -291,7 +291,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const msg = cookie.get("auth_page_message");
     cookie.set("auth_page_message", "", { expires: new Date(0) });
-    const response = await getLoggedInUser(context.req);
+    const user = await getLoggedInDiscordUser(context.req).catch((err) => null);
     let cookieAddress: string | null;
     try {
       cookieAddress = getCookieWallet(cookie);
@@ -300,9 +300,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
     return {
       props: {
-        user: response.data,
+        user,
         cookieAddress,
-        msg: msg ? msg : null,
+        msg: msg || null,
       },
     };
   } catch (error) {

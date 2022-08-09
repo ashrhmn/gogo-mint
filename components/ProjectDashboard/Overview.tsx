@@ -44,7 +44,7 @@ const OverviewSection = ({
       : filterStatus === "minted"
       ? claimedSupply
       : unclaimedSupply;
-  const { account, library } = useEthers();
+  // const { account, library } = useEthers();
   const router = useRouter();
   const [nftsWithOwner, setNftsWithOwner] =
     useState<(NftExtended & { owner?: string })[]>(nfts);
@@ -56,6 +56,7 @@ const OverviewSection = ({
       isAddress(address) &&
       !!RPC_URLS[projectChainId]
     ) {
+      if (collectionType === "1155") return;
       const contract = new Contract(
         address,
         collectionType === "721" ? ABI721 : ABI1155,
@@ -80,150 +81,154 @@ const OverviewSection = ({
       });
     }
   }, [address, collectionType, nfts, projectChainId]);
-  const handleSignClick = async (nftId: number) => {
-    if (!account || !library) {
-      toast.error("Please connect your wallet first");
-      return;
-    }
-    if (ownerAddress && ownerAddress !== account) {
-      toast.error(
-        `Project owner is ${shortenIfAddress(
-          ownerAddress
-        )}, only owner can sign NFT`
-      );
-      return;
-    }
-    const signature = await library
-      .getSigner(account)
-      .signMessage(
-        arrayify(solidityKeccak256(["string"], [getTokenUri(nftId)]))
-      );
-    const result = await toast.promise(
-      service.put(`nft/signature`, { id: nftId, signature }),
-      {
-        error: "Error saving signature",
-        loading: "Storing signature...",
-        success: "Signature stored successfully",
-      }
-    );
-    if ((result as any).error && typeof (result as any).error == "string")
-      toast.error((result as any).error);
-    router.reload();
-  };
+  // const handleSignClick = async (nftId: number) => {
+  //   if (!account || !library) {
+  //     toast.error("Please connect your wallet first");
+  //     return;
+  //   }
+  //   if (ownerAddress && ownerAddress !== account) {
+  //     toast.error(
+  //       `Project owner is ${shortenIfAddress(
+  //         ownerAddress
+  //       )}, only owner can sign NFT`
+  //     );
+  //     return;
+  //   }
+  //   const signature = await library
+  //     .getSigner(account)
+  //     .signMessage(
+  //       arrayify(solidityKeccak256(["string"], [getTokenUri(nftId)]))
+  //     );
+  //   const result = await toast.promise(
+  //     service.put(`nft/signature`, { id: nftId, signature }),
+  //     {
+  //       error: "Error saving signature",
+  //       loading: "Storing signature...",
+  //       success: "Signature stored successfully",
+  //     }
+  //   );
+  //   if ((result as any).error && typeof (result as any).error == "string")
+  //     toast.error((result as any).error);
+  //   router.reload();
+  // };
   return (
     <div>
-      <div className="flex justify-start w-full gap-4 p-4 overflow-x-auto">
-        <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
-          <h1>Total Supply</h1>
-          <h2>{allNftCount}</h2>
+      {collectionType === "721" && (
+        <div className="flex justify-start w-full gap-4 p-4 overflow-x-auto">
+          <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
+            <h1>Total Supply</h1>
+            <h2>{allNftCount}</h2>
+          </div>
+          <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
+            <h1>Claimed Supply</h1>
+            <h2>{claimedSupply}</h2>
+          </div>
+          <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
+            <h1>Unclaimed Supply</h1>
+            <h2>{unclaimedSupply}</h2>
+          </div>
         </div>
-        <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
-          <h1>Claimed Supply</h1>
-          <h2>{claimedSupply}</h2>
-        </div>
-        <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
-          <h1>Unclaimed Supply</h1>
-          <h2>{unclaimedSupply}</h2>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center justify-center sm:justify-end my-3 gap-4">
-        <select
-          className="bg-gray-100 rounded p-2"
-          value={filterStatus}
-          onChange={(e) => {
-            router
-              .push({
-                ...router,
-                query: { ...router.query, status: e.target.value, page: 1 },
-              })
-              .then(() => router.reload());
-          }}
-        >
-          {["All", "Minted", "Unminted"].map((v) => (
-            <option key={v} value={v.toLowerCase()}>
-              {v}
-            </option>
-          ))}
-        </select>
-        <div className="flex gap-2">
-          <button
-            disabled={page === 1 || Math.ceil(nftCount / view) === 0}
-            onClick={async () => {
-              if (page === 1) return;
-              await router.push({
-                ...router,
-                query: { ...router.query, page: page - 1 },
-              });
-              router.reload();
+      )}
+      {collectionType === "721" && (
+        <div className="flex flex-wrap items-center justify-center sm:justify-end my-3 gap-4">
+          <select
+            className="bg-gray-100 rounded p-2"
+            value={filterStatus}
+            onChange={(e) => {
+              router
+                .push({
+                  ...router,
+                  query: { ...router.query, status: e.target.value, page: 1 },
+                })
+                .then(() => router.reload());
             }}
-            className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
           >
-            Prev
-          </button>
+            {["All", "Minted", "Unminted"].map((v) => (
+              <option key={v} value={v.toLowerCase()}>
+                {v}
+              </option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <button
+              disabled={page === 1 || Math.ceil(nftCount / view) === 0}
+              onClick={async () => {
+                if (page === 1) return;
+                await router.push({
+                  ...router,
+                  query: { ...router.query, page: page - 1 },
+                });
+                router.reload();
+              }}
+              className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+            >
+              Prev
+            </button>
+            <div className="bg-gray-100 py-1 px-3 rounded">
+              Page{" "}
+              <select
+                className="rounded p-1"
+                value={page}
+                onChange={async (e) => {
+                  await router.push({
+                    ...router,
+                    query: { ...router.query, page: e.target.value },
+                  });
+                  router.reload();
+                }}
+              >
+                {Array(Math.ceil(nftCount / view))
+                  .fill(0)
+                  .map((_, i) => (
+                    <option key={i} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+              </select>{" "}
+              of {Math.ceil(nftCount / view)}
+            </div>
+            <button
+              disabled={
+                page === Math.ceil(nftCount / view) ||
+                Math.ceil(nftCount / view) === 0
+              }
+              onClick={async () => {
+                if (page === Math.ceil(nftCount / view)) return;
+                await router.push({
+                  ...router,
+                  query: { ...router.query, page: page + 1 },
+                });
+                router.reload();
+              }}
+              className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+            >
+              Next
+            </button>
+          </div>
           <div className="bg-gray-100 py-1 px-3 rounded">
-            Page{" "}
+            View Per Page{" "}
             <select
               className="rounded p-1"
-              value={page}
+              value={view}
               onChange={async (e) => {
                 await router.push({
                   ...router,
-                  query: { ...router.query, page: e.target.value },
+                  query: { ...router.query, view: e.target.value, page: 1 },
                 });
                 router.reload();
               }}
             >
-              {Array(Math.ceil(nftCount / view))
+              {Array(10)
                 .fill(0)
                 .map((_, i) => (
-                  <option key={i} value={i + 1}>
-                    {i + 1}
+                  <option key={i} value={(i + 1) * 10}>
+                    {(i + 1) * 10}
                   </option>
                 ))}
-            </select>{" "}
-            of {Math.ceil(nftCount / view)}
+            </select>
           </div>
-          <button
-            disabled={
-              page === Math.ceil(nftCount / view) ||
-              Math.ceil(nftCount / view) === 0
-            }
-            onClick={async () => {
-              if (page === Math.ceil(nftCount / view)) return;
-              await router.push({
-                ...router,
-                query: { ...router.query, page: page + 1 },
-              });
-              router.reload();
-            }}
-            className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
-          >
-            Next
-          </button>
         </div>
-        <div className="bg-gray-100 py-1 px-3 rounded">
-          View Per Page{" "}
-          <select
-            className="rounded p-1"
-            value={view}
-            onChange={async (e) => {
-              await router.push({
-                ...router,
-                query: { ...router.query, view: e.target.value, page: 1 },
-              });
-              router.reload();
-            }}
-          >
-            {Array(10)
-              .fill(0)
-              .map((_, i) => (
-                <option key={i} value={(i + 1) * 10}>
-                  {(i + 1) * 10}
-                </option>
-              ))}
-          </select>
-        </div>
-      </div>
+      )}
       <div className="overflow-y-auto">
         <table className="w-full">
           <thead>
@@ -234,7 +239,7 @@ const OverviewSection = ({
               <th>Name</th>
               <th>Description</th>
               <th>Properties</th>
-              <th>Owner</th>
+              {collectionType === "721" && <th>Owner</th>}
               <th>Action</th>
             </tr>
           </thead>
@@ -274,15 +279,17 @@ const OverviewSection = ({
                       )}
                     </pre>
                   </td>
-                  <td className="p-4 text-center min-w-[100px]">
-                    {!!bgProcRunning ? (
-                      <LoaderIcon />
-                    ) : !!nft.owner ? (
-                      <CopyAddressToClipboard address={nft.owner} shorten />
-                    ) : (
-                      "0x0000.....0000"
-                    )}
-                  </td>
+                  {collectionType === "721" && (
+                    <td className="p-4 text-center min-w-[100px]">
+                      {!!bgProcRunning ? (
+                        <LoaderIcon />
+                      ) : !!nft.owner ? (
+                        <CopyAddressToClipboard address={nft.owner} shorten />
+                      ) : (
+                        "0x0000.....0000"
+                      )}
+                    </td>
+                  )}
                   <td className="p-4 text-center min-w-[100px]">
                     <div>{nft.tokenId === null && <button>Delete</button>}</div>
                   </td>
