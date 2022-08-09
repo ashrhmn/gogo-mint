@@ -17,8 +17,8 @@ const MintHome: NextPage<Props> = ({ projects }) => {
       <div className="flex flex-wrap justify-center">
         {projects.map((p) => (
           <Link key={p.id} href={`/mint/${p.uid}`} passHref>
-            <a className="text-2xl rounded w-96 group">
-              <div className="flex bg-gray-100 group-hover:bg-gray-200 transition-colors rounded-xl gap-2 p-3 m-4">
+            <a className="text-2xl rounded w-96 group m-4">
+              <div className="flex shadow bg-gray-100 group-hover:bg-gray-200 transition-colors rounded-xl gap-2 p-3">
                 {!!p.imageUrl ? (
                   <div className="relative h-20 aspect-square rounded">
                     <Image
@@ -32,7 +32,7 @@ const MintHome: NextPage<Props> = ({ projects }) => {
                   <div className="h-20 w-20 bg-gray-300 rounded" />
                 )}
                 <div>
-                  <h1 className="font-medium group-hover:underline group-hover:text-blue-900 transition">
+                  <h1 className="font-medium group-hover:text-blue-900 transition">
                     {p.name + " "}
                     <span className="font-normal text-sm">
                       ({p.collectionType})
