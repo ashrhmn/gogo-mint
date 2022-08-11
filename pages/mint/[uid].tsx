@@ -303,7 +303,9 @@ const MintPage: NextPage<Props> = ({
           randomMsgSign.signature,
           saleConfig,
           {
-            value: parseEther((currentSale.mintCharge * mintCount).toFixed(18)),
+            value: parseEther(
+              (+(currentSale.mintCharge * mintCount).toFixed(18)).toString()
+            ).toString(),
           }
         ),
         {
