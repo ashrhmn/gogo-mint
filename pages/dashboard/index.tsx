@@ -111,7 +111,17 @@ const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookie = getHttpCookie(context.req, context.res);
   try {
-    const cookieAddress = getCookieWallet(cookie);
+    let cookieAddress: string | null;
+    try {
+      cookieAddress = getCookieWallet(cookie);
+    } catch (error) {
+      cookieAddress = null;
+    }
+    if (!cookieAddress)
+      return {
+        props: {},
+        redirect: { destination: authPageUrlWithMessage("Sign Required") },
+      };
     const dbUser = await getUserByWalletAddress(cookieAddress);
     if (!dbUser)
       return {

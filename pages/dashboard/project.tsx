@@ -96,15 +96,15 @@ const ProjectPage: NextPage<Props> = ({
           </div>
         </div>
         <div className="flex gap-4 items-center">
-          {project.collectionType === "721" ||
-            (project.collectionType === "1155" && project._count.nfts < 1 && (
-              <button
-                className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                + Create
-              </button>
-            ))}
+          {(project.collectionType === "721" ||
+            (project.collectionType === "1155" && project._count.nfts < 1)) && (
+            <button
+              className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              + Create
+            </button>
+          )}
           {project.collectionType === "721" && (
             <button
               className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
@@ -227,7 +227,7 @@ const ProjectPage: NextPage<Props> = ({
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const cookies = getHttpCookie(context.req, context.res);
+  const cookie = getHttpCookie(context.req, context.res);
   try {
     const { contract, network } = context.query;
     if (
@@ -239,7 +239,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       isNaN(+network)
     )
       return { props: {}, redirect: { destination: `/404` } };
-    const cookieAddress = getCookieWallet(cookies);
+    let cookieAddress: string | null;
+    try {
+      cookieAddress = getCookieWallet(cookie);
+    } catch (error) {
+      cookieAddress = null;
+    }
+    if (!cookieAddress)
+      return {
+        props: {},
+        redirect: { destination: authPageUrlWithMessage("Sign Required") },
+      };
     const dbUser = await getUserByWalletAddress(cookieAddress);
     if (!dbUser)
       return {
@@ -283,7 +293,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       await Promise.all([
         getClaimedSupplyCountByProjectChainAddress(contract, +network),
         getUnclaimedSupplyCountByProjectChainAddress(contract, +network),
-        getServerListWithAdminOrManageRole(cookies).catch((e) => {
+        getServerListWithAdminOrManageRole(cookie).catch((e) => {
           console.log("Error server list : ", e);
           return null;
         }),
