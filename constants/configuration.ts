@@ -43,11 +43,11 @@ export const PLATFORM_SIGNER_PRIVATE_KEY =
   "61f61b813c9d591825c7385e6fd3bb37687cc9c3b93f293b359cec8c98a8ee91";
 
 export const PUBLIC_HOST_ROOT =
-  process.env.NEXT_PUBLIC_HOST_ROOT || "gogomint.ashrhmn.com";
+  process.env.NEXT_PUBLIC_HOST_ROOT || "gogo-mint.ashrhmn.com";
 
 export const BASE_API_URL = `${
   isDevelopment ? "http" : "https"
 }://${PUBLIC_HOST_ROOT}/api/v1/`;
 
 export const BASE_URI =
-  process.env.BASE_URI || "http://172.105.60.188:3001/api/v1/";
+  process.env.BASE_URI || "http://139.162.48.222:3001/api/v1/";
