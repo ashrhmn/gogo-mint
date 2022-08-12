@@ -703,16 +703,15 @@ const SettingsSection = ({
           >
             <a>Add VerifyBot to you server</a>
           </Link>
-          {serverList === null ||
-            (discordUser === null && (
-              <h1>
-                Make sure to be log in from{" "}
-                <Link href={`/authenticate`} passHref>
-                  <a>Authenticate</a>
-                </Link>{" "}
-                Page
-              </h1>
-            ))}
+          {(serverList === null || discordUser === null) && (
+            <h1>
+              Make sure to be log in from{" "}
+              <Link href={`/authenticate`} passHref>
+                <a>Authenticate</a>
+              </Link>{" "}
+              Page
+            </h1>
+          )}
           {serverList !== null && discordUser !== null && (
             <div>
               <h1>

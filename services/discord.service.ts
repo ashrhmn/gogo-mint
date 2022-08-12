@@ -118,6 +118,7 @@ export const getServerListWithAdminOrManageRole = async (cookies: Cookies) => {
   const encryptedAccessToken = cookies.get(ACCESS_TOKEN_COOKIE_KEY);
   if (!encryptedAccessToken) throw "User not logged in";
   const accessToken = decryptAccessToken(encryptedAccessToken);
+  console.log({ accessToken });
   const user = await getUserByAccessToken(accessToken);
   if (!user) throw "Invalid Access Token";
 
