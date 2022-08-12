@@ -30,6 +30,8 @@ export const getUserByAccessToken = async (accessToken: string) => {
         headers: { Authorization: `Bearer ${accessToken}` },
       }
     );
+    console.log({ user });
+
     return user;
   } catch (error) {
     console.log("Error fetching user from discord : ", error);
@@ -120,6 +122,7 @@ export const getServerListWithAdminOrManageRole = async (cookies: Cookies) => {
   const accessToken = decryptAccessToken(encryptedAccessToken);
   console.log({ accessToken });
   const user = await getUserByAccessToken(accessToken);
+  console.log({ user });
   if (!user) throw "Invalid Access Token";
 
   const guilds = (await getAllGuildDetails()).filter((g) =>
