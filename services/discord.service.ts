@@ -122,12 +122,13 @@ export const getServerListWithAdminOrManageRole = async (cookies: Cookies) => {
   const accessToken = decryptAccessToken(encryptedAccessToken);
   console.log({ accessToken });
   const user = await getUserByAccessToken(accessToken);
-  console.log({ user });
+  console.log({ user, fn: "getServerListWithAdminOrManageRole" });
   if (!user) throw "Invalid Access Token";
 
   const guilds = (await getAllGuildDetails()).filter((g) =>
     g.members.map((m) => m.id).includes(user.id)
   );
+  console.log({ guilds, fn: "getServerListWithAdminOrManageRole" });
 
   return guilds;
 };
