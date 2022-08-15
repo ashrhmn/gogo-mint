@@ -2,7 +2,7 @@ export const RPC_URLS: { [chainId: number]: string } = {
   1: `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` as string,
   3: `https://ropsten.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` as string,
   4: `https://rinkeby.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` as string,
-  5: `https://goerli.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` as string,
+  5: `https://eth-goerli.g.alchemy.com/v2/ih9-sO2b3BLVwkT4G1o2TVeDDuCTgQzw` as string,
   42: `https://kovan.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` as string,
   56: `https://bsc-dataseed.binance.org/`,
   43114: `https://api.avax.network/ext/bc/C/rpc`,

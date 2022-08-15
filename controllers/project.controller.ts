@@ -4,6 +4,7 @@ import * as ProjectService from "../services/project.service";
 import { getHttpCookie } from "../utils/Request.utils";
 import { isAddress } from "ethers/lib/utils";
 import * as MerkleService from "../services/merkletree.service";
+import { z } from "zod";
 
 export const getAllProjectsByDiscordId = async (
   req: NextApiRequest,
@@ -235,5 +236,97 @@ export const getContractUri = async (
   } catch (error) {
     console.log("Error getting contract URI : ", error);
     return res.status(500).json(errorResponse(error));
+  }
+};
+
+export const addRoleIntegrationToProject = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const { guildId, minValidNfts, projectId, roleId } = z
+      .object({
+        projectId: z.number(),
+        guildId: z.string(),
+        roleId: z.string(),
+        minValidNfts: z.number(),
+      })
+      .parse(req.body);
+
+    return res.json(
+      successResponse(
+        await ProjectService.addRoleIntegrationToProject(
+          projectId,
+          guildId,
+          roleId,
+          minValidNfts,
+          getHttpCookie(req, res)
+        )
+      )
+    );
+  } catch (error) {
+    console.log("Error adding role integration : ", error);
+    return res.status(500).json(errorResponse("Error adding role integration"));
+  }
+};
+
+export const getRoleIntegrationByProjectId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const projectId = req.query.projectId;
+    if (typeof projectId !== "string" || isNaN(+projectId))
+      return res.status(400).json(errorResponse("Invalid Project ID"));
+    return res.json(
+      successResponse(
+        await ProjectService.getRoleIntegrationsByProjectId(+projectId)
+      )
+    );
+  } catch (error) {
+    console.log("Getting role integrations error", error);
+    return res
+      .status(500)
+      .json(errorResponse("Getting role integrations error"));
+  }
+};
+
+export const getDetailedRoleIntegrationByProjectId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const projectId = req.query.projectId;
+    if (typeof projectId !== "string" || isNaN(+projectId))
+      return res.status(400).json(errorResponse("Invalid Project ID"));
+    return res.json(
+      successResponse(
+        await ProjectService.getDetailedRoleIntegrationsByProjectId(+projectId)
+      )
+    );
+  } catch (error) {
+    console.log("Getting detailed role integrations error", error);
+    return res
+      .status(500)
+      .json(errorResponse("Getting detailed role integrations error"));
+  }
+};
+
+export const deleteRoleIntegrationById = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const id = req.query.id;
+    if (typeof id !== "string" || isNaN(+id))
+      return res.status(400).json(errorResponse("Invalid ID"));
+    return res.json(
+      successResponse(await ProjectService.deleteRoleIntegrationById(+id))
+    );
+  } catch (error) {
+    console.log("Error deleting role inetegration : ", error);
+    return res
+      .status(500)
+      .json(errorResponse("Error deleting role integration"));
   }
 };

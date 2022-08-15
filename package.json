@@ -16,7 +16,7 @@
     "prebuild": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json"
   },
   "dependencies": {
-    "@prisma/client": "^4.1.0",
+    "@prisma/client": "^4.2.1",
     "@usedapp/core": "^1.0.15",
     "axios": "^0.27.2",
     "cookies": "^0.8.0",
@@ -49,7 +49,7 @@
     "eslint": "8.18.0",
     "eslint-config-next": "12.2.0",
     "postcss": "^8.4.14",
-    "prisma": "^4.1.0",
+    "prisma": "^4.2.1",
     "tailwindcss": "^3.1.4",
     "typechain": "^8.1.0",
     "types-solc": "^1.0.1",

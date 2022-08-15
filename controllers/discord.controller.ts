@@ -7,10 +7,12 @@ import {
 import {
   getDiscordUsersCreds,
   removeDiscordAccessToken,
+  refreshDiscordRoles2,
 } from "../services/discord.service";
 import { successResponse } from "../utils/Response.utils";
 import { encryptToken } from "../utils/String.utils";
 import { updateUserOnDiscordAuth } from "../services/user.service";
+import { z } from "zod";
 
 export const discordRedirectGet = async (
   req: NextApiRequest,
@@ -41,4 +43,27 @@ export const logoutDiscord = async (
 ) => {
   removeDiscordAccessToken(req, res);
   return res.json(successResponse("Success"));
+};
+
+export const refreshRoleIntegrations = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const data = z
+      .object({
+        projectAddress: z.string().optional(),
+        walletAddress: z.string().optional(),
+        discordUsername: z.string().optional(),
+        discordDiscriminator: z.number().optional(),
+      })
+      .parse(req.body);
+
+    refreshDiscordRoles2(data);
+
+    return res.json({ message: "Added to queue to refresh" });
+  } catch (error) {
+    console.log("Error refreshing discord roles : ", error);
+    return res.status(500).json({ message: "Error refreshing discord roles" });
+  }
 };

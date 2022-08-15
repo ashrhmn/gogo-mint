@@ -1,4 +1,10 @@
-import { NFT, NFTMetadataProperties, Project, User } from "@prisma/client";
+import {
+  NFT,
+  NFTMetadataProperties,
+  Project,
+  RoleIntegration,
+  User,
+} from "@prisma/client";
 import { IncomingMessage, ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -111,6 +117,7 @@ export interface NftExtended extends NFT {
 export interface ProjectExtended extends Project {
   nfts: NftExtended[];
   owner: User;
+  roleIntegrations: RoleIntegration[];
 }
 
 export interface ISaleConfig {
@@ -173,4 +180,19 @@ export interface IGuild {
       name: string;
     }[];
   }[];
+}
+
+export interface IDetailedRoleIntegration {
+  id: number;
+  guild: {
+    id: string;
+    name: string;
+  };
+  role: {
+    id: string;
+    name: string;
+  };
+  minValidNfts: number;
+  projectId: number;
+  addedByUserId: number;
 }

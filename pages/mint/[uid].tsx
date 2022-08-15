@@ -27,7 +27,7 @@ import {
   getNextSale,
   getSaleConfigProofByProjectId,
 } from "../../services/saleConfig.service";
-import { getSolVersionConfig } from "../../utils/SaleCOnfig.utils";
+import { getSolVersionConfig } from "../../utils/SaleConfig.utils";
 import {
   get721MintEventArgsMapping,
   normalizeString,
@@ -322,6 +322,10 @@ const MintPage: NextPage<Props> = ({
       });
 
       if (project.collectionType === "1155") {
+        await service.post(`discord/refresh-role-integrations`, {
+          walletAddress: account,
+          projectAddress: project.address,
+        });
         router.reload();
         return;
       }
@@ -335,11 +339,17 @@ const MintPage: NextPage<Props> = ({
         (receipt as any).events.find((e: any) => e.event === "Mint").args
       );
       await toast.promise(
-        service.post(`nft/random-unclaimed/attatch`, {
-          projectId: project.id,
-          fromTokenId: eventData.fromTokenId,
-          toTokenId: eventData.toTokenId,
-        }),
+        Promise.all([
+          service.post(`nft/random-unclaimed/attatch`, {
+            projectId: project.id,
+            fromTokenId: eventData.fromTokenId,
+            toTokenId: eventData.toTokenId,
+          }),
+          service.post(`discord/refresh-role-integrations`, {
+            walletAddress: account,
+            projectAddress: project.address,
+          }),
+        ]),
         {
           error: "Error updating NFT",
           loading: "Updating informations...",

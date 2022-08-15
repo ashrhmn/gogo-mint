@@ -91,11 +91,12 @@ model RoleIntegration {
   id           Int      @id @default(autoincrement())
   Project      Project? @relation(fields: [projectId], references: [id])
   projectId    Int?
-  guildId      Int
-  roleId       Int
+  guildId      String
+  roleId       String
   minValidNfts Int
   addedBy      User     @relation(fields: [userId], references: [id])
   userId       Int
 
+  @@unique([projectId, guildId, roleId])
   @@map("role_integrations")
 }

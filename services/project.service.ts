@@ -1,9 +1,13 @@
 import assert from "assert";
 import Cookies from "cookies";
 import { prisma } from "../lib/db";
+import roleIntegrations from "../pages/api/v1/projects/role-integrations";
 import { ISaleConfigInput } from "../types";
 import { getCookieWallet } from "./auth.service";
-import { getUserByAccessToken } from "./discord.service";
+import { getDiscordClient, getUserByAccessToken } from "./discord.service";
+import { getUserByWalletAddress } from "./user.service";
+
+export const getAllProjects = async () => await prisma.project.findMany();
 
 export const getAllProjectsByDiscordId = async (
   username: string,
@@ -47,6 +51,7 @@ export const getProjectByChainAddress = async (
       },
       owner: true,
       _count: { select: { nfts: true } },
+      roleIntegrations: { orderBy: { id: "asc" } },
     },
   });
 };
@@ -302,3 +307,50 @@ export const getProjectMetadata = async (address: string, chainId: number) => {
     fee_recipient: project.royaltyReceiver || project.owner.walletAddress,
   };
 };
+
+export const addRoleIntegrationToProject = async (
+  projectId: number,
+  guildId: string,
+  roleId: string,
+  minValidNfts: number,
+  cookies: Cookies
+) => {
+  const cookieWallet = getCookieWallet(cookies);
+  const dbUser = await getUserByWalletAddress(cookieWallet);
+  if (!dbUser) throw "Sign Required";
+  return await prisma.roleIntegration.upsert({
+    create: { guildId, minValidNfts, roleId, userId: dbUser.id, projectId },
+    where: { projectId_guildId_roleId: { guildId, projectId, roleId } },
+    update: { minValidNfts },
+  });
+};
+
+export const getRoleIntegrationsByProjectId = async (projectId: number) =>
+  await prisma.roleIntegration.findMany({ where: { projectId } });
+
+export const getDetailedRoleIntegrationsByProjectId = async (
+  projectId: number
+) => {
+  const roleIntegrations = await prisma.roleIntegration.findMany({
+    where: { projectId },
+  });
+  return await Promise.all(
+    roleIntegrations.map(async (ri) => {
+      const { guildId, id, minValidNfts, roleId, userId } = ri;
+      const guild = await (await getDiscordClient()).guilds.fetch(guildId);
+      const role = await guild.roles.fetch(roleId);
+      if (!role) throw "Invalid role";
+      return {
+        id,
+        guild: { id: guildId, name: guild.name },
+        role: { id: roleId, name: role.name },
+        minValidNfts,
+        projectId,
+        addedByUserId: userId,
+      };
+    })
+  );
+};
+
+export const deleteRoleIntegrationById = async (id: number) =>
+  await prisma.roleIntegration.delete({ where: { id } });

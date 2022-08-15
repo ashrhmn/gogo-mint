@@ -13,10 +13,7 @@ import OverviewSection from "../../components/ProjectDashboard/Overview";
 import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
 import { getCookieWallet } from "../../services/auth.service";
-import {
-  getServerListWithAdminOrManageRole,
-  getUserByAccessToken,
-} from "../../services/discord.service";
+import { getServerListWithAdminOrManageRole } from "../../services/discord.service";
 import {
   getClaimedSupplyCountByProjectChainAddress,
   getProjectByChainAddress,
@@ -194,6 +191,7 @@ const ProjectPage: NextPage<Props> = ({
               projectOwner={project.owner.walletAddress}
               serverList={serverList}
               discordUser={discordUser}
+              roleIntegrations={project.roleIntegrations}
             />
           )}
         </div>
@@ -278,6 +276,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       take,
       mintStatus as "all" | "minted" | "unminted"
     );
+
     if (!project) return { props: {}, redirect: { destination: `/404` } };
     if (project.owner.walletAddress !== cookieAddress)
       return {
@@ -300,7 +299,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         getLoggedInDiscordUser(context.req).catch((err) => null),
       ]);
 
-    console.log({ serverList });
+    // console.log({ serverList });
 
     return {
       props: {

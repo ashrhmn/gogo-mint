@@ -1,10 +1,17 @@
+import { RoleIntegration } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
 import { getDefaultProvider } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { v4 } from "uuid";
 import { RPC_URLS } from "../../constants/RPC_URL";
@@ -25,6 +32,7 @@ const SettingsSection = ({
   projectOwner,
   serverList,
   discordUser,
+  roleIntegrations: initialRoleIntegrations,
 }: {
   projectId: number;
   projectChainId: number | null;
@@ -33,6 +41,7 @@ const SettingsSection = ({
   projectOwner: string | null;
   serverList: IGuild[] | null;
   discordUser: DiscordUserResponse | null;
+  roleIntegrations: RoleIntegration[];
 }) => {
   const { account, library, chainId } = useEthers();
   const router = useRouter();
@@ -42,6 +51,63 @@ const SettingsSection = ({
   const [maxMintInTotalPerWalletBgProc, setMaxMintInTotalPerWalletBgProc] =
     useState(0);
   const [isUidUnavailable, setIsUidUnavailable] = useState(false);
+  const [minValidNfts, setMinValidNfts] = useState(0);
+  // const [detailedRoleIntegrations, setDetailedRoleIntegrations] = useState<
+  //   IDetailedRoleIntegration[]
+  // >([]);
+
+  const [roleIntegrationRefetcher, setRoleIntegrationRefetcher] =
+    useState(false);
+  const [roleIntegrationBgProc, setRoleIntegrationBgProc] = useState(0);
+
+  const [roleIntegrations, setRoleIntegrations] = useState<RoleIntegration[]>(
+    initialRoleIntegrations
+  );
+
+  // useEffect(() => {
+  //   setRoleIntRefetcherBgProc(false);
+  // }, [roleIntegrations]);
+
+  const getGuildNameById = useCallback(
+    (id: string) => {
+      if (serverList == null) return undefined;
+      const guild = serverList.map((s) => s.guild).find((g) => g.id === id);
+      return !!guild ? guild.name : undefined;
+    },
+    [serverList]
+  );
+
+  const getRoleNameById = useCallback(
+    (id: string) => {
+      if (serverList === null) return undefined;
+      const role = serverList
+        .map((s) => s.guildRoles)
+        .reduce((prev, current) => [...prev, ...current], [])
+        .find((r) => r.id === id);
+      return !!role ? role.name : undefined;
+    },
+    [serverList]
+  );
+
+  useEffect(() => {
+    (async () => {
+      setRoleIntegrationBgProc((v) => v + 1);
+      await service
+        .get(`/projects/role-integrations?projectId=${projectId}`)
+        .then((res) =>
+          (res.data.data as RoleIntegration[]).sort((a, b) =>
+            a.id > b.id ? 1 : a.id < b.id ? -1 : 0
+          )
+        )
+        .then(setRoleIntegrations)
+        .catch((err) => {
+          setRoleIntegrationBgProc((v) => v - 1);
+          toast.error("Error fetching role integrations");
+          console.log("Error fetching role integrations : ", err);
+        });
+      setRoleIntegrationBgProc((v) => v - 1);
+    })();
+  }, [projectId, roleIntegrationRefetcher]);
 
   const [configSet, setConfigSet] = useState<
     IDeployConfigSet & { baseURI: string }
@@ -60,7 +126,6 @@ const SettingsSection = ({
     maxMintInTotalPerWallet: 0,
     collectionType: collectionType === "721" ? "721" : "1155",
   });
-  console.log(serverList);
 
   const [imageBase64Logo, setImageBase64Logo] = useState("");
   const logoImgInputRef = useRef<HTMLInputElement | null>(null);
@@ -435,6 +500,84 @@ const SettingsSection = ({
     return !member ? null : member;
   }, [discordUser, selectedGuild]);
 
+  const handleSaveRoleIntegration = async () => {
+    try {
+      if (selectedGuild == null) throw "No server selected";
+      if (selectedGuildRole == null) throw "No role selected";
+      if (minValidNfts < 1) throw "Min number of NFTs must be at least 1";
+      if (selectedServerGuildMember == null)
+        throw "Logged in user not found in selected server";
+      if (
+        !(
+          selectedServerGuildMember.isAdmin ||
+          selectedServerGuildMember.canManageRole
+        )
+      )
+        throw "You must have Administrator or Role Manager permission on the selected server";
+
+      // setRoleIntRefetcherBgProc(true);
+
+      setRoleIntegrations((p) =>
+        !!p.find(
+          (ri) =>
+            ri.projectId === projectId &&
+            ri.guildId === selectedGuild.guild.id &&
+            ri.roleId === selectedGuildRole.id
+        )
+          ? p.map((ri) =>
+              ri.projectId === projectId &&
+              ri.roleId === selectedGuildRole.id &&
+              ri.guildId === selectedGuild.guild.id
+                ? { ...ri, minValidNfts }
+                : ri
+            )
+          : [
+              ...p,
+              {
+                projectId,
+                roleId: selectedGuildRole.id,
+                guildId: selectedGuild.guild.id,
+                minValidNfts,
+                id: -11,
+                userId: -11,
+              },
+            ]
+      );
+
+      const { data } = await service.post(`/projects/role-integrations`, {
+        projectId,
+        roleId: selectedGuildRole.id,
+        guildId: selectedGuild.guild.id,
+        minValidNfts,
+      });
+      console.log(data);
+
+      setRoleIntegrationRefetcher((v) => !v);
+
+      await service.post(`discord/refresh-role-integrations`, {
+        projectAddress,
+      });
+
+      // router.replace(router.asPath);
+    } catch (error) {
+      if (typeof error === "string") toast.error(error);
+      console.log(error);
+    }
+  };
+
+  const handleDeleteRoleIntegration = async (id: number) => {
+    setRoleIntegrations((p) => p.filter((ri) => ri.id !== id));
+    await service
+      .delete(`/projects/role-integrations/${id}`)
+      .then((res) => res.data)
+      .then(console.log)
+      .catch(console.error);
+    setRoleIntegrationRefetcher((v) => !v);
+    // await service.post(`discord/refresh-role-integrations`, {
+    //   projectAddress,
+    // });
+  };
+
   return (
     <div className="mt-4">
       <div className="bg-gray-200 p-4 rounded relative overflow-hidden">
@@ -691,24 +834,32 @@ const SettingsSection = ({
       </div>
       <div className="bg-gray-200 rounded p-4 my-6 relative">
         <div className="mt-4 space-y-2">
-          <label className="font-bold">Set Discord Roles</label>
+          <label className="font-bold">
+            Set Discord Roles{" "}
+            {!!discordUser && (
+              <span className="font-light text-sm">
+                (Logged in as {discordUser.username}#{discordUser.discriminator}
+                )
+              </span>
+            )}
+          </label>
           <p className="text-sm text-gray-500">
             Here you can set discord roles to be assigned to NFT holders from
             this project
           </p>
-          <Link
+          <a
             target="_blank"
+            rel="noreferrer"
             href={`https://discord.com/oauth2/authorize?client_id=990705597953474590&scope=bot%20applications.commands&permissions=268435456`}
-            passHref
           >
-            <a>Add VerifyBot to you server</a>
-          </Link>
+            Add VerifyBot to your server
+          </a>
           {(serverList === null || discordUser === null) && (
             <h1>
-              Make sure to be log in from{" "}
-              <Link href={`/authenticate`} passHref>
-                <a>Authenticate</a>
-              </Link>{" "}
+              Make sure to be logged in from{" "}
+              <a target="_blank" rel="noreferrer" href={`/authenticate`}>
+                Authenticate
+              </a>{" "}
               Page
             </h1>
           )}
@@ -718,58 +869,87 @@ const SettingsSection = ({
                 VerifyBot is added to {serverList.length} Discord Server(s) that
                 you are member of
               </h1>
-              <div>
-                <label>Select Server</label>
-                <select
-                  onChange={(e) =>
-                    setSelectedServer(
-                      e.target.value !== "select" ? e.target.value : null
-                    )
-                  }
-                >
-                  <option value="select">Select</option>
-                  {serverList.map((s) => (
-                    <option
-                      // disabled={!s.botCanManageRole}
-                      key={s.guild.id}
-                      value={s.guild.id}
-                    >
-                      {s.guild.name}{" "}
-                      {!s.botCanManageRole &&
-                        "(Add the bot again with default permissions)"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label>Select Role</label>
-                <select
-                  onChange={(e) =>
-                    setSelectedRole(
-                      e.target.value !== "select" ? e.target.value : null
-                    )
-                  }
-                >
-                  {selectedGuild === null && (
-                    <option value={"select"}>Select a server</option>
-                  )}
-                  {selectedGuild !== null &&
-                    selectedGuild.guildRoles.map((role) => (
-                      <option value={role.id} key={role.id}>
-                        {role.name}
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <div className="w-full flex gap-2 items-center">
+                  <label className="min-w-fit">Select Server</label>
+                  <select
+                    className="w-full p-1 rounded"
+                    onChange={(e) =>
+                      setSelectedServer(
+                        e.target.value !== "select" ? e.target.value : null
+                      )
+                    }
+                  >
+                    <option value="select">Select</option>
+                    {serverList.map((s) => (
+                      <option
+                        disabled={!s.botCanManageRole}
+                        key={s.guild.id}
+                        value={s.guild.id}
+                      >
+                        {s.guild.name}{" "}
+                        {!s.botCanManageRole &&
+                          "(Add the bot again with default permissions)"}
                       </option>
                     ))}
-                  {selectedGuild !== null &&
-                    selectedGuild.guildRoles.length === 0 && (
-                      <option value={"select"}>No roles found</option>
-                    )}
-                </select>
+                  </select>
+                </div>
+                <div className="w-full flex gap-2 items-center">
+                  <label className="min-w-fit">Select Role</label>
+                  <select
+                    className="w-full p-1 rounded"
+                    onChange={(e) =>
+                      setSelectedRole(
+                        e.target.value !== "select" ? e.target.value : null
+                      )
+                    }
+                  >
+                    {/* {selectedGuild === null && (
+                    <option value={"select"}>Select a server</option>
+                  )} */}
+                    <option value={"select"}>Select</option>
+                    {selectedGuild !== null &&
+                      selectedGuild.guildRoles.map((role) => (
+                        <option value={role.id} key={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    {selectedGuild !== null &&
+                      selectedGuild.guildRoles.length === 0 && (
+                        <option disabled value={"select"}>
+                          No roles found
+                        </option>
+                      )}
+                  </select>
+                </div>
+                <div className="w-full flex gap-2 items-center">
+                  <label className="min-w-fit">
+                    Minimum NFTs required for this role
+                  </label>
+                  <input
+                    className="w-full p-1 rounded"
+                    type="number"
+                    value={minValidNfts || ""}
+                    onChange={(e) =>
+                      setMinValidNfts(
+                        e.target.value === "" || isNaN(+e.target.value)
+                          ? 0
+                          : e.target.valueAsNumber
+                      )
+                    }
+                  />
+                </div>
+                <button onClick={handleSaveRoleIntegration}>Save</button>
               </div>
-              <div>
-                <h1>{selectedServer}</h1>
-                <h1>{selectedRole}</h1>
-                {selectedServerGuildMember !== null && (
-                  <>
+              {selectedServerGuildMember !== null && (
+                <div className="my-4 text-xl bg-gray-100 rounded">
+                  {!!discordUser && !!selectedGuild && (
+                    <h1 className="text-center">
+                      On server {"'" + selectedGuild.guild.name + "' "}
+                      {discordUser.username}#{discordUser.discriminator}
+                    </h1>
+                  )}
+                  <div className="flex justify-around">
                     <h1>
                       Has Admin Rights :{" "}
                       {selectedServerGuildMember.isAdmin ? "Yes" : "No"}
@@ -778,10 +958,68 @@ const SettingsSection = ({
                       Can Manage Roles :{" "}
                       {selectedServerGuildMember.canManageRole ? "Yes" : "No"}
                     </h1>
-                  </>
-                )}
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
+          )}
+        </div>
+        <div className="mt-4 space-y-2 relative">
+          {!!roleIntegrationBgProc && (
+            <div className="absolute right-5 top-20 z-10 scale-150">
+              <LoaderIcon />
+            </div>
+          )}
+          <label className="font-bold">Existing Rules</label>
+          <p className="text-sm text-gray-500">
+            These are the rules for discord roles added from this project
+          </p>
+          {roleIntegrations.length === 0 && (
+            <h1 className="text-center text-xl">
+              No integration is currently set for this project
+            </h1>
+          )}
+          {roleIntegrations.length > 0 && (
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th className="text-center p-2 border-2 border-gray-400">
+                    Server
+                  </th>
+                  <th className="text-center p-2 border-2 border-gray-400">
+                    Role
+                  </th>
+                  <th className="text-center p-2 border-2 border-gray-400">
+                    Min NFT
+                  </th>
+                  <th className="text-center p-2 border-2 border-gray-400">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {roleIntegrations.map((ri) => (
+                  <tr key={ri.id}>
+                    <td className="text-center p-2 border-2 border-gray-400">
+                      {getGuildNameById(ri.guildId) || ri.guildId}
+                    </td>
+                    <td className="text-center p-2 border-2 border-gray-400">
+                      {getRoleNameById(ri.roleId) || ri.roleId}
+                    </td>
+                    <td className="text-center p-2 border-2 border-gray-400">
+                      {ri.minValidNfts}
+                    </td>
+                    <td className="text-center p-2 border-2 border-gray-400">
+                      <button
+                        onClick={() => handleDeleteRoleIntegration(ri.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
