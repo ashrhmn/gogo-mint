@@ -118,13 +118,14 @@ const MintPage: NextPage<Props> = ({
         !account ||
         !chainId ||
         !currentSale
-      )
+      ) {
+        setConfig((c) => ({
+          ...c,
+          totalMintInSale: 0,
+          mintCountInSaleByUser: 0,
+        }));
         return;
-      // const contract = new Contract(
-      //   project.address,
-      //   project.collectionType === "721" ? ABI721 : ABI1155,
-      //   getDefaultProvider(RPC_URLS[project.chainId])
-      // );
+      }
       const contract =
         project.collectionType === "721"
           ? Collection721__factory.connect(
