@@ -22,7 +22,7 @@ import { IDeployConfigSet } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
-import { normalizeString } from "../../utils/String.utils";
+import { formatHtmlDateTime, normalizeString } from "../../utils/String.utils";
 
 interface Props {
   cookieAddress: string;
@@ -47,6 +47,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     roayltyReceiver: "",
     maxMintInTotalPerWallet: 0,
     collectionType: "721",
+    revealTime: +(+Date.now() / 1000).toFixed(0),
   });
   useEffect(() => {
     if (account)
@@ -87,6 +88,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     saleConfigRoot: string,
     platformSignerAddress: string,
     baseURI: string,
+    revealTime: number,
     factory: Collection721__factory
   ) => {
     const contract = await toast.promise(
@@ -97,7 +99,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         maxMintInTotalPerWallet,
         saleConfigRoot,
         platformSignerAddress,
-        baseURI
+        baseURI,
+        revealTime
       ),
       {
         success: "Transaction sent",
@@ -115,6 +118,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     saleConfigRoot: string,
     platformSignerAddress: string,
     baseURI: string,
+    revealTime: number,
     factory: Collection1155__factory
   ) => {
     const contract = await toast.promise(
@@ -124,7 +128,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         maxMintInTotalPerWallet,
         saleConfigRoot,
         platformSignerAddress,
-        baseURI
+        baseURI,
+        revealTime
       ),
       {
         success: "Transaction sent",
@@ -274,6 +279,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               saleConfigRoot.data,
               platformSignerAddress.data,
               baseUri,
+              configSet.revealTime,
               new Collection721__factory(library.getSigner(account))
             )
           : await deploy1155(
@@ -283,6 +289,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               saleConfigRoot.data,
               platformSignerAddress.data,
               baseUri,
+              configSet.revealTime,
               new Collection1155__factory(library.getSigner(account))
             );
 
@@ -370,18 +377,39 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           </div>
           <div>
             <div>
+              <div className="space-y-2 w-full mt-4">
+                <label className="font-bold">
+                  Name <span className="text-red-700">*</span>
+                </label>
+                <p className="text-sm text-gray-500">Name of the project</p>
+                <input
+                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  type="text"
+                  value={configSet.name}
+                  onChange={(e) =>
+                    setConfigSet((c) => ({ ...c, name: e.target.value }))
+                  }
+                />
+              </div>
               <div className="mt-4 flex gap-2">
                 <div className="space-y-2 w-full">
-                  <label className="font-bold">
-                    Name <span className="text-red-700">*</span>
-                  </label>
-                  <p className="text-sm text-gray-500">Name of the project</p>
+                  <label className="font-bold">Metadata Reveal Time</label>
+                  <p className="text-sm text-gray-500">
+                    When to reveal the metadata
+                  </p>
                   <input
                     className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                    type="text"
-                    value={configSet.name}
+                    type="datetime-local"
+                    value={formatHtmlDateTime(
+                      new Date(configSet.revealTime * 1000)
+                    )}
                     onChange={(e) =>
-                      setConfigSet((c) => ({ ...c, name: e.target.value }))
+                      setConfigSet((c) => ({
+                        ...c,
+                        revealTime: +(+new Date(e.target.value) / 1000).toFixed(
+                          0
+                        ),
+                      }))
                     }
                   />
                 </div>

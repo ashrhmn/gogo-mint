@@ -143,6 +143,32 @@ export const getNftMetadata = async (
   }
 };
 
+export const getHiddenNftMetadata = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const { address, network: chainId } = z
+      .object({
+        address: z.string().refine(isAddress, "Not a valid address"),
+        network: z
+          .string()
+          .refine((v) => !isNaN(+v), "Not a number")
+          .transform((v) => +v),
+      })
+      .parse(req.query);
+
+    console.log({ address, chainId, message: "Query for hidden token" });
+
+    return res.json(
+      await NftService.getOnChainHiddenMetadata(address, chainId)
+    );
+  } catch (error) {
+    console.log("Get metadata error : ", error);
+    return res.json(errorResponse(error));
+  }
+};
+
 export const updateTokenId = async (
   req: NextApiRequest,
   res: NextApiResponse

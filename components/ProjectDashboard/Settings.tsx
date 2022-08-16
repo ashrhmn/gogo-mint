@@ -125,6 +125,7 @@ const SettingsSection = ({
     roayltyReceiver: "",
     maxMintInTotalPerWallet: 0,
     collectionType: collectionType === "721" ? "721" : "1155",
+    revealTime: 0,
   });
 
   const [imageBase64Logo, setImageBase64Logo] = useState("");

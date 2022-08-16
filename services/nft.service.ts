@@ -188,6 +188,22 @@ export const getOnChainMetadata = async (
   };
 };
 
+export const getOnChainHiddenMetadata = async (
+  address: string,
+  chainId: number
+) => {
+  const project = await prisma.project.findFirstOrThrow({
+    where: {
+      address,
+      chainId,
+    },
+  });
+  return {
+    name: `${project.name} item - hidden`,
+    description: `This item is from ${project.name} but not revealed yet`,
+  };
+};
+
 export const updateTokenId = async (id: number, tokenId: number) => {
   return await prisma.nFT.update({ where: { id }, data: { tokenId } });
 };

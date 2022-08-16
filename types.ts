@@ -41,6 +41,7 @@ export interface IDeployConfigSet {
   logo: File | null;
   banner: File | null;
   name: string;
+  revealTime: number;
   symbol: string;
   description: string;
   feeToAddress: string;
