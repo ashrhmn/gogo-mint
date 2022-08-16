@@ -23,6 +23,7 @@ import useDebounce from "../../hooks/useDebounce";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { DiscordUserResponse, IDeployConfigSet, IGuild } from "../../types";
+import { formatHtmlDateTime } from "../../utils/String.utils";
 
 const SettingsSection = ({
   projectId,
@@ -48,6 +49,7 @@ const SettingsSection = ({
   const [basicDataBgProc, setBasicDataBgProc] = useState(0);
   const [feeAddressBgProc, setFeeAddressBgProc] = useState(0);
   const [baseURIBgProc, setBaseURIBgProc] = useState(0);
+  const [revealTimeBgProc, setRevealTimeBgProc] = useState(0);
   const [maxMintInTotalPerWalletBgProc, setMaxMintInTotalPerWalletBgProc] =
     useState(0);
   const [isUidUnavailable, setIsUidUnavailable] = useState(false);
@@ -186,12 +188,14 @@ const SettingsSection = ({
           baseURI,
           maxMintInTotalPerWallet,
           token0uri,
+          revealTime,
         ] = await Promise.all([
           contract.feeDestination(),
           contract.contractURI(),
           contract.baseURI(),
           contract.maxMintInTotalPerWallet(),
           contract.tokenURI(0),
+          contract.revealTime(),
         ]);
         console.log({ curi, token0uri });
 
@@ -200,6 +204,7 @@ const SettingsSection = ({
           feeToAddress,
           baseURI,
           maxMintInTotalPerWallet: +maxMintInTotalPerWallet.toString(),
+          revealTime: revealTime.toNumber(),
         }));
         setFeeAddressBgProc((v) => v - 1);
         setBaseURIBgProc((v) => v - 1);
@@ -309,6 +314,52 @@ const SettingsSection = ({
     }
   };
 
+  const handleRevealTimeUpdate = async () => {
+    if (!account || !library || !chainId) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+      toast.error("Error loading project");
+      return;
+    }
+    if (chainId !== projectChainId) {
+      toast.error(`Please switch to network id ${projectChainId}`);
+      return;
+    }
+    if (account !== projectOwner) {
+      toast.error("You are not project owner");
+    }
+    try {
+      const contract =
+        collectionType === "721"
+          ? new Collection721__factory(library.getSigner(account)).attach(
+              projectAddress
+            )
+          : new Collection1155__factory(library.getSigner(account)).attach(
+              projectAddress
+            );
+      setRevealTimeBgProc((v) => v + 1);
+      const tx = await toast.promise(
+        contract.updateRevealTime(configSet.revealTime),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction...",
+          success: "Transaction sent",
+        }
+      );
+      await toast.promise(tx.wait(), {
+        error: "Mining failed",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setRevealTimeBgProc((v) => v - 1);
+    } catch (error) {
+      setRevealTimeBgProc((v) => v - 1);
+      console.log("Error updating Reveal Time : ", error);
+      toast.error("Error updating Reveal Time");
+    }
+  };
   const handleBaseUriUpdate = async () => {
     if (!account || !library || !chainId) {
       toast.error("Please connect your wallet");
@@ -789,6 +840,41 @@ const SettingsSection = ({
             disabled={!!feeAddressBgProc}
             className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
             onClick={handleFeetoAddressUpdate}
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div className="bg-gray-200 rounded p-4 my-6 relative">
+        {!!revealTimeBgProc && (
+          <div className="absolute right-5 top-5 z-10 scale-150">
+            <LoaderIcon />
+          </div>
+        )}
+        <div className="mt-4 space-y-2">
+          <label className="font-bold">Update Metadata Reveal Time</label>
+          <p className="text-sm text-gray-500">
+            Update the time when NFT metadata is revealed (Requires Transaction
+            on update)
+          </p>
+          <input
+            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            type="datetime-local"
+            disabled={!!revealTimeBgProc}
+            value={formatHtmlDateTime(new Date(configSet.revealTime * 1000))}
+            onChange={(e) =>
+              setConfigSet((c) => ({
+                ...c,
+                revealTime: +(+new Date(e.target.value) / 1000).toFixed(0),
+              }))
+            }
+          />
+        </div>
+        <div>
+          <button
+            disabled={!!revealTimeBgProc}
+            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+            onClick={handleRevealTimeUpdate}
           >
             Update
           </button>

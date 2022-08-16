@@ -194,7 +194,7 @@ export const getOnChainHiddenMetadata = async (
 ) => {
   const project = await prisma.project.findFirstOrThrow({
     where: {
-      address,
+      address: { mode: "insensitive", equals: address },
       chainId,
     },
   });
