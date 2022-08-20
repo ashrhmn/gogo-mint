@@ -9,10 +9,12 @@ import {
   removeDiscordAccessToken,
   refreshDiscordRoles2,
 } from "../services/discord.service";
-import { successResponse } from "../utils/Response.utils";
+import { errorResponse, successResponse } from "../utils/Response.utils";
 import { encryptToken } from "../utils/String.utils";
 import { updateUserOnDiscordAuth } from "../services/user.service";
 import { z } from "zod";
+import * as DiscordService from "../services/discord.service";
+import { getHttpCookie } from "../utils/Request.utils";
 
 export const discordRedirectGet = async (
   req: NextApiRequest,
@@ -65,5 +67,21 @@ export const refreshRoleIntegrations = async (
   } catch (error) {
     console.log("Error refreshing discord roles : ", error);
     return res.status(500).json({ message: "Error refreshing discord roles" });
+  }
+};
+
+export const getServerListWithAdminOrManageRole = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const cookies = getHttpCookie(req, res);
+    const data = await DiscordService.getServerListWithAdminOrManageRole(
+      cookies
+    );
+    return res.json(successResponse(data));
+  } catch (error) {
+    console.log("Error getting server list : ", error);
+    return res.status(500).json(errorResponse("Error getting server list"));
   }
 };

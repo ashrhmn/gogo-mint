@@ -1,9 +1,8 @@
 import { RoleIntegration } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
-import { getDefaultProvider } from "ethers";
+import { BigNumber, getDefaultProvider } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React, {
   useCallback,
@@ -31,8 +30,8 @@ const SettingsSection = ({
   projectChainId,
   collectionType,
   projectOwner,
-  serverList,
-  discordUser,
+  // serverList,
+  // discordUser,
   roleIntegrations: initialRoleIntegrations,
 }: {
   projectId: number;
@@ -40,8 +39,8 @@ const SettingsSection = ({
   projectAddress: string | null;
   collectionType: string | null;
   projectOwner: string | null;
-  serverList: IGuild[] | null;
-  discordUser: DiscordUserResponse | null;
+  // serverList: IGuild[] | null;
+  // discordUser: DiscordUserResponse | null;
   roleIntegrations: RoleIntegration[];
 }) => {
   const { account, library, chainId } = useEthers();
@@ -54,9 +53,6 @@ const SettingsSection = ({
     useState(0);
   const [isUidUnavailable, setIsUidUnavailable] = useState(false);
   const [minValidNfts, setMinValidNfts] = useState(0);
-  // const [detailedRoleIntegrations, setDetailedRoleIntegrations] = useState<
-  //   IDetailedRoleIntegration[]
-  // >([]);
 
   const [roleIntegrationRefetcher, setRoleIntegrationRefetcher] =
     useState(false);
@@ -66,9 +62,40 @@ const SettingsSection = ({
     initialRoleIntegrations
   );
 
-  // useEffect(() => {
-  //   setRoleIntRefetcherBgProc(false);
-  // }, [roleIntegrations]);
+  const [discordUser, setDiscordUser] = useState<
+    DiscordUserResponse | null | undefined
+  >(undefined);
+
+  const [serverList, setServerList] = useState<IGuild[] | null | undefined>(
+    undefined
+  );
+
+  // const [discordUserRefetcher, setDiscordUserRefetcher] = useState(false);
+  const [serverlistRefetcher, setServerlistRefetcher] = useState(false);
+
+  useEffect(() => {
+    service
+      .get(`auth/discord/current-user`)
+      .then((res) => res.data)
+      .then((r) => r.data)
+      .then(setDiscordUser)
+      .catch((error) => {
+        console.error(error);
+        setDiscordUser(null);
+      });
+  }, []);
+
+  useEffect(() => {
+    service
+      .get(`discord/server-list`)
+      .then((res) => res.data)
+      .then((r) => r.data)
+      .then(setServerList)
+      .catch((error) => {
+        console.error(error);
+        setServerList(null);
+      });
+  }, [serverlistRefetcher]);
 
   const getGuildNameById = useCallback(
     (id: string) => {
@@ -81,7 +108,7 @@ const SettingsSection = ({
 
   const getRoleNameById = useCallback(
     (id: string) => {
-      if (serverList === null) return undefined;
+      if (serverList === null || !serverList) return undefined;
       const role = serverList
         .map((s) => s.guildRoles)
         .reduce((prev, current) => [...prev, ...current], [])
@@ -164,11 +191,6 @@ const SettingsSection = ({
       (async () => {
         if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId])
           return;
-        // const contract = new Contract(
-        //   projectAddress,
-        //   collectionType === "721" ? ABI721 : ABI1155,
-        //   getDefaultProvider(RPC_URLS[projectChainId])
-        // );
         const contract =
           collectionType === "721"
             ? Collection721__factory.connect(
@@ -190,12 +212,30 @@ const SettingsSection = ({
           token0uri,
           revealTime,
         ] = await Promise.all([
-          contract.feeDestination(),
-          contract.contractURI(),
-          contract.baseURI(),
-          contract.maxMintInTotalPerWallet(),
-          contract.tokenURI(0),
-          contract.revealTime(),
+          contract.feeDestination().catch((e) => {
+            console.log("Error getting feeDestination  : ", e);
+            return "";
+          }),
+          contract.contractURI().catch((e) => {
+            console.log("Error getting contractURI  : ", e);
+            return "";
+          }),
+          contract.baseURI().catch((e) => {
+            console.log("Error getting baseURI  : ", e);
+            return "";
+          }),
+          contract.maxMintInTotalPerWallet().catch((e) => {
+            console.log("Error getting maxMintInTotalPerWallet : ", e);
+            return 0;
+          }),
+          contract.tokenURI(0).catch((e) => {
+            console.log("Error getting token0 uri : ", e);
+            return null;
+          }),
+          contract.revealTime().catch((e) => {
+            console.log("Error getting revealTime  : ", e);
+            return BigNumber.from(0);
+          }),
         ]);
         console.log({ curi, token0uri });
 
@@ -224,7 +264,7 @@ const SettingsSection = ({
         if (projectId) {
           setBasicDataBgProc((v) => v + 1);
           const { data: project } = await service.get(`/projects/${projectId}`);
-          console.log(project);
+          // console.log(project);
           if (project.error) {
             console.log(project.error);
             return;
@@ -535,7 +575,8 @@ const SettingsSection = ({
   );
 
   const selectedGuild = useMemo(() => {
-    if (serverList === null || selectedServer === null) return null;
+    if (serverList === null || !serverList || selectedServer === null)
+      return null;
     const server = serverList.find((s) => s.guild.id === selectedServer);
     return !server ? null : server;
   }, [selectedServer, serverList]);
@@ -547,7 +588,8 @@ const SettingsSection = ({
   }, [selectedGuild, selectedRole]);
 
   const selectedServerGuildMember = useMemo(() => {
-    if (selectedGuild === null || discordUser === null) return null;
+    if (selectedGuild === null || !discordUser || discordUser === null)
+      return null;
     const member = selectedGuild.members.find((m) => m.id === discordUser.id);
     return !member ? null : member;
   }, [discordUser, selectedGuild]);
@@ -640,14 +682,15 @@ const SettingsSection = ({
         )}
         <div className="absolute top-0 right-0 left-0 text-gray-700 bg-white text-3xl font-medium text-center py-1 shadow-2xl z-10">
           <h1>Mint Page Preview</h1>
-          <Link
-            href={`https://gogomint.ashrhmn.com/mint/${configSet.uid}`}
-            passHref
+          <a
+            href={`https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}
+            target="_blank"
+            rel="noreferrer"
           >
-            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogomint.ashrhmn.com/mint/${
+            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogo-mint.ashrhmn.com/mint/${
               configSet.uid.trim().replaceAll(" ", "%20") || "<random-string>"
             }`}</div>
-          </Link>
+          </a>
         </div>
         <div className="flex flex-col">
           <div className="border-2 border-gray-500 p-4 rounded-2xl">
@@ -694,6 +737,7 @@ const SettingsSection = ({
                   alt=""
                   layout="fill"
                   objectFit="cover"
+                  priority
                 />
               ) : (
                 <span className="text-2xl">+</span>
@@ -941,6 +985,11 @@ const SettingsSection = ({
           >
             Add VerifyBot to your server
           </a>
+          {(serverList === undefined || discordUser === undefined) && (
+            <div className="flex justify-center scale-150">
+              <LoaderIcon />
+            </div>
+          )}
           {(serverList === null || discordUser === null) && (
             <h1>
               Make sure to be logged in from{" "}
@@ -950,17 +999,17 @@ const SettingsSection = ({
               Page
             </h1>
           )}
-          {serverList !== null && discordUser !== null && (
+          {!!serverList && discordUser !== null && (
             <div>
               <h1>
                 VerifyBot is added to {serverList.length} Discord Server(s) that
                 you are member of
               </h1>
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex flex-col md:flex-row gap-4 items-center">
                 <div className="w-full flex gap-2 items-center">
                   <label className="min-w-fit">Select Server</label>
                   <select
-                    className="w-full p-1 rounded"
+                    className="w-full p-1 rounded h-8"
                     onChange={(e) =>
                       setSelectedServer(
                         e.target.value !== "select" ? e.target.value : null
@@ -984,7 +1033,7 @@ const SettingsSection = ({
                 <div className="w-full flex gap-2 items-center">
                   <label className="min-w-fit">Select Role</label>
                   <select
-                    className="w-full p-1 rounded"
+                    className="w-full p-1 rounded h-8"
                     onChange={(e) =>
                       setSelectedRole(
                         e.target.value !== "select" ? e.target.value : null
@@ -1010,11 +1059,11 @@ const SettingsSection = ({
                   </select>
                 </div>
                 <div className="w-full flex gap-2 items-center">
-                  <label className="min-w-fit">
+                  <label className="">
                     Minimum NFTs required for this role
                   </label>
                   <input
-                    className="w-full p-1 rounded"
+                    className="w-full p-1 rounded h-8"
                     type="number"
                     value={minValidNfts || ""}
                     onChange={(e) =>
@@ -1026,7 +1075,12 @@ const SettingsSection = ({
                     }
                   />
                 </div>
-                <button onClick={handleSaveRoleIntegration}>Save</button>
+                <button
+                  className="bg-blue-600 text-white hover:bg-blue-700 transition-colors px-3 rounded h-8"
+                  onClick={handleSaveRoleIntegration}
+                >
+                  Save
+                </button>
               </div>
               {selectedServerGuildMember !== null && (
                 <div className="my-4 text-xl bg-gray-100 rounded">
@@ -1151,11 +1205,6 @@ const SettingsSection = ({
           </div>
         </div>
       </details>
-      {/* <iframe
-        className="w-full h-[600px] border-2 border-gray-500 rounded-xl"
-        src={`https://gogomint.ashrhmn.com/mint/${configSet.uid}`}
-        frameBorder="0"
-      ></iframe> */}
     </div>
   );
 };

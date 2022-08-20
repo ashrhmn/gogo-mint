@@ -36,8 +36,8 @@ interface Props {
   page: number;
   view: number;
   mintStatus: "all" | "minted" | "unminted";
-  serverList: IGuild[] | null;
-  discordUser: DiscordUserResponse | null;
+  // serverList: IGuild[] | null;
+  // discordUser: DiscordUserResponse | null;
 }
 
 const ProjectPage: NextPage<Props> = ({
@@ -48,8 +48,8 @@ const ProjectPage: NextPage<Props> = ({
   page,
   view,
   mintStatus,
-  serverList,
-  discordUser,
+  // serverList,
+  // discordUser,
 }) => {
   const router = useRouter();
   const { account } = useEthers();
@@ -189,8 +189,8 @@ const ProjectPage: NextPage<Props> = ({
               projectChainId={project.chainId}
               collectionType={project.collectionType}
               projectOwner={project.owner.walletAddress}
-              serverList={serverList}
-              discordUser={discordUser}
+              // serverList={serverList}
+              // discordUser={discordUser}
               roleIntegrations={project.roleIntegrations}
             />
           )}
@@ -227,7 +227,9 @@ const ProjectPage: NextPage<Props> = ({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const cookie = getHttpCookie(context.req, context.res);
   try {
-    const { contract, network } = context.query;
+    const { contract, network, tab } = context.query;
+    // console.log({ tab });
+
     if (
       !contract ||
       !network ||
@@ -288,18 +290,30 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         },
       };
 
-    const [claimedSupply, unclaimedSupply, serverList, discordUser] =
-      await Promise.all([
-        getClaimedSupplyCountByProjectChainAddress(contract, +network),
-        getUnclaimedSupplyCountByProjectChainAddress(contract, +network),
-        getServerListWithAdminOrManageRole(cookie).catch((e) => {
-          console.log("Error server list : ", e);
-          return null;
-        }),
-        getLoggedInDiscordUser(context.req).catch((err) => null),
-      ]);
+    const [
+      claimedSupply,
+      unclaimedSupply,
+      // serverList,
+      //  discordUser
+    ] = await Promise.all([
+      tab === "overview" || tab === undefined
+        ? getClaimedSupplyCountByProjectChainAddress(contract, +network)
+        : null,
+      tab === "overview" || tab === undefined
+        ? getUnclaimedSupplyCountByProjectChainAddress(contract, +network)
+        : null,
+      // tab === "settings"
+      //   ? getServerListWithAdminOrManageRole(cookie).catch((e) => {
+      //       console.log("Error server list : ", e);
+      //       return null;
+      //     })
+      //   : null,
+      // tab === "settings"
+      //   ? getLoggedInDiscordUser(context.req).catch((err) => null)
+      //   : null,
+    ]);
 
-    // console.log({ serverList });
+    // console.log({ claimedSupply, unclaimedSupply, serverList, discordUser });
 
     return {
       props: {
@@ -310,8 +324,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         page: pageNo,
         view: take,
         mintStatus,
-        serverList,
-        discordUser,
+        // serverList,
+        // discordUser,
       },
     };
   } catch (error) {

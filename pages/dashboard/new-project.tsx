@@ -91,6 +91,17 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     revealTime: number,
     factory: Collection721__factory
   ) => {
+    console.log("Deploy 721 with : ", {
+      name,
+      symbol,
+      feeToAddress,
+      maxMintInTotalPerWallet,
+      saleConfigRoot,
+      platformSignerAddress,
+      baseURI,
+      revealTime,
+    });
+
     const contract = await toast.promise(
       factory.deploy(
         name,
@@ -121,6 +132,16 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     revealTime: number,
     factory: Collection1155__factory
   ) => {
+    console.log("Deploy 1155 with : ", {
+      name,
+      feeToAddress,
+      maxMintInTotalPerWallet,
+      saleConfigRoot,
+      platformSignerAddress,
+      baseURI,
+      revealTime,
+    });
+
     const contract = await toast.promise(
       factory.deploy(
         name,
@@ -224,51 +245,6 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         setBgProcessRunning((v) => v - 1);
         return;
       }
-      // if (initCode.error) {
-      //   toast.error("Error contract data");
-      //   setBgProcessRunning((v) => v - 1);
-      //   return;
-      // }
-
-      // const factory = new ContractFactory(
-      //   initCode.data.abi,
-      //   initCode.data.bytecode,
-      //   library.getSigner(account)
-      // );
-
-      // const contract = await toast.promise(
-      //   new Collection721__factory(library.getSigner(account)).deploy(
-      //     normalizeString(configSet.name),
-      //     normalizeString(configSet.symbol),
-      //     configSet.feeToAddress,
-      //     configSet.maxMintInTotalPerWallet,
-      //     saleConfigRoot.data,
-      //     platformSignerAddress.data,
-      //     baseUri
-      //   ),
-      //   {
-      //     success: "Transaction sent",
-      //     error: "Error sending transaction",
-      //     loading: "Sending transaction...",
-      //   }
-      // );
-      // const contract = await toast.promise(
-      //   factory.deploy(
-      //     normalizeString(configSet.name),
-      //     normalizeString(configSet.symbol),
-      //     configSet.feeToAddress,
-      //     configSet.maxMintInTotalPerWallet,
-      //     saleConfigRoot.data,
-      //     platformSignerAddress.data,
-      //     baseUri
-      //   ),
-      //   {
-      //     success: "Transaction sent",
-      //     error: "Error sending transaction",
-      //     loading: "Sending transaction...",
-      //   }
-      // );
-
       const contract =
         configSet.collectionType === "721"
           ? await deploy721(
