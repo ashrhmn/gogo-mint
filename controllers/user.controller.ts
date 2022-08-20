@@ -14,11 +14,17 @@ export const getLoggedInUser = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
-  const accessToken = getAccessTokenFromCookie(req);
-  if (!accessToken) return res.json({ message: "Access Token Not Found" });
-  const user = await getUserByAccessToken(accessToken);
-  if (!user) return res.json(errorResponse("Unauthorized"));
-  return res.json(successResponse(user));
+  try {
+    const accessToken = getAccessTokenFromCookie(req);
+    if (!accessToken)
+      return res.status(400).json(errorResponse("Access Token Not Found"));
+    const user = await getUserByAccessToken(accessToken);
+    if (!user) return res.status(403).json(errorResponse("Unauthorized"));
+    return res.json(successResponse(user));
+  } catch (error) {
+    console.log("Error getting discord current user : ", error);
+    res.status(500).json(errorResponse("Error getting discord current user"));
+  }
 };
 
 export const getUserByDiscordIdentifiers = async (

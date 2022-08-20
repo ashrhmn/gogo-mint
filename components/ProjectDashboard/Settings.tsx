@@ -70,29 +70,31 @@ const SettingsSection = ({
     undefined
   );
 
-  // const [discordUserRefetcher, setDiscordUserRefetcher] = useState(false);
   const [serverlistRefetcher, setServerlistRefetcher] = useState(false);
+  const [discordUserRefetcher, setDiscordUserRefetcher] = useState(false);
 
   useEffect(() => {
+    setDiscordUser(undefined);
     service
       .get(`auth/discord/current-user`)
       .then((res) => res.data)
       .then((r) => r.data)
       .then(setDiscordUser)
       .catch((error) => {
-        console.error(error);
+        // console.error("Error getting discord user : ", error);
         setDiscordUser(null);
       });
-  }, []);
+  }, [discordUserRefetcher]);
 
   useEffect(() => {
+    setServerList(undefined);
     service
       .get(`discord/server-list`)
       .then((res) => res.data)
       .then((r) => r.data)
       .then(setServerList)
       .catch((error) => {
-        console.error(error);
+        // console.error("Error getting server list", error);
         setServerList(null);
       });
   }, [serverlistRefetcher]);
@@ -964,43 +966,65 @@ const SettingsSection = ({
         </div>
       </div>
       <div className="bg-gray-200 rounded p-4 my-6 relative">
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">
-            Set Discord Roles{" "}
-            {!!discordUser && (
-              <span className="font-light text-sm">
-                (Logged in as {discordUser.username}#{discordUser.discriminator}
-                )
-              </span>
-            )}
-          </label>
-          <p className="text-sm text-gray-500">
-            Here you can set discord roles to be assigned to NFT holders from
-            this project
-          </p>
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href={`https://discord.com/oauth2/authorize?client_id=990705597953474590&scope=bot%20applications.commands&permissions=268435456`}
-          >
-            Add VerifyBot to your server
-          </a>
+        <div className="mt-4">
+          <div className="flex flex-col sm:flex-row justify-between mb-5">
+            <div>
+              <label className="font-bold">
+                Set Discord Roles{" "}
+                {!!discordUser && (
+                  <span className="font-light text-sm">
+                    (Logged in as {discordUser.username}#
+                    {discordUser.discriminator})
+                  </span>
+                )}
+              </label>
+              <p className="text-sm text-gray-500 mt-1 mb-4">
+                Here you can set discord roles to be assigned to NFT holders
+                from this project
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                className="bg-blue-500 text-white hover:bg-blue-700 transition-colors p-2 rounded"
+                onClick={() => {
+                  setDiscordUserRefetcher((v) => !v);
+                  setServerlistRefetcher((v) => !v);
+                  setRoleIntegrationRefetcher((v) => !v);
+                }}
+              >
+                Refresh Informations
+              </button>
+              <a
+                className="bg-blue-500 text-white text-center hover:bg-blue-700 transition-colors p-2 rounded"
+                target="_blank"
+                rel="noreferrer"
+                href={`https://discord.com/oauth2/authorize?client_id=990705597953474590&scope=bot%20applications.commands&permissions=268435456`}
+              >
+                Add VerifyBot
+              </a>
+            </div>
+          </div>
           {(serverList === undefined || discordUser === undefined) && (
             <div className="flex justify-center scale-150">
               <LoaderIcon />
             </div>
           )}
           {(serverList === null || discordUser === null) && (
-            <h1>
-              Make sure to be logged in from{" "}
-              <a target="_blank" rel="noreferrer" href={`/authenticate`}>
+            <h1 className="mt-3 text-center text-xl">
+              You are not logged in with Discord. Make sure to be logged in from{" "}
+              <a
+                className="text-blue-500 hover:text-blue-600 transition-colors"
+                target="_blank"
+                rel="noreferrer"
+                href={`/authenticate`}
+              >
                 Authenticate
               </a>{" "}
               Page
             </h1>
           )}
           {!!serverList && discordUser !== null && (
-            <div>
+            <div className="mt-3">
               <h1>
                 VerifyBot is added to {serverList.length} Discord Server(s) that
                 you are member of
@@ -1105,64 +1129,66 @@ const SettingsSection = ({
             </div>
           )}
         </div>
-        <div className="mt-4 space-y-2 relative">
-          {!!roleIntegrationBgProc && (
-            <div className="absolute right-5 top-20 z-10 scale-150">
-              <LoaderIcon />
-            </div>
-          )}
-          <label className="font-bold">Existing Rules</label>
-          <p className="text-sm text-gray-500">
-            These are the rules for discord roles added from this project
-          </p>
-          {roleIntegrations.length === 0 && (
-            <h1 className="text-center text-xl">
-              No integration is currently set for this project
-            </h1>
-          )}
-          {roleIntegrations.length > 0 && (
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="text-center p-2 border-2 border-gray-400">
-                    Server
-                  </th>
-                  <th className="text-center p-2 border-2 border-gray-400">
-                    Role
-                  </th>
-                  <th className="text-center p-2 border-2 border-gray-400">
-                    Min NFT
-                  </th>
-                  <th className="text-center p-2 border-2 border-gray-400">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {roleIntegrations.map((ri) => (
-                  <tr key={ri.id}>
-                    <td className="text-center p-2 border-2 border-gray-400">
-                      {getGuildNameById(ri.guildId) || ri.guildId}
-                    </td>
-                    <td className="text-center p-2 border-2 border-gray-400">
-                      {getRoleNameById(ri.roleId) || ri.roleId}
-                    </td>
-                    <td className="text-center p-2 border-2 border-gray-400">
-                      {ri.minValidNfts}
-                    </td>
-                    <td className="text-center p-2 border-2 border-gray-400">
-                      <button
-                        onClick={() => handleDeleteRoleIntegration(ri.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+        {!!discordUser && !!serverList && (
+          <div className="mt-4 space-y-2 relative">
+            {!!roleIntegrationBgProc && (
+              <div className="absolute right-5 top-20 z-10 scale-150">
+                <LoaderIcon />
+              </div>
+            )}
+            <label className="font-bold">Existing Rules</label>
+            <p className="text-sm text-gray-500">
+              These are the rules for discord roles added from this project
+            </p>
+            {roleIntegrations.length === 0 && (
+              <h1 className="text-center text-xl">
+                No integration is currently set for this project
+              </h1>
+            )}
+            {roleIntegrations.length > 0 && (
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-center p-2 border-2 border-gray-400">
+                      Server
+                    </th>
+                    <th className="text-center p-2 border-2 border-gray-400">
+                      Role
+                    </th>
+                    <th className="text-center p-2 border-2 border-gray-400">
+                      Min NFT
+                    </th>
+                    <th className="text-center p-2 border-2 border-gray-400">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {roleIntegrations.map((ri) => (
+                    <tr key={ri.id}>
+                      <td className="text-center p-2 border-2 border-gray-400">
+                        {getGuildNameById(ri.guildId) || ri.guildId}
+                      </td>
+                      <td className="text-center p-2 border-2 border-gray-400">
+                        {getRoleNameById(ri.roleId) || ri.roleId}
+                      </td>
+                      <td className="text-center p-2 border-2 border-gray-400">
+                        {ri.minValidNfts}
+                      </td>
+                      <td className="text-center p-2 border-2 border-gray-400">
+                        <button
+                          onClick={() => handleDeleteRoleIntegration(ri.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
 
       <details>
