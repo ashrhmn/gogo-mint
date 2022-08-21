@@ -147,7 +147,10 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
         signature,
       });
       console.log(res.data);
-      router.reload();
+      service.post(`discord/refresh-role-integrations`, {
+        walletAddress: account,
+      }),
+        router.reload();
     } catch (error: any) {
       console.error(error);
       if (error.message && typeof error.message === "string")
