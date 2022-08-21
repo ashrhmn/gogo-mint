@@ -87,7 +87,7 @@ const OverviewSection = ({
       service
         .delete(`nft/${id}`)
         .then((res) => res.data)
-        .then(console.log)
+        // .then(console.log)
         .then(() => {
           router.reload();
         }),

@@ -260,7 +260,6 @@ const SettingsSection = ({
       toast.error("Error fetching fee to address, base URI");
     }
   }, [collectionType, projectAddress, projectChainId]);
-  console.log({ configSet });
 
   useEffect(() => {
     try {
