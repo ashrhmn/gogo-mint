@@ -127,7 +127,10 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
         error: "Error linking account!",
       }
     );
-    setRefetcher((v) => !v);
+    service.post(`discord/refresh-role-integrations`, {
+      walletAddress: account,
+    }),
+      setRefetcher((v) => !v);
     setBgProcesses((v) => v - 1);
     if (!response.error) {
     } else {
