@@ -260,6 +260,8 @@ const SettingsSection = ({
       toast.error("Error fetching fee to address, base URI");
     }
   }, [collectionType, projectAddress, projectChainId]);
+  console.log({ configSet });
+
   useEffect(() => {
     try {
       (async () => {
@@ -829,7 +831,7 @@ const SettingsSection = ({
                     max={10}
                     min={0}
                     step={0.01}
-                    defaultValue={configSet.roayltyPercentage}
+                    value={configSet.roayltyPercentage || ""}
                     placeholder="0"
                     onChange={(e) =>
                       setConfigSet((p) => ({

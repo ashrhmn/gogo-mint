@@ -235,3 +235,22 @@ export const updateTokenIdToRandom = async (
     return res.status(500).json(errorResponse(error));
   }
 };
+
+export const deleteNftById = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const id = req.query.id;
+
+    if (typeof id !== "string" || isNaN(+id)) {
+      return res.status(400).json(errorResponse("Invalid nft Id"));
+    }
+    const cookies = getHttpCookie(req, res);
+    await NftService.deleteNftById(+id, cookies);
+    return res.json(successResponse("Deleted"));
+  } catch (error) {
+    console.log("Error deleting nft : ", error);
+    return res.status(500).json(errorResponse(error));
+  }
+};

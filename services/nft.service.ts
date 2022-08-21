@@ -258,3 +258,14 @@ export const updateTokenIdToRandom = async (
   );
   return updatedNfts;
 };
+
+export const deleteNftById = async (id: number, cookies: Cookies) => {
+  const cookieWallet = getCookieWallet(cookies);
+  const nft = await prisma.nFT.findUniqueOrThrow({
+    where: { id },
+    include: { project: { include: { owner: true } } },
+  });
+  if (cookieWallet !== nft.project.owner.walletAddress)
+    throw "Logged in wallet not project owner";
+  await prisma.nFT.delete({ where: { id } });
+};

@@ -81,36 +81,24 @@ const OverviewSection = ({
       });
     }
   }, [address, collectionType, nfts, projectChainId]);
-  // const handleSignClick = async (nftId: number) => {
-  //   if (!account || !library) {
-  //     toast.error("Please connect your wallet first");
-  //     return;
-  //   }
-  //   if (ownerAddress && ownerAddress !== account) {
-  //     toast.error(
-  //       `Project owner is ${shortenIfAddress(
-  //         ownerAddress
-  //       )}, only owner can sign NFT`
-  //     );
-  //     return;
-  //   }
-  //   const signature = await library
-  //     .getSigner(account)
-  //     .signMessage(
-  //       arrayify(solidityKeccak256(["string"], [getTokenUri(nftId)]))
-  //     );
-  //   const result = await toast.promise(
-  //     service.put(`nft/signature`, { id: nftId, signature }),
-  //     {
-  //       error: "Error saving signature",
-  //       loading: "Storing signature...",
-  //       success: "Signature stored successfully",
-  //     }
-  //   );
-  //   if ((result as any).error && typeof (result as any).error == "string")
-  //     toast.error((result as any).error);
-  //   router.reload();
-  // };
+
+  const handleDeleteNft = async (id: number) => {
+    await toast.promise(
+      service
+        .delete(`nft/${id}`)
+        .then((res) => res.data)
+        .then(console.log)
+        .then(() => {
+          router.reload();
+        }),
+      {
+        error: "Error deleting NFT",
+        loading: "Deleting NFT",
+        success: "Deleted",
+      }
+    );
+  };
+
   return (
     <div>
       {collectionType === "721" && (
@@ -291,7 +279,16 @@ const OverviewSection = ({
                     </td>
                   )}
                   <td className="p-4 text-center min-w-[100px]">
-                    <div>{nft.tokenId === null && <button>Delete</button>}</div>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => handleDeleteNft(nft.id)}
+                    >
+                      {nft.tokenId === null && (
+                        <button className="bg-red-500 text-white p-1 rounded w-28 hover:bg-red-700 transition-colors">
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
