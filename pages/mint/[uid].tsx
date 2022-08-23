@@ -1,11 +1,11 @@
 import { Project, SaleConfig, User } from "@prisma/client";
 import { shortenIfAddress, useEtherBalance, useEthers } from "@usedapp/core";
-import { getDefaultProvider } from "ethers";
+import { BigNumber, getDefaultProvider } from "ethers";
 import { formatEther, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import Layout from "../../components/Layout";
 import { RPC_URLS } from "../../constants/RPC_URL";
@@ -69,7 +69,18 @@ const MintPage: NextPage<Props> = ({
   });
   const router = useRouter();
   const [mintCount, setMintCount] = useState(1);
-  const userEtherBalance = useEtherBalance(account);
+  const [userEtherBalance, setUserEtherBalance] = useState<
+    BigNumber | undefined
+  >(undefined);
+
+  useEffect(() => {
+    (async () => {
+      if (!library || !account) return;
+      const signer = library.getSigner(account);
+      const balance = await signer.getBalance();
+      setUserEtherBalance(balance);
+    })();
+  }, [account, library]);
 
   useEffect(() => {
     (async () => {
