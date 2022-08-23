@@ -201,6 +201,7 @@ export const getOnChainHiddenMetadata = async (
   return {
     name: `${project.name} item - hidden`,
     description: `This item is from ${project.name} but not revealed yet`,
+    image: project.unrevealedImageUrl,
   };
 };
 

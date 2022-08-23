@@ -23,22 +23,23 @@ model User {
 }
 
 model Project {
-  id                Int               @id @default(autoincrement())
-  userId            Int
-  name              String
-  description       String?
-  imageUrl          String?
-  bannerUrl         String?
-  owner             User              @relation(fields: [userId], references: [id])
-  address           String?
-  nfts              NFT[]
-  chainId           Int?
-  collectionType    String?
-  uid               String?           @unique
-  saleConfigs       SaleConfig[]
-  royaltyReceiver   String?
-  royaltyPercentage Float             @default(0.0)
-  roleIntegrations  RoleIntegration[]
+  id                 Int               @id @default(autoincrement())
+  userId             Int
+  name               String
+  description        String?
+  imageUrl           String?
+  unrevealedImageUrl String?
+  bannerUrl          String?
+  owner              User              @relation(fields: [userId], references: [id])
+  address            String?
+  nfts               NFT[]
+  chainId            Int?
+  collectionType     String?
+  uid                String?           @unique
+  saleConfigs        SaleConfig[]
+  royaltyReceiver    String?
+  royaltyPercentage  Float             @default(0.0)
+  roleIntegrations   RoleIntegration[]
 
   @@unique([address, chainId])
   @@map("projects")

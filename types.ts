@@ -39,6 +39,7 @@ export type NextOrServerResponse = NextApiResponse | ServerResponse;
 
 export interface IDeployConfigSet {
   logo: File | null;
+  unrevealedImage: File | null;
   banner: File | null;
   name: string;
   revealTime: number;

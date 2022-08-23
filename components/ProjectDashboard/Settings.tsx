@@ -147,6 +147,7 @@ const SettingsSection = ({
     description: "",
     feeToAddress: "",
     logo: null,
+    unrevealedImage: null,
     banner: null,
     symbol: "",
     uid: "",
@@ -161,7 +162,10 @@ const SettingsSection = ({
 
   const [imageBase64Logo, setImageBase64Logo] = useState("");
   const logoImgInputRef = useRef<HTMLInputElement | null>(null);
+  const unrevealedImgInputRef = useRef<HTMLInputElement | null>(null);
   const [imageBase64Banner, setImageBase64Banner] = useState("");
+  const [imageBase64UnrevealedImage, setImageBase64UnrevealedImage] =
+    useState("");
   const bannerImgInputRef = useRef<HTMLInputElement | null>(null);
   const [currentUid, setCurrentUid] = useState("");
   const [selectedServer, setSelectedServer] = useState<string | null>(null);
@@ -187,6 +191,17 @@ const SettingsSection = ({
     };
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, banner: file }));
+  };
+  const onSelectUnrevealedImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target && typeof ev.target.result === "string")
+        setImageBase64UnrevealedImage(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+    setConfigSet((c) => ({ ...c, unrevealedImage: file }));
   };
   useEffect(() => {
     try {
@@ -266,7 +281,9 @@ const SettingsSection = ({
       (async () => {
         if (projectId) {
           setBasicDataBgProc((v) => v + 1);
-          const { data: project } = await service.get(`/projects/${projectId}`);
+          const project = await service
+            .get(`/projects/${projectId}`)
+            .then((res) => res.data);
           // console.log(project);
           if (project.error) {
             console.log(project.error);
@@ -274,6 +291,7 @@ const SettingsSection = ({
           }
           setImageBase64Logo(project.data.imageUrl);
           setImageBase64Banner(project.data.bannerUrl);
+          setImageBase64UnrevealedImage(project.data.unrevealedImageUrl);
           setConfigSet((c) => ({
             ...c,
             description: project.data.description,
@@ -292,6 +310,39 @@ const SettingsSection = ({
       toast.error("Error fetching data");
     }
   }, [projectId]);
+
+  const handleUpdateUnrevealedImage = async () => {
+    try {
+      if (!configSet.unrevealedImage) return;
+      setBasicDataBgProc((v) => v + 1);
+      const url = await toast.promise(
+        uploadFileToFirebase(configSet.unrevealedImage),
+        {
+          error: "Error uploading",
+          loading: "Uploading Image...",
+          success: "Uploaded successfully",
+        }
+      );
+      if (!url) return;
+
+      const { data: project } = await toast.promise(
+        service.put(`/projects/${projectId}`, {
+          unrevealedImageUrl: url,
+        }),
+        {
+          error: "Error updating Unrevealed NFT Image",
+          loading: "Updating Unrevealed NFT Image...",
+          success: "Updated successfully",
+        }
+      );
+      // setBasicDataBgProc((v) => v - 1);
+      router.reload();
+    } catch (error) {
+      toast.error("Error updatin unrevealed image");
+      console.log(error);
+      setBasicDataBgProc((v) => v - 1);
+    }
+  };
   const handleUpdateBasic = async () => {
     try {
       if (!configSet.name) {
@@ -892,39 +943,88 @@ const SettingsSection = ({
           </button>
         </div>
       </div>
-      <div className="bg-gray-200 rounded p-4 my-6 relative">
-        {!!revealTimeBgProc && (
-          <div className="absolute right-5 top-5 z-10 scale-150">
-            <LoaderIcon />
+      <div className="flex items-stretch gap-4">
+        <div className="bg-gray-200 rounded p-4 my-6 relative w-full">
+          {!!revealTimeBgProc && (
+            <div className="absolute right-5 top-5 z-10 scale-150">
+              <LoaderIcon />
+            </div>
+          )}
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Update Metadata Reveal Time</label>
+            <p className="text-sm text-gray-500">
+              Update the time when NFT metadata is revealed (Requires
+              Transaction on update)
+            </p>
+            <input
+              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+              type="datetime-local"
+              disabled={!!revealTimeBgProc}
+              value={formatHtmlDateTime(new Date(configSet.revealTime * 1000))}
+              onChange={(e) =>
+                setConfigSet((c) => ({
+                  ...c,
+                  revealTime: +(+new Date(e.target.value) / 1000).toFixed(0),
+                }))
+              }
+            />
           </div>
-        )}
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">Update Metadata Reveal Time</label>
-          <p className="text-sm text-gray-500">
-            Update the time when NFT metadata is revealed (Requires Transaction
-            on update)
-          </p>
-          <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-            type="datetime-local"
-            disabled={!!revealTimeBgProc}
-            value={formatHtmlDateTime(new Date(configSet.revealTime * 1000))}
-            onChange={(e) =>
-              setConfigSet((c) => ({
-                ...c,
-                revealTime: +(+new Date(e.target.value) / 1000).toFixed(0),
-              }))
-            }
-          />
+          <div>
+            <button
+              disabled={!!revealTimeBgProc}
+              className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              onClick={handleRevealTimeUpdate}
+            >
+              Update
+            </button>
+          </div>
         </div>
-        <div>
-          <button
-            disabled={!!revealTimeBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
-            onClick={handleRevealTimeUpdate}
-          >
-            Update
-          </button>
+        <div className="bg-gray-200 rounded p-4 my-6 relative w-full">
+          {!!basicDataBgProc && (
+            <div className="absolute right-5 top-5 z-10 scale-150">
+              <LoaderIcon />
+            </div>
+          )}
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Unrevealed NFT Image</label>
+            <p className="text-sm text-gray-500">
+              This image will be shown when an NFT has not been revealed yet
+            </p>
+            <div
+              onClick={() => {
+                if (unrevealedImgInputRef && unrevealedImgInputRef.current)
+                  unrevealedImgInputRef.current.click();
+              }}
+              className="relative aspect-square w-40 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer shadow-xl"
+            >
+              <input
+                ref={unrevealedImgInputRef}
+                onChange={onSelectUnrevealedImage}
+                type="file"
+                hidden
+              />
+              {!!imageBase64UnrevealedImage ? (
+                <Image
+                  src={imageBase64UnrevealedImage}
+                  alt=""
+                  layout="fill"
+                  objectFit="cover"
+                  priority
+                />
+              ) : (
+                <span className="text-2xl">+</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <button
+              disabled={!!basicDataBgProc}
+              className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              onClick={handleUpdateUnrevealedImage}
+            >
+              Update
+            </button>
+          </div>
         </div>
       </div>
       <div className="bg-gray-200 rounded p-4 my-6 relative">

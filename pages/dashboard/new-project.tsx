@@ -32,6 +32,7 @@ interface Props {
 const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
   const { account, library, chainId } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
+  const unrevealedImgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
   const router = useRouter();
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
@@ -39,6 +40,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     description: "",
     feeToAddress: "",
     logo: null,
+    unrevealedImage: null,
     banner: null,
     symbol: "",
     saleWaves: [],
@@ -68,6 +70,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
       );
   }, [account, cookieAddress, router]);
   const [imageBase64, setImageBase64] = useState("");
+  const [unrevealedImageBase64, setUnrevealedImageBase64] = useState("");
   const onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -78,6 +81,17 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     });
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, logo: file }));
+  };
+  const onSelectUnrevealedImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.addEventListener("load", (ev) => {
+      if (ev.target && typeof ev.target.result === "string")
+        setUnrevealedImageBase64(ev.target.result);
+    });
+    reader.readAsDataURL(file);
+    setConfigSet((c) => ({ ...c, unrevealedImage: file }));
   };
 
   const deploy721 = async (
@@ -207,12 +221,14 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     try {
       const [
         imageUrl,
+        unrevealedImageUrl,
         { data: saleConfigRoot },
         // { data: initCode },
         { data: platformSignerAddress },
       ] = await toast.promise(
         Promise.all([
           uploadFileToFirebase(configSet.logo),
+          uploadFileToFirebase(configSet.unrevealedImage),
           service.post(`sale-config/root`, {
             saleConfigs: configSet.saleWaves.map((sw) => ({
               ...sw,
@@ -276,6 +292,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             address: contract.address,
             description: configSet.description,
             imageUrl,
+            unrevealedImageUrl,
             chainId,
             collectionType: configSet.collectionType,
             signerAddress: account,
@@ -334,7 +351,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         <h1 className="text-2xl font-medium my-1">Contract Information</h1>
         <h2>Customize your new project</h2>
         <div>
-          <div>
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <div
               onClick={() => {
                 if (imgInputRef && imgInputRef.current)
@@ -351,7 +368,28 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               {!!imageBase64 ? (
                 <Image src={imageBase64} alt="" layout="fill" />
               ) : (
-                <span className="text-2xl">+</span>
+                <span className="text-2xl text-center">Project Logo</span>
+              )}
+            </div>
+            <div
+              onClick={() => {
+                if (unrevealedImgInputRef && unrevealedImgInputRef.current)
+                  unrevealedImgInputRef.current.click();
+              }}
+              className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+            >
+              <input
+                ref={unrevealedImgInputRef}
+                onChange={onSelectUnrevealedImage}
+                type="file"
+                hidden
+              />
+              {!!unrevealedImageBase64 ? (
+                <Image src={unrevealedImageBase64} alt="" layout="fill" />
+              ) : (
+                <span className="text-2xl text-center">
+                  Unrevealed NFT Image
+                </span>
               )}
             </div>
           </div>
