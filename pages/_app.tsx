@@ -13,10 +13,10 @@ function MyApp({ Component, pageProps }: AppProps) {
     <DAppProvider config={config}>
       <Head>
         <title>GOGO-MINT</title>
-        <meta
+        {/* <meta
           httpEquiv="Content-Security-Policy"
           content="upgrade-insecure-requests"
-        ></meta>
+        ></meta> */}
       </Head>
 
       <Component {...pageProps} />

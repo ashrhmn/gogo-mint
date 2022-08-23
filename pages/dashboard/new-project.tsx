@@ -309,12 +309,11 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         return;
       }
       await service
-        .get(`http://54.153.49.223:4200/restart`)
+        .get(`/discord/test6`)
+        // .get(`http://54.153.49.223:4200/restart`)
         .then((res) => res.data)
         .then(console.log)
         .catch(console.error);
-      //   console.log(newProject.data);
-      //   console.log(contract);
       setBgProcessRunning((v) => v - 1);
 
       router.push(
