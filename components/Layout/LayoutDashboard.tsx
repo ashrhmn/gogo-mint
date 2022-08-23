@@ -1,9 +1,10 @@
 import { useEthers, shortenIfAddress } from "@usedapp/core";
 import Link from "next/link";
 import React from "react";
+import { walletConnectConnector } from "../../lib/connectors";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
-  const { activateBrowserWallet, account, deactivate } = useEthers();
+  const { activateBrowserWallet, account, deactivate, activate } = useEthers();
   return (
     <>
       <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-40 bg-white">
@@ -42,7 +43,19 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
                 </>
               ) : (
                 <>
-                  <button onClick={activateBrowserWallet}>Connect</button>
+                  <button
+                    onClick={() => {
+                      if (!!(window as any).ethereum) {
+                        activateBrowserWallet();
+                      } else {
+                        activate(walletConnectConnector)
+                          .then(console.log)
+                          .catch(console.error);
+                      }
+                    }}
+                  >
+                    Connect
+                  </button>
                 </>
               )}
             </div>

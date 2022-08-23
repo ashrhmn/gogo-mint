@@ -31,6 +31,7 @@ import {
   get721MintEventArgsMapping,
   normalizeString,
 } from "../../utils/String.utils";
+import { walletConnectConnector } from "../../lib/connectors";
 
 interface Props {
   project: Project & {
@@ -57,7 +58,8 @@ const MintPage: NextPage<Props> = ({
   totalSupply,
   randomMsgSign,
 }) => {
-  const { account, chainId, library, activateBrowserWallet } = useEthers();
+  const { account, chainId, library, activateBrowserWallet, activate } =
+    useEthers();
   const [mintBgProc, setMintBgProc] = useState(0);
   const [config, setConfig] = useState({
     userBalance: -1,
@@ -425,7 +427,15 @@ const MintPage: NextPage<Props> = ({
               ) : (
                 <button
                   className="w-full bg-blue-500 rounded text-white min-h-[2.5rem] hover:bg-blue-600 transition-colors"
-                  onClick={activateBrowserWallet}
+                  onClick={() => {
+                    if (!!(window as any).ethereum) {
+                      activateBrowserWallet();
+                    } else {
+                      activate(walletConnectConnector)
+                        .then(console.log)
+                        .catch(console.error);
+                    }
+                  }}
                 >
                   Connect Wallet
                 </button>
@@ -518,9 +528,11 @@ const MintPage: NextPage<Props> = ({
               config.mintCountInSaleByUser === -1 ||
               config.totalMintInSale === -1 ||
               config.userBalance === -1
-                ? "Loading... "
+                ? !!account
+                  ? "Loading... "
+                  : "Wallet Not Connected"
                 : "Mint "}
-              {!!currentSale && (
+              {!!currentSale && !!account && (
                 <span className="text-lg">
                   {+(currentSale.mintCharge * mintCount).toFixed(8) === 0 ? (
                     "(Free)"

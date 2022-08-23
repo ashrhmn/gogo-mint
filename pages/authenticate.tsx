@@ -14,11 +14,11 @@ import {
 } from "../constants/configuration";
 import { getHttpCookie } from "../utils/Request.utils";
 import toast from "react-hot-toast";
-import { getSigner } from "../services/ethereum.service";
 import assert from "assert";
 import { getCookieWallet } from "../services/auth.service";
 import Layout from "../components/Layout";
 import { getLoggedInDiscordUser } from "../services/user.service";
+import { walletConnectConnector } from "../lib/connectors";
 
 interface Props {
   user?: DiscordUserResponse;
@@ -27,7 +27,8 @@ interface Props {
 }
 
 const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
-  const { account, deactivate, activateBrowserWallet, library } = useEthers();
+  const { account, deactivate, activateBrowserWallet, library, activate } =
+    useEthers();
   const [connectedUser, setConnectedUser] = useState<User | null>();
   const [connectedWallet, setConnectedWallet] = useState<string | null>("");
   const [bgProcesses, setBgProcesses] = useState(0);
@@ -194,12 +195,22 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
-            <h1>Wallet not connect</h1>
+            <h1>Wallet not connected</h1>
             <button
-              className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
+              className="mt-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
               onClick={activateBrowserWallet}
             >
-              Connect
+              Metamask
+            </button>
+            <button
+              onClick={() =>
+                activate(walletConnectConnector)
+                  .then(console.log)
+                  .catch(console.error)
+              }
+              className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
+            >
+              WalletConnect
             </button>
           </div>
         )}
