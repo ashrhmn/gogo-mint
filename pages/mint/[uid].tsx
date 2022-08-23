@@ -322,10 +322,10 @@ const MintPage: NextPage<Props> = ({
       });
 
       if (project.collectionType === "1155") {
-        await service.post(`discord/refresh-role-integrations`, {
-          walletAddress: account,
-          projectAddress: project.address,
-        });
+        // await service.post(`discord/refresh-role-integrations`, {
+        //   walletAddress: account,
+        //   projectAddress: project.address,
+        // });
         router.reload();
         return;
       }
@@ -345,10 +345,10 @@ const MintPage: NextPage<Props> = ({
             fromTokenId: eventData.fromTokenId,
             toTokenId: eventData.toTokenId,
           }),
-          service.post(`discord/refresh-role-integrations`, {
-            walletAddress: account,
-            projectAddress: project.address,
-          }),
+          // service.post(`discord/refresh-role-integrations`, {
+          //   walletAddress: account,
+          //   projectAddress: project.address,
+          // }),
         ]),
         {
           error: "Error updating NFT",
