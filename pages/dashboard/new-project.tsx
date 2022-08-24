@@ -411,7 +411,12 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               </div>
               <div className="mt-4 flex gap-2">
                 <div className="space-y-2 w-full">
-                  <label className="font-bold">Metadata Reveal Time</label>
+                  <label className="font-bold">
+                    Metadata Reveal Time{" "}
+                    <span className="text-xs font-normal">
+                      ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
+                    </span>
+                  </label>
                   <p className="text-sm text-gray-500">
                     When to reveal the metadata
                   </p>

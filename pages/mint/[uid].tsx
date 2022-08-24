@@ -481,9 +481,9 @@ const MintPage: NextPage<Props> = ({
                   )}
                 </h1>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col justify-between items-center border-2 rounded p-1 m-1">
                 <h1>Sale Status</h1>
-                <h1>
+                <h1 className="text-center text-lg">
                   {!!currentSale
                     ? normalizeString(currentSale.saleType)
                     : !!nextSale
@@ -491,7 +491,11 @@ const MintPage: NextPage<Props> = ({
                         nextSale.saleType
                       )} Sale starts at ${new Date(
                         nextSale.startTime * 1000
-                      ).toLocaleString()}`
+                      ).toLocaleString()} ${
+                        new Date(nextSale.startTime * 1000)
+                          .toString()
+                          .match(/\(([^\)]+)\)$/)?.[1]
+                      }`
                     : "No Sale is running"}
                 </h1>
               </div>

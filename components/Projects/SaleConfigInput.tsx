@@ -91,7 +91,12 @@ const SaleConfigInput = ({
         </div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full flex justify-between items-center font-medium">
-            <h1>Start Time</h1>
+            <h1>
+              Start Time{" "}
+              <span className="text-xs font-normal">
+                ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
+              </span>
+            </h1>
             <div>
               <button
                 className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
@@ -132,7 +137,12 @@ const SaleConfigInput = ({
         </div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full flex justify-between items-center font-medium">
-            <h1>End Time</h1>
+            <h1>
+              End Time{" "}
+              <span className="text-xs font-normal">
+                ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
+              </span>
+            </h1>
             <div className="flex items-center gap-1">
               <div className="flex items-center gap-1 bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors cursor-pointer select-none">
                 <input

@@ -1,16 +1,17 @@
-import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { Contract, getDefaultProvider } from "ethers";
-import { arrayify, isAddress, solidityKeccak256 } from "ethers/lib/utils";
+import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
+import dynamic from "next/dynamic";
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
-import { getTokenUri } from "../../constants/tokenUri";
 import { service } from "../../service";
 import { NftExtended } from "../../types";
 import { resolveIPFS } from "../../utils/Request.utils";
+import { getUrlFileExtension } from "../../utils/String.utils";
 import CopyAddressToClipboard from "../Common/CopyAddressToClipboard";
 
 const OverviewSection = ({
@@ -243,11 +244,32 @@ const OverviewSection = ({
                   <td className="p-4 text-center min-w-[100px]">
                     {nft.imageUrl && (
                       <div className="h-20 w-20 relative">
-                        <Image
+                        {["mp4", "avi", "mkv", "wmv"].includes(
+                          getUrlFileExtension(nft.imageUrl).toLowerCase()
+                        ) ? (
+                          <ReactPlayer
+                            height="100%"
+                            width="100%"
+                            muted
+                            playing
+                            loop
+                            url={nft.imageUrl}
+                            style={{ position: "absolute", inset: "0" }}
+                          />
+                        ) : (
+                          <Image
+                            src={resolveIPFS(nft.imageUrl)}
+                            alt=""
+                            layout="fill"
+                            objectFit="cover"
+                            priority
+                          />
+                        )}
+                        {/* <Image
                           layout="fill"
                           src={resolveIPFS(nft.imageUrl)}
                           alt=""
-                        />
+                        /> */}
                       </div>
                     )}
                   </td>

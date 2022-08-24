@@ -955,7 +955,12 @@ const SettingsSection = ({
             </div>
           )}
           <div className="mt-4 space-y-2">
-            <label className="font-bold">Update Metadata Reveal Time</label>
+            <label className="font-bold">
+              Update Metadata Reveal Time{" "}
+              <span className="text-xs font-normal">
+                ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
+              </span>
+            </label>
             <p className="text-sm text-gray-500">
               Update the time when NFT metadata is revealed (Requires
               Transaction on update)
@@ -1011,8 +1016,6 @@ const SettingsSection = ({
                 ["mp4", "avi", "mkv", "wmv"].includes(
                   getUrlFileExtension(imageBase64UnrevealedImage).toLowerCase()
                 ) ? (
-                  // <video src={imageBase64UnrevealedImage}></video>
-
                   <ReactPlayer
                     height="100%"
                     width="100%"
