@@ -8,27 +8,28 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-40 bg-white">
-        <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-16">
+        <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-12 sm:h-16">
           <div className="w-0 sm:w-auto overflow-hidden text-3xl font-bold">
             Logo
           </div>
-          <div className="flex overflow-auto">
-            <Link href={`/mint`}>
+          <div className="flex text-sm sm:text-lg sm:gap-2 items-center overflow-auto">
+            {/* <Link href={`/mint`}>
               <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
                 Mint
               </a>
-            </Link>
+            </Link> */}
             <Link href={`/dashboard`}>
-              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
+              <a className="p-1 font-bold text-gray-600 hover:text-black transition-colors">
                 Dashboard
               </a>
             </Link>
             <Link href={`/authenticate`}>
-              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                Authenticate
+              <a className="p-1 font-bold text-gray-600 hover:text-black transition-colors">
+                <span className="sm:hidden">Auth</span>
+                <span className="hidden sm:block">Authenticate</span>
               </a>
             </Link>
-            <div className="sm:flex hidden items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
+            <div className="flex items-center justify-center group p-1 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
               {account ? (
                 <>
                   <span className="group-hover:hidden">

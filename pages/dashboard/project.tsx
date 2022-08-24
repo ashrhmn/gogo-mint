@@ -92,11 +92,11 @@ const ProjectPage: NextPage<Props> = ({
             </h2>
           </div>
         </div>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
           {(project.collectionType === "721" ||
             (project.collectionType === "1155" && project._count.nfts < 1)) && (
             <button
-              className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+              className="bg-sky-600 text-white p-2 w-24 rounded hover:bg-sky-700 transition-colors"
               onClick={() => setIsCreateModalOpen(true)}
             >
               + Create
@@ -104,7 +104,7 @@ const ProjectPage: NextPage<Props> = ({
           )}
           {project.collectionType === "721" && (
             <button
-              className="bg-sky-600 text-white p-2 w-40 rounded hover:bg-sky-700 transition-colors"
+              className="bg-sky-600 text-white p-2 w-32 rounded hover:bg-sky-700 transition-colors"
               onClick={() => setIsBatchCreateModalOpen(true)}
             >
               + Create Batch

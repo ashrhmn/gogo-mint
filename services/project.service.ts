@@ -1,4 +1,5 @@
 import assert from "assert";
+import axios from "axios";
 import Cookies from "cookies";
 import { prisma } from "../lib/db";
 import roleIntegrations from "../pages/api/v1/projects/role-integrations";
@@ -360,3 +361,15 @@ export const getDetailedRoleIntegrationsByProjectId = async (
 
 export const deleteRoleIntegrationById = async (id: number) =>
   await prisma.roleIntegration.delete({ where: { id } });
+
+export const deleteProject = async (id: number) => {
+  await prisma.nFT.deleteMany({ where: { projectId: id } });
+  console.log({ deleteProject: "NFTS deleted", id });
+  await prisma.project.delete({ where: { id } });
+  console.log({ deleteProject: "Project deleted", id });
+  await axios
+    .get("http://54.153.49.223:4200/restart")
+    .then((res) => res.data)
+    .then(console.log)
+    .catch(console.error);
+};

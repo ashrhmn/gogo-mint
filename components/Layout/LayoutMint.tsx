@@ -12,22 +12,27 @@ const LayoutMint = ({ children }: { children: React.ReactNode }) => {
             Logo
           </div>
           <div className="flex overflow-auto">
-            <Link href={`/dashboard`}>
+            {/* <Link href={`/dashboard`}>
               <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
                 temp
               </a>
-            </Link>
-            <Link href={`/mint`}>
+            </Link> */}
+            {/* <Link href={`/mint`}>
               <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
                 All Projects
               </a>
-            </Link>
-            <Link href={`/authenticate`}>
-              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                Authenticate
-              </a>
-            </Link>
-            <div className="sm:flex hidden items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
+            </Link> */}
+
+            <a
+              target="_blank"
+              href={`/link-wallet`}
+              className="p-2 font-bold text-gray-600 hover:text-black transition-colors"
+              rel="noreferrer"
+            >
+              Link Wallet
+            </a>
+
+            <div className="flex items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
               {account ? (
                 <>
                   <span className="group-hover:hidden">

@@ -3,8 +3,11 @@ import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import CopyAddressToClipboard from "../../components/Common/CopyAddressToClipboard";
 import Layout from "../../components/Layout";
+import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
 
 import { getAllProjectByOwnerAddress } from "../../services/project.service";
@@ -18,7 +21,11 @@ interface Props {
   cookieAddress: string;
 }
 
-const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
+const Dashboard: NextPage<Props> = ({
+  projects: initialProjects,
+  cookieAddress,
+}) => {
+  const [projects, setProjects] = useState(initialProjects);
   const router = useRouter();
   const { account } = useEthers();
   useEffect(() => {
@@ -33,6 +40,22 @@ const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
         )
       );
   }, [account, cookieAddress, router]);
+
+  const handleDeleteProject = async (id: number) => {
+    await service
+      .delete(`/projects/${id}`)
+      .then((res) => res.data)
+      .then(console.log)
+      .then(() => {
+        toast.success(
+          "Project will be deleted shortly (May take time depending on the number of Artworks)"
+        );
+        setProjects((p) => (!!p ? p.filter((d) => d.id !== id) : p));
+      })
+      .catch(() => {
+        toast.error("Error deleting project");
+      });
+  };
   return (
     <Layout dashboard>
       <div className="flex justify-between my-4 items-center">
@@ -48,50 +71,51 @@ const Dashboard: NextPage<Props> = ({ projects, cookieAddress }) => {
         <div className="text-center text-3xl mt-20">Error Loading Projects</div>
       )}
       {projects && projects.length > 0 && (
-        <div className="w-full overflow-x-auto border-2 border-gray-400 rounded">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b-2 border-gray-400">
-                <th className="p-4 text-center min-w-[100px]">Name</th>
-                <th className="p-4 text-center min-w-[100px]">
-                  Collection Type
-                </th>
-                <th className="p-4 text-center min-w-[100px]">Network</th>
-                <th className="p-4 text-center min-w-[100px]">
-                  Contract Address
-                </th>
-                <th className="p-4 text-center min-w-[100px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects &&
-                projects.map((p) => (
-                  <Link
-                    href={`/dashboard/project?contract=${p.address}&network=${p.chainId}`}
-                    passHref
-                    key={p.id}
+        <div className="w-full overflow-x-auto border-2 border-gray-400 rounded text-xl">
+          <div className="flex justify-between text-center font-bold border-gray-400 border-b-2 py-3 mb-3">
+            <h1 className="w-4/12">Name</h1>
+            <h1 className="w-2/12">Type</h1>
+            <h1 className="w-1/12">Network</h1>
+            <h1 className="w-3/12">Address</h1>
+            <h1 className="w-2/12">Actions</h1>
+          </div>
+          {projects &&
+            projects.map((p) => (
+              <div
+                className="flex justify-between items-center text-center hover:bg-gray-100 transition-colors"
+                key={p.id}
+              >
+                <Link
+                  href={`/dashboard/project?contract=${p.address}&network=${p.chainId}`}
+                  passHref
+                >
+                  <a className="w-4/12 py-3">{p.name}</a>
+                </Link>
+                <Link
+                  href={`/dashboard/project?contract=${p.address}&network=${p.chainId}`}
+                  passHref
+                >
+                  <a className="w-2/12 py-3">{p.collectionType}</a>
+                </Link>
+                <Link
+                  href={`/dashboard/project?contract=${p.address}&network=${p.chainId}`}
+                  passHref
+                >
+                  <a className="w-1/12 py-3">{p.chainId}</a>
+                </Link>
+                <h1 className="w-3/12">
+                  <CopyAddressToClipboard shorten address={p.address || ""} />
+                </h1>
+                <h1 className="w-2/12">
+                  <button
+                    onClick={() => handleDeleteProject(p.id)}
+                    className="text-red-700 hover:text-white hover:bg-red-500 transition-colors py-1 px-3 rounded"
                   >
-                    <tr className="cursor-pointer hover:bg-gray-200 transition-colors">
-                      <td className="p-4 text-center min-w-[100px]">
-                        {p.name}
-                      </td>
-                      <td className="p-4 text-center min-w-[100px]">
-                        {p.collectionType}
-                      </td>
-                      <td className="p-4 text-center min-w-[100px]">
-                        {p.chainId}
-                      </td>
-                      <td className="p-4 text-center min-w-[100px]">
-                        {shortenIfAddress(p.address)}
-                      </td>
-                      <td className="p-4 text-center min-w-[100px] ">
-                        <button>Delete</button>
-                      </td>
-                    </tr>
-                  </Link>
-                ))}
-            </tbody>
-          </table>
+                    Delete
+                  </button>
+                </h1>
+              </div>
+            ))}
         </div>
       )}
       {projects && projects.length == 0 && (

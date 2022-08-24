@@ -736,11 +736,7 @@ const SettingsSection = ({
         )}
         <div className="absolute top-0 right-0 left-0 text-gray-700 bg-white text-3xl font-medium text-center py-1 shadow-2xl z-10">
           <h1>Mint Page Preview</h1>
-          <a
-            href={`https://gogo-mint.ashrhmn.com/mint/${configSet.uid}`}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={`/mint/${configSet.uid}`} target="_blank" rel="noreferrer">
             <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogo-mint.ashrhmn.com/mint/${
               configSet.uid.trim().replaceAll(" ", "%20") || "<random-string>"
             }`}</div>
@@ -943,7 +939,7 @@ const SettingsSection = ({
           </button>
         </div>
       </div>
-      <div className="flex items-stretch gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-stretch sm:gap-4">
         <div className="bg-gray-200 rounded p-4 my-6 relative w-full">
           {!!revealTimeBgProc && (
             <div className="absolute right-5 top-5 z-10 scale-150">

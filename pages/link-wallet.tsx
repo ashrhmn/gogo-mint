@@ -163,7 +163,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
   };
 
   return (
-    <Layout dashboard>
+    <Layout mint>
       <div className="flex flex-col lg:flex-row text-3xl justify-center mt-10">
         {account ? (
           <div className="flex flex-col gap-6 items-center w-full">
@@ -276,7 +276,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           </div>
         )}
       </div>
-      <div className="flex flex-col md:flex-row gap-4 justify-center text-3xl my-10">
+      <div className="flex flex-col md:flex-row gap-4 justify-center text-3xl my-10 px-6">
         <button
           className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
           onClick={handleSignClick}

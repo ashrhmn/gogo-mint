@@ -334,3 +334,19 @@ export const deleteRoleIntegrationById = async (
       .json(errorResponse("Error deleting role integration"));
   }
 };
+
+export const deleteProject = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const id = req.query.id;
+    if (typeof id !== "string" || isNaN(+id))
+      return res.status(400).json(errorResponse("Invalid ID"));
+    ProjectService.deleteProject(+id);
+    return res.json(successResponse({ message: "Queued" }));
+  } catch (error) {
+    console.log("Error deleting project : ", error);
+    return res.status(500).json(errorResponse("Error deleting project"));
+  }
+};

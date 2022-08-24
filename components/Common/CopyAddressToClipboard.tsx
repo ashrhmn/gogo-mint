@@ -17,7 +17,7 @@ const CopyAddressToClipboard = ({
   };
   return (
     <div
-      className={`inline-flex items-center group cursor-pointer bg-gray-200 p-1 rounded border-2 border-gray-500 select-none ${className} ${
+      className={`inline-flex items-center group cursor-pointer bg-gray-200 hover:bg-gray-300 transition-colors p-1 rounded border-2 border-gray-500 select-none ${className} ${
         shorten ? "min-w-[210px] justify-center" : "min-w-[450px]"
       }`}
       onClick={copyToClipBoard}
