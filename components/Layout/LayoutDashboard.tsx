@@ -29,14 +29,29 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
                 <span className="hidden sm:block">Authenticate</span>
               </a>
             </Link>
-            <div className="flex items-center justify-center group p-1 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
+            <div
+              className="flex items-center justify-center group p-1 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors"
+              onClick={
+                !!account
+                  ? deactivate
+                  : () => {
+                      if (!!(window as any).ethereum) {
+                        activateBrowserWallet();
+                      } else {
+                        activate(walletConnectConnector)
+                          .then(console.log)
+                          .catch(console.error);
+                      }
+                    }
+              }
+            >
               {account ? (
                 <>
                   <span className="group-hover:hidden">
                     {shortenIfAddress(account)}
                   </span>
                   <button
-                    onClick={deactivate}
+                    // onClick={deactivate}
                     className="hidden group-hover:block w-full"
                   >
                     Disconnect
@@ -45,15 +60,15 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
               ) : (
                 <>
                   <button
-                    onClick={() => {
-                      if (!!(window as any).ethereum) {
-                        activateBrowserWallet();
-                      } else {
-                        activate(walletConnectConnector)
-                          .then(console.log)
-                          .catch(console.error);
-                      }
-                    }}
+                  // onClick={() => {
+                  //   if (!!(window as any).ethereum) {
+                  //     activateBrowserWallet();
+                  //   } else {
+                  //     activate(walletConnectConnector)
+                  //       .then(console.log)
+                  //       .catch(console.error);
+                  //   }
+                  // }}
                   >
                     Connect
                   </button>

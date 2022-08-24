@@ -1,9 +1,10 @@
 import { useEthers, shortenIfAddress } from "@usedapp/core";
 import Link from "next/link";
 import React from "react";
+import { walletConnectConnector } from "../../lib/connectors";
 
 const LayoutMint = ({ children }: { children: React.ReactNode }) => {
-  const { activateBrowserWallet, account, deactivate } = useEthers();
+  const { activateBrowserWallet, account, deactivate, activate } = useEthers();
   return (
     <>
       <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-40 bg-white">
@@ -32,14 +33,29 @@ const LayoutMint = ({ children }: { children: React.ReactNode }) => {
               Link Wallet
             </a>
 
-            <div className="flex items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors">
+            <div
+              className="flex items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors"
+              onClick={
+                !!account
+                  ? deactivate
+                  : () => {
+                      if (!!(window as any).ethereum) {
+                        activateBrowserWallet();
+                      } else {
+                        activate(walletConnectConnector)
+                          .then(console.log)
+                          .catch(console.error);
+                      }
+                    }
+              }
+            >
               {account ? (
                 <>
                   <span className="group-hover:hidden">
                     {shortenIfAddress(account)}
                   </span>
                   <button
-                    onClick={deactivate}
+                    // onClick={deactivate}
                     className="hidden group-hover:block w-full"
                   >
                     Disconnect
@@ -47,7 +63,11 @@ const LayoutMint = ({ children }: { children: React.ReactNode }) => {
                 </>
               ) : (
                 <>
-                  <button onClick={activateBrowserWallet}>Connect</button>
+                  <button
+                  // onClick={activateBrowserWallet}
+                  >
+                    Connect
+                  </button>
                 </>
               )}
             </div>

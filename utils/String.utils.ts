@@ -68,3 +68,10 @@ export function formatHtmlDateTime(datetime: Date) {
     datetime.getHours()
   )}:${forceTwo(datetime.getMinutes())}`;
 }
+
+export const getUrlFileExtension = (url: string) => {
+  const urlObj = new URL(url);
+  const pathname = urlObj.pathname;
+  const ext = pathname.substring(pathname.lastIndexOf(".") + 1);
+  return ext;
+};

@@ -1,3 +1,4 @@
+import ReactPlayer from "react-player";
 import { RoleIntegration } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
 import { BigNumber, getDefaultProvider } from "ethers";
@@ -22,7 +23,10 @@ import useDebounce from "../../hooks/useDebounce";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { DiscordUserResponse, IDeployConfigSet, IGuild } from "../../types";
-import { formatHtmlDateTime } from "../../utils/String.utils";
+import {
+  formatHtmlDateTime,
+  getUrlFileExtension,
+} from "../../utils/String.utils";
 
 const SettingsSection = ({
   projectId,
@@ -197,8 +201,12 @@ const SettingsSection = ({
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      if (ev.target && typeof ev.target.result === "string")
+      if (ev.target && typeof ev.target.result === "string") {
         setImageBase64UnrevealedImage(ev.target.result);
+        console.log(ev.target.result);
+
+        console.log("IF");
+      }
     };
     reader.readAsDataURL(file);
     setConfigSet((c) => ({ ...c, unrevealedImage: file }));
@@ -1000,13 +1008,29 @@ const SettingsSection = ({
                 hidden
               />
               {!!imageBase64UnrevealedImage ? (
-                <Image
-                  src={imageBase64UnrevealedImage}
-                  alt=""
-                  layout="fill"
-                  objectFit="cover"
-                  priority
-                />
+                ["mp4", "avi", "mkv", "wmv"].includes(
+                  getUrlFileExtension(imageBase64UnrevealedImage).toLowerCase()
+                ) ? (
+                  // <video src={imageBase64UnrevealedImage}></video>
+
+                  <ReactPlayer
+                    height="100%"
+                    width="100%"
+                    muted
+                    playing
+                    loop
+                    url={imageBase64UnrevealedImage}
+                    style={{ position: "absolute", inset: "0" }}
+                  />
+                ) : (
+                  <Image
+                    src={imageBase64UnrevealedImage}
+                    alt=""
+                    layout="fill"
+                    objectFit="cover"
+                    priority
+                  />
+                )
               ) : (
                 <span className="text-2xl">+</span>
               )}
