@@ -71,7 +71,7 @@ const Dashboard: NextPage<Props> = ({
         <div className="text-center text-3xl mt-20">Error Loading Projects</div>
       )}
       {projects && projects.length > 0 && (
-        <div className="w-full overflow-x-auto border-2 border-gray-400 rounded text-xl">
+        <div className="w-full min-w-[800px] overflow-x-auto border-2 border-gray-400 rounded text-xl">
           <div className="flex justify-between text-center font-bold border-gray-400 border-b-2 py-3 mb-3">
             <h1 className="w-4/12">Name</h1>
             <h1 className="w-2/12">Type</h1>
