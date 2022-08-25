@@ -44,13 +44,18 @@ export const getUserByAccessToken = async (accessToken: string) => {
   }
 };
 
-export const getDiscordUsersCreds = async (code: string) => {
+export const getDiscordUsersCreds = async (
+  code: string,
+  userType?: "buyer" | "creator"
+) => {
   const payload = new URLSearchParams({
     client_id: DISCORD_OAUTH_CLIENT_ID,
     client_secret: DISCORD_OAUTH_CLIENT_SECRET,
     grant_type: "authorization_code",
     code,
-    redirect_uri: `${BASE_API_URL}auth/discord/redirect`,
+    redirect_uri: `${BASE_API_URL}auth/discord/redirect${
+      userType === "buyer" ? "-buyer" : ""
+    }`,
   }).toString();
   const { data: creds }: { data: DiscordAccessTokenResponse } =
     await axios.post("https://discord.com/api/v8/oauth2/token", payload, {

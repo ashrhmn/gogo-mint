@@ -50,28 +50,13 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
                   <span className="group-hover:hidden">
                     {shortenIfAddress(account)}
                   </span>
-                  <button
-                    // onClick={deactivate}
-                    className="hidden group-hover:block w-full"
-                  >
+                  <button className="hidden group-hover:block w-full">
                     Disconnect
                   </button>
                 </>
               ) : (
                 <>
-                  <button
-                  // onClick={() => {
-                  //   if (!!(window as any).ethereum) {
-                  //     activateBrowserWallet();
-                  //   } else {
-                  //     activate(walletConnectConnector)
-                  //       .then(console.log)
-                  //       .catch(console.error);
-                  //   }
-                  // }}
-                  >
-                    Connect
-                  </button>
+                  <button>Connect</button>
                 </>
               )}
             </div>

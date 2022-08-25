@@ -363,8 +363,8 @@ export const deleteRoleIntegrationById = async (id: number) =>
   await prisma.roleIntegration.delete({ where: { id } });
 
 export const deleteProject = async (id: number) => {
-  await prisma.nFT.deleteMany({ where: { projectId: id } });
-  console.log({ deleteProject: "NFTS deleted", id });
+  // await prisma.nFT.deleteMany({ where: { projectId: id } });
+  // console.log({ deleteProject: "NFTS deleted", id });
   await prisma.project.delete({ where: { id } });
   console.log({ deleteProject: "Project deleted", id });
   await axios

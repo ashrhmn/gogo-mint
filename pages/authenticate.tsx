@@ -276,27 +276,13 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           </div>
         )}
       </div>
-      <div className="flex flex-col md:flex-row gap-4 justify-center text-3xl my-10">
+      <div className="flex flex-col gap-4 justify-center items-center text-3xl my-10">
         <button
-          className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
+          className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-500 disabled:bg-blue-400 w-60"
           onClick={handleSignClick}
+          disabled={account === cookieAddress}
         >
-          Sign Wallet
-        </button>
-        <button
-          disabled={
-            !!bgProcesses ||
-            !account ||
-            !user ||
-            (account === connectedWallet &&
-              !!connectedUser &&
-              user.username === connectedUser.discordUsername &&
-              +user.discriminator === connectedUser.discordDiscriminator)
-          }
-          onClick={handleLinkAccountClick}
-          className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
-        >
-          Link Discord and Wallet
+          {account === cookieAddress ? "Signed" : "Sign Wallet"}
         </button>
       </div>
     </Layout>

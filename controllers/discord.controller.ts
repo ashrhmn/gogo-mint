@@ -22,7 +22,10 @@ export const discordRedirectGet = async (
 ) => {
   try {
     if (req.query.code && typeof req.query.code == "string") {
-      const { user, creds } = await getDiscordUsersCreds(req.query.code);
+      const { user, creds } = await getDiscordUsersCreds(
+        req.query.code,
+        "creator"
+      );
       const encryptedToken = encryptToken(creds.access_token);
       const cookie = new Cookies(req, res);
       cookie.set(ACCESS_TOKEN_COOKIE_KEY, encryptedToken, {
@@ -31,6 +34,32 @@ export const discordRedirectGet = async (
       });
       const upsert = await updateUserOnDiscordAuth(user, creds);
       return res.redirect(`/authenticate`);
+    }
+    return res.redirect(DISCORD_AUTH_URL);
+  } catch (error) {
+    console.log("Error : ", error);
+    return res.status(500).json({ message: "Error authenticating discord" });
+  }
+};
+
+export const discordRedirectGetLinkWallet = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    if (req.query.code && typeof req.query.code == "string") {
+      const { user, creds } = await getDiscordUsersCreds(
+        req.query.code,
+        "buyer"
+      );
+      const encryptedToken = encryptToken(creds.access_token);
+      const cookie = new Cookies(req, res);
+      cookie.set(ACCESS_TOKEN_COOKIE_KEY, encryptedToken, {
+        httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+      });
+      const upsert = await updateUserOnDiscordAuth(user, creds);
+      return res.redirect(`/link-wallet`);
     }
     return res.redirect(DISCORD_AUTH_URL);
   } catch (error) {

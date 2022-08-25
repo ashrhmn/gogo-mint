@@ -54,20 +54,13 @@ const LayoutMint = ({ children }: { children: React.ReactNode }) => {
                   <span className="group-hover:hidden">
                     {shortenIfAddress(account)}
                   </span>
-                  <button
-                    // onClick={deactivate}
-                    className="hidden group-hover:block w-full"
-                  >
+                  <button className="hidden group-hover:block w-full">
                     Disconnect
                   </button>
                 </>
               ) : (
                 <>
-                  <button
-                  // onClick={activateBrowserWallet}
-                  >
-                    Connect
-                  </button>
+                  <button>Connect</button>
                 </>
               )}
             </div>

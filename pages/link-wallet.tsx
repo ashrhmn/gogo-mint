@@ -9,7 +9,7 @@ import { randomIntFromInterval } from "../utils/Number.utils";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  DISCORD_AUTH_URL,
+  DISCORD_AUTH_URL_BUYER,
   getMessageToSignOnAuth,
 } from "../constants/configuration";
 import { getHttpCookie } from "../utils/Request.utils";
@@ -106,37 +106,66 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
       return;
     }
 
-    if (cookieAddress !== account) {
-      toast.error(
-        `Signed in wallet is ${shortenIfAddress(
-          cookieAddress
-        )}, but connected wallet is ${shortenIfAddress(account)}`
-      );
-      return;
-    }
+    // if (cookieAddress !== account) {
+    //   toast.error(
+    //     `Signed in wallet is ${shortenIfAddress(
+    //       cookieAddress
+    //     )}, but connected wallet is ${shortenIfAddress(account)}`
+    //   );
+    //   return;
+    // }
 
-    setBgProcesses((v) => v + 1);
-    const { data: response } = await toast.promise(
-      service.post("/auth/discord/link", {
-        username: user.username,
-        discriminator: +user.discriminator,
-        address: account,
+    try {
+      assert(account && library, "Please connect Wallet");
+      setBgProcesses((v) => v + 1);
+      const signature = await toast.promise(
+        library.getSigner(account).signMessage(getMessageToSignOnAuth(account)),
+        {
+          error: "Error getting signature",
+          loading: "Awaiting signature approval",
+          success: "Signed...",
+        }
+      );
+      // console.log("Sig : ", signature);
+      const res = await toast.promise(
+        service.post(`/auth/wallet/login`, {
+          address: account,
+          signature,
+        }),
+        {
+          error: "Error generating link",
+          loading: "Generating link...",
+          success: "Generated",
+        }
+      );
+      // console.log(res.data);
+      // service.post(`discord/refresh-role-integrations`, {
+      //   walletAddress: account,
+      // }),
+      //////////////////////////
+
+      const { data: response } = await toast.promise(
+        service.post("/auth/discord/link", {
+          username: user.username,
+          discriminator: +user.discriminator,
+          address: account,
+        }),
+        {
+          loading: "Linking account...",
+          success: "Account linked successfully!",
+          error: "Error linking account!",
+        }
+      );
+      service.post(`discord/refresh-role-integrations`, {
+        walletAddress: account,
       }),
-      {
-        loading: "Linking account...",
-        success: "Account linked successfully!",
-        error: "Error linking account!",
+        setRefetcher((v) => !v);
+      setBgProcesses((v) => v - 1);
+      if (!response.error) {
+      } else {
+        console.log(response.error);
       }
-    );
-    service.post(`discord/refresh-role-integrations`, {
-      walletAddress: account,
-    }),
-      setRefetcher((v) => !v);
-    setBgProcesses((v) => v - 1);
-    if (!response.error) {
-    } else {
-      console.log(response.error);
-    }
+    } catch (error) {}
   };
 
   const handleSignClick = async () => {
@@ -268,7 +297,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
             <h1>Discord not connected</h1>
-            <Link href={DISCORD_AUTH_URL} passHref>
+            <Link href={DISCORD_AUTH_URL_BUYER} passHref>
               <a className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors">
                 Login with Discord
               </a>
@@ -277,12 +306,12 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
         )}
       </div>
       <div className="flex flex-col md:flex-row gap-4 justify-center text-3xl my-10 px-6">
-        <button
+        {/* <button
           className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
           onClick={handleSignClick}
         >
           Sign Wallet
-        </button>
+        </button> */}
         <button
           disabled={
             !!bgProcesses ||
@@ -296,7 +325,15 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           onClick={handleLinkAccountClick}
           className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
         >
-          Link Discord and Wallet
+          {!!bgProcesses ||
+          !account ||
+          !user ||
+          (account === connectedWallet &&
+            !!connectedUser &&
+            user.username === connectedUser.discordUsername &&
+            +user.discriminator === connectedUser.discordDiscriminator)
+            ? "Discord and Wallet Already Linked"
+            : "Link Discord and Wallet"}
         </button>
       </div>
     </Layout>

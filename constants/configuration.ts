@@ -29,6 +29,12 @@ export const DISCORD_AUTH_URL = isDevelopment
       process.env.NEXT_PUBLIC_HOST_ROOT || "gogo-mint.ashrhmn.com"
     }%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect&response_type=code&scope=identify`;
 
+export const DISCORD_AUTH_URL_BUYER = isDevelopment
+  ? `https://discord.com/api/oauth2/authorize?client_id=992820231242268723&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect-buyer&response_type=code&scope=identify`
+  : `https://discord.com/api/oauth2/authorize?client_id=992820231242268723&redirect_uri=https%3A%2F%2F${
+      process.env.NEXT_PUBLIC_HOST_ROOT || "gogo-mint.ashrhmn.com"
+    }%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect-buyer&response_type=code&scope=identify`;
+
 export const getMessageToSignOnAuth = (address: string) => `
 Welcome to GOGO-MINT
 
