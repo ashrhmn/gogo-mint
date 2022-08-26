@@ -1149,106 +1149,127 @@ const SettingsSection = ({
           )}
           {!!serverList && discordUser !== null && (
             <div className="mt-3">
-              <h1>
-                VerifyBot is added to {serverList.length} Discord Server(s) that
-                you are member of
-              </h1>
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="w-full flex gap-2 items-center">
-                  <label className="min-w-fit">Select Server</label>
-                  <select
-                    className="w-full p-1 rounded h-8"
-                    onChange={(e) =>
-                      setSelectedServer(
-                        e.target.value !== "select" ? e.target.value : null
-                      )
-                    }
-                  >
-                    <option value="select">Select</option>
-                    {serverList.map((s) => (
-                      <option
-                        disabled={!s.botCanManageRole}
-                        key={s.guild.id}
-                        value={s.guild.id}
+              {serverList.length > 0 ? (
+                <>
+                  <h1>
+                    VerifyBot is added to {serverList.length} Discord Server(s)
+                    that you are member of
+                  </h1>
+                  <div className="flex flex-col md:flex-row gap-4 items-center">
+                    <div className="w-full flex gap-2 items-center">
+                      <label className="min-w-fit">Select Server</label>
+                      <select
+                        className="w-full p-1 rounded h-8"
+                        onChange={(e) =>
+                          setSelectedServer(
+                            e.target.value !== "select" ? e.target.value : null
+                          )
+                        }
                       >
-                        {s.guild.name}{" "}
-                        {!s.botCanManageRole &&
-                          "(Add the bot again with default permissions)"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="w-full flex gap-2 items-center">
-                  <label className="min-w-fit">Select Role</label>
-                  <select
-                    className="w-full p-1 rounded h-8"
-                    onChange={(e) =>
-                      setSelectedRole(
-                        e.target.value !== "select" ? e.target.value : null
-                      )
-                    }
-                  >
-                    {/* {selectedGuild === null && (
+                        <option value="select">Select</option>
+                        {serverList.map((s) => (
+                          <option
+                            disabled={!s.botCanManageRole}
+                            key={s.guild.id}
+                            value={s.guild.id}
+                          >
+                            {s.guild.name}{" "}
+                            {!s.botCanManageRole &&
+                              "(Add the bot again with default permissions)"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="w-full flex gap-2 items-center">
+                      <label className="min-w-fit">Select Role</label>
+                      <select
+                        className="w-full p-1 rounded h-8"
+                        onChange={(e) =>
+                          setSelectedRole(
+                            e.target.value !== "select" ? e.target.value : null
+                          )
+                        }
+                      >
+                        {/* {selectedGuild === null && (
                     <option value={"select"}>Select a server</option>
                   )} */}
-                    <option value={"select"}>Select</option>
-                    {selectedGuild !== null &&
-                      selectedGuild.guildRoles.map((role) => (
-                        <option value={role.id} key={role.id}>
-                          {role.name}
-                        </option>
-                      ))}
-                    {selectedGuild !== null &&
-                      selectedGuild.guildRoles.length === 0 && (
-                        <option disabled value={"select"}>
-                          No roles found
-                        </option>
-                      )}
-                  </select>
-                </div>
-                <div className="w-full flex gap-2 items-center">
-                  <label className="">
-                    Minimum NFTs required for this role
-                  </label>
-                  <input
-                    className="w-full p-1 rounded h-8"
-                    type="number"
-                    value={minValidNfts || ""}
-                    onChange={(e) =>
-                      setMinValidNfts(
-                        e.target.value === "" || isNaN(+e.target.value)
-                          ? 0
-                          : e.target.valueAsNumber
-                      )
-                    }
-                  />
-                </div>
-                <button
-                  className="bg-blue-600 text-white hover:bg-blue-700 transition-colors px-3 rounded h-8"
-                  onClick={handleSaveRoleIntegration}
-                >
-                  Save
-                </button>
-              </div>
-              {selectedServerGuildMember !== null && (
-                <div className="my-4 text-xl bg-gray-100 rounded">
-                  {!!discordUser && !!selectedGuild && (
-                    <h1 className="text-center">
-                      On server {"'" + selectedGuild.guild.name + "' "}
-                      {discordUser.username}#{discordUser.discriminator}
-                    </h1>
-                  )}
-                  <div className="flex justify-around">
-                    <h1>
-                      Has Admin Rights :{" "}
-                      {selectedServerGuildMember.isAdmin ? "Yes" : "No"}
-                    </h1>
-                    <h1>
-                      Can Manage Roles :{" "}
-                      {selectedServerGuildMember.canManageRole ? "Yes" : "No"}
-                    </h1>
+                        <option value={"select"}>Select</option>
+                        {selectedGuild !== null &&
+                          selectedGuild.guildRoles.map((role) => (
+                            <option value={role.id} key={role.id}>
+                              {role.name}
+                            </option>
+                          ))}
+                        {selectedGuild !== null &&
+                          selectedGuild.guildRoles.length === 0 && (
+                            <option disabled value={"select"}>
+                              No roles found
+                            </option>
+                          )}
+                      </select>
+                    </div>
+                    <div className="w-full flex gap-2 items-center">
+                      <label className="">
+                        Minimum NFTs required for this role
+                      </label>
+                      <input
+                        className="w-full p-1 rounded h-8"
+                        type="number"
+                        value={minValidNfts || ""}
+                        onChange={(e) =>
+                          setMinValidNfts(
+                            e.target.value === "" || isNaN(+e.target.value)
+                              ? 0
+                              : e.target.valueAsNumber
+                          )
+                        }
+                      />
+                    </div>
+                    <button
+                      className="bg-blue-600 text-white hover:bg-blue-700 transition-colors px-3 rounded h-8"
+                      onClick={handleSaveRoleIntegration}
+                    >
+                      Save
+                    </button>
                   </div>
-                </div>
+                  {selectedServerGuildMember !== null && (
+                    <div className="my-4 text-xl bg-gray-100 rounded">
+                      {!!discordUser && !!selectedGuild && (
+                        <h1 className="text-center">
+                          On server {"'" + selectedGuild.guild.name + "' "}
+                          {discordUser.username}#{discordUser.discriminator}
+                        </h1>
+                      )}
+                      <div className="flex justify-around">
+                        <h1>
+                          Has Admin Rights :{" "}
+                          {selectedServerGuildMember.isAdmin ? "Yes" : "No"}
+                        </h1>
+                        <h1>
+                          Can Manage Roles :{" "}
+                          {selectedServerGuildMember.canManageRole
+                            ? "Yes"
+                            : "No"}
+                        </h1>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h1 className="text-center">
+                    VerifyBot is not added to any Discord Server that you are
+                    member of, you can always{" "}
+                    <a
+                      className="text-blue-500 text-center hover:text-blue-700 transition-colors"
+                      target="_blank"
+                      rel="noreferrer"
+                      href={`https://discord.com/oauth2/authorize?client_id=990705597953474590&scope=bot%20applications.commands&permissions=268435456`}
+                    >
+                      Add VerifyBot to your server
+                    </a>
+                  </h1>
+                </>
               )}
             </div>
           )}
