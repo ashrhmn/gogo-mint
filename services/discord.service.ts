@@ -468,7 +468,11 @@ export const isValidNftHolder = async (
           })
       : 0;
 
-  console.log(`Checking ${balance}>=${minNft} : ${balance >= minNft}`);
+  console.log(`Checking ${balance}>=${minNft} : ${balance >= minNft}`, {
+    projectAddress,
+    projectChainId,
+    ownerAddress,
+  });
 
   return balance >= minNft;
 };
