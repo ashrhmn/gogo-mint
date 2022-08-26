@@ -132,7 +132,13 @@ export const getNftMetadata = async (
       })
       .parse(req.query);
 
-    console.log({ address, chainId, tokenId, message: "Query for token" });
+    console.log({
+      address,
+      chainId,
+      tokenId,
+      from: req.headers.host,
+      message: "Query for token",
+    });
 
     return res.json(
       await NftService.getOnChainMetadata(address, chainId, tokenId)
@@ -158,7 +164,12 @@ export const getHiddenNftMetadata = async (
       })
       .parse(req.query);
 
-    console.log({ address, chainId, message: "Query for hidden token" });
+    console.log({
+      address,
+      chainId,
+      from: req.headers.host,
+      message: "Query for hidden token",
+    });
 
     return res.json(
       await NftService.getOnChainHiddenMetadata(address, chainId)
