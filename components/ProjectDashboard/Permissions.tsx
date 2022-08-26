@@ -1,5 +1,5 @@
 import { useEthers } from "@usedapp/core";
-import { Contract, getDefaultProvider, Transaction } from "ethers";
+import { Contract, providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -32,7 +32,7 @@ const PermissionsSection = ({
           const contract = new Contract(
             projectAddress,
             ABI721,
-            getDefaultProvider(RPC_URLS[projectChainId])
+            new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
           );
           const owner = await contract.owner();
           setCurrentOwner(owner);

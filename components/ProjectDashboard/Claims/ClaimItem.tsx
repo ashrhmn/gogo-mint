@@ -1,5 +1,5 @@
 import { useEthers } from "@usedapp/core";
-import { Contract, getDefaultProvider } from "ethers";
+import { Contract, providers } from "ethers";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { ABI1155, ABI721 } from "../../../constants/abis";
@@ -45,7 +45,7 @@ const ClaimItem = ({
         const contract = new Contract(
           projectAddress,
           collectionType === "721" ? ABI721 : ABI1155,
-          getDefaultProvider(RPC_URLS[projectChainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
         );
         const result = await contract.functions[getFunction]();
         // console.log(heading, "Result : ", getSaleConfigFromResponse(result));

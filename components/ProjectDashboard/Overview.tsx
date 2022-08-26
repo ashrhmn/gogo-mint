@@ -1,4 +1,4 @@
-import { Contract, getDefaultProvider } from "ethers";
+import { Contract, providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -61,7 +61,7 @@ const OverviewSection = ({
       const contract = new Contract(
         address,
         collectionType === "721" ? ABI721 : ABI1155,
-        getDefaultProvider(RPC_URLS[projectChainId])
+        new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
       );
       nfts.forEach(async (nft) => {
         if (nft.tokenId === null) return;

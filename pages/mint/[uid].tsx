@@ -1,6 +1,6 @@
 import { Project, SaleConfig, User } from "@prisma/client";
-import { shortenIfAddress, useEtherBalance, useEthers } from "@usedapp/core";
-import { BigNumber, getDefaultProvider } from "ethers";
+import { shortenIfAddress, useEthers } from "@usedapp/core";
+import { BigNumber, providers } from "ethers";
 import { formatEther, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
@@ -97,11 +97,11 @@ const MintPage: NextPage<Props> = ({
         project.collectionType === "721"
           ? Collection721__factory.connect(
               project.address,
-              getDefaultProvider(RPC_URLS[project.chainId])
+              new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             )
           : Collection1155__factory.connect(
               project.address,
-              getDefaultProvider(RPC_URLS[project.chainId])
+              new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             );
       const [userBalance, maxMintInTotalPerWallet] = (
         await Promise.all([
@@ -143,11 +143,11 @@ const MintPage: NextPage<Props> = ({
         project.collectionType === "721"
           ? Collection721__factory.connect(
               project.address,
-              getDefaultProvider(RPC_URLS[project.chainId])
+              new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             )
           : Collection1155__factory.connect(
               project.address,
-              getDefaultProvider(RPC_URLS[project.chainId])
+              new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             );
       const [totalMintInSale, mintCountInSaleByUser] = (
         await Promise.all([

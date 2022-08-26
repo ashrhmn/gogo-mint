@@ -1,4 +1,4 @@
-import { BigNumber, getDefaultProvider } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
 import { RPC_URLS } from "../../../../constants/RPC_URL";
@@ -17,7 +17,7 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
       if (project.collectionType === "721") {
         const contract = Collection721__factory.connect(
           project.address,
-          getDefaultProvider(RPC_URLS[project.chainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
         );
         console.log(
           "Adding 721 listener for ",
@@ -47,7 +47,7 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
       if (project.collectionType === "1155") {
         const contract = Collection1155__factory.connect(
           project.address,
-          getDefaultProvider(RPC_URLS[project.chainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
         );
         console.log(
           "Adding 1155 listener for ",

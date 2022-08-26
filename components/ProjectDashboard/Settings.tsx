@@ -1,7 +1,7 @@
 import ReactPlayer from "react-player";
 import { RoleIntegration } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
-import { BigNumber, getDefaultProvider } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -220,11 +220,11 @@ const SettingsSection = ({
           collectionType === "721"
             ? Collection721__factory.connect(
                 projectAddress,
-                getDefaultProvider(RPC_URLS[projectChainId])
+                new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
               )
             : Collection1155__factory.connect(
                 projectAddress,
-                getDefaultProvider(RPC_URLS[projectChainId])
+                new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
               );
         setFeeAddressBgProc((v) => v + 1);
         setMaxMintInTotalPerWalletBgProc((v) => v + 1);
@@ -279,8 +279,7 @@ const SettingsSection = ({
       setMaxMintInTotalPerWalletBgProc((v) => v - 1);
       setBaseURIBgProc((v) => v - 1);
       setFeeAddressBgProc((v) => v - 1);
-      console.log("Error fetching fee to address, base URI : ", error);
-      toast.error("Error fetching fee to address, base URI");
+      console.log("Error fetching : ", error);
     }
   }, [collectionType, projectAddress, projectChainId]);
 

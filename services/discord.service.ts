@@ -16,7 +16,7 @@ import {
   Collection1155__factory,
   Collection721__factory,
 } from "../ContractFactory";
-import { getDefaultProvider } from "ethers";
+import { providers } from "ethers";
 import { RPC_URLS } from "../constants/RPC_URL";
 
 export const removeDiscordAccessToken = (
@@ -175,7 +175,7 @@ export const refreshDiscordRoles = async () => {
       if (ri.Project?.collectionType === "721") {
         const contract = Collection721__factory.connect(
           ri.Project.address,
-          getDefaultProvider(RPC_URLS[ri.Project.chainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[ri.Project.chainId])
         );
         const balance = await contract
           .balanceOf(dbUser?.walletAddress as string)
@@ -196,7 +196,7 @@ export const refreshDiscordRoles = async () => {
       if (ri.Project?.collectionType === "1155") {
         const contract = Collection1155__factory.connect(
           ri.Project.address,
-          getDefaultProvider(RPC_URLS[ri.Project.chainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[ri.Project.chainId])
         );
         const balance = await contract
           .balanceOf(dbUser?.walletAddress as string, 0)
@@ -237,7 +237,7 @@ export const refreshDiscordRoles = async () => {
       if (ri.Project?.collectionType === "721") {
         const contract = Collection721__factory.connect(
           ri.Project.address,
-          getDefaultProvider(RPC_URLS[ri.Project.chainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[ri.Project.chainId])
         );
         const balance = await contract
           .balanceOf(user.walletAddress)
@@ -261,7 +261,7 @@ export const refreshDiscordRoles = async () => {
       if (ri.Project?.collectionType === "1155") {
         const contract = Collection1155__factory.connect(
           ri.Project.address,
-          getDefaultProvider(RPC_URLS[ri.Project.chainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[ri.Project.chainId])
         );
         const balance = await contract
           .balanceOf(user.walletAddress, 0)
@@ -447,7 +447,7 @@ export const isValidNftHolder = async (
     projectType === "721"
       ? await Collection721__factory.connect(
           projectAddress,
-          getDefaultProvider(RPC_URLS[projectChainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
         )
           .balanceOf(ownerAddress)
           .then((r) => r.toNumber())
@@ -458,7 +458,7 @@ export const isValidNftHolder = async (
       : projectType === "1155"
       ? await Collection1155__factory.connect(
           projectAddress,
-          getDefaultProvider(RPC_URLS[projectChainId])
+          new providers.StaticJsonRpcProvider(RPC_URLS[projectChainId])
         )
           .balanceOf(ownerAddress, 0)
           .then((r) => r.toNumber())

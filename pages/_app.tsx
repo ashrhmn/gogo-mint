@@ -7,20 +7,14 @@ import { Toaster } from "react-hot-toast";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const config: DAppProviderProps["config"] = {
-    // readOnlyUrls: RPC_URLS,
+    readOnlyUrls: RPC_URLS,
   };
   return (
     <DAppProvider config={config}>
       <Head>
         <title>GOGO-MINT</title>
-        {/* <meta
-          httpEquiv="Content-Security-Policy"
-          content="upgrade-insecure-requests"
-        ></meta> */}
       </Head>
-
       <Component {...pageProps} />
-
       <Toaster position="top-right" />
     </DAppProvider>
   );
