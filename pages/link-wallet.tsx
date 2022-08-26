@@ -101,10 +101,10 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
     if (!user || !account) {
       return;
     }
-    if (!connectedUser) {
-      toast.error("Sign is Required");
-      return;
-    }
+    // if (!connectedUser) {
+    //   toast.error("Sign is Required");
+    //   return;
+    // }
 
     // if (cookieAddress !== account) {
     //   toast.error(
@@ -118,26 +118,30 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
     try {
       assert(account && library, "Please connect Wallet");
       setBgProcesses((v) => v + 1);
-      const signature = await toast.promise(
-        library.getSigner(account).signMessage(getMessageToSignOnAuth(account)),
-        {
-          error: "Error getting signature",
-          loading: "Awaiting signature approval",
-          success: "Signed...",
-        }
-      );
-      // console.log("Sig : ", signature);
-      const res = await toast.promise(
-        service.post(`/auth/wallet/login`, {
-          address: account,
-          signature,
-        }),
-        {
-          error: "Error generating link",
-          loading: "Generating link...",
-          success: "Generated",
-        }
-      );
+      if (account !== cookieAddress) {
+        const signature = await toast.promise(
+          library
+            .getSigner(account)
+            .signMessage(getMessageToSignOnAuth(account)),
+          {
+            error: "Error getting signature",
+            loading: "Awaiting signature approval",
+            success: "Signed...",
+          }
+        );
+        // console.log("Sig : ", signature);
+        const res = await toast.promise(
+          service.post(`/auth/wallet/login`, {
+            address: account,
+            signature,
+          }),
+          {
+            error: "Error generating link",
+            loading: "Generating link...",
+            success: "Generated",
+          }
+        );
+      }
       // console.log(res.data);
       // service.post(`discord/refresh-role-integrations`, {
       //   walletAddress: account,
@@ -208,7 +212,9 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
             </div>
             {!bgProcesses && (
               <>
-                {connectedUser ? (
+                {connectedUser &&
+                connectedUser.discordUsername &&
+                connectedUser.discordDiscriminator ? (
                   <div className="text-center">
                     Your wallet is linked to the user{" "}
                     {connectedUser.discordUsername} #

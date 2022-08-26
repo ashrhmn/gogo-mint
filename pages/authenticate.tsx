@@ -142,14 +142,26 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
   const handleSignClick = async () => {
     try {
       assert(account && library, "Please connect Wallet");
-      const signature = await library
-        .getSigner(account)
-        .signMessage(getMessageToSignOnAuth(account));
+      const signature = await toast.promise(
+        library.getSigner(account).signMessage(getMessageToSignOnAuth(account)),
+        {
+          error: "Error getting signature",
+          loading: "Awaiting signature approval...",
+          success: "Signed",
+        }
+      );
       // console.log("Sig : ", signature);
-      const res = await service.post(`/auth/wallet/login`, {
-        address: account,
-        signature,
-      });
+      const res = await toast.promise(
+        service.post(`/auth/wallet/login`, {
+          address: account,
+          signature,
+        }),
+        {
+          error: "Error loging in",
+          loading: "Logging you in...",
+          success: "Logged in",
+        }
+      );
       console.log(res.data);
       service.post(`discord/refresh-role-integrations`, {
         walletAddress: account,
@@ -177,9 +189,11 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                 Disconnect
               </button>
             </div>
-            {!bgProcesses && (
+            {/* {!bgProcesses && (
               <>
-                {connectedUser ? (
+                {connectedUser &&
+                connectedUser.discordUsername &&
+                connectedUser.discordDiscriminator ? (
                   <div className="text-center">
                     Your wallet is linked to the user{" "}
                     {connectedUser.discordUsername} #
@@ -191,7 +205,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                   </div>
                 )}
               </>
-            )}
+            )} */}
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
@@ -250,7 +264,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                 </button>
               </div>
             </div>
-            {!bgProcesses && (
+            {/* {!bgProcesses && (
               <>
                 {connectedWallet ? (
                   <div className="text-center">
@@ -263,7 +277,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                   </div>
                 )}
               </>
-            )}
+            )} */}
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
