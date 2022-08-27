@@ -12,7 +12,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <DAppProvider config={config}>
       <Head>
-        <title>GOGO-MINT</title>
+        <title>HydroMint</title>
       </Head>
       <Component {...pageProps} />
       <Toaster position="top-right" />

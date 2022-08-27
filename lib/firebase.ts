@@ -16,7 +16,7 @@ export const storage = getStorage(app);
 
 export const uploadFileToFirebase = async (
   file: any,
-  folderName: string = "GOGO-MINT"
+  folderName: string = "HydroMint"
 ) => {
   if (!file) return null;
   try {

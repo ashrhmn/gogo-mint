@@ -70,8 +70,7 @@ export function formatHtmlDateTime(datetime: Date) {
 }
 
 export const getUrlFileExtension = (url: string) => {
-  const urlObj = new URL(url);
-  const pathname = urlObj.pathname;
-  const ext = pathname.substring(pathname.lastIndexOf(".") + 1);
-  return ext;
+  return new URL(url).pathname.substring(
+    new URL(url).pathname.lastIndexOf(".") + 1
+  );
 };

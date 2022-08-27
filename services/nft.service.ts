@@ -2,7 +2,6 @@ import Cookies from "cookies";
 import { prisma } from "../lib/db";
 import { getCookieWallet } from "./auth.service";
 import { NFT, Prisma } from "@prisma/client";
-import * as PlatformSignerService from "./platformSigner.service";
 
 export const addNftsInQueue = async (
   promises: Prisma.Prisma__NFTClient<NFT>[],
@@ -61,8 +60,6 @@ export const addNftToProject = async (
 
 export const addBatchNftsToProject = async (
   nftsData: {
-    // signature: string;
-    // message: string;
     tokenId: number;
     name: string;
     description: string;
@@ -135,13 +132,6 @@ export const getNftsByProjectId = async (
     take,
   });
 };
-
-// export const updateNftCreationSignature = async (
-//   id: number,
-//   signature: string
-// ) => {
-//   return await prisma.nFT.update({ where: { id }, data: { signature } });
-// };
 
 export const getMetadata = async (nftId: number) => {
   const nft = await prisma.nFT.findFirstOrThrow({

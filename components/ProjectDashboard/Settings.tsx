@@ -27,6 +27,7 @@ import {
   formatHtmlDateTime,
   getUrlFileExtension,
 } from "../../utils/String.utils";
+import { PUBLIC_HOST_ROOT } from "../../constants/configuration";
 
 const SettingsSection = ({
   projectId,
@@ -744,7 +745,7 @@ const SettingsSection = ({
         <div className="absolute top-0 right-0 left-0 text-gray-700 bg-white text-3xl font-medium text-center py-1 shadow-2xl z-10">
           <h1>Mint Page Preview</h1>
           <a href={`/mint/${configSet.uid}`} target="_blank" rel="noreferrer">
-            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://gogo-mint.ashrhmn.com/mint/${
+            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://${PUBLIC_HOST_ROOT}/mint/${
               configSet.uid.trim().replaceAll(" ", "%20") || "<random-string>"
             }`}</div>
           </a>
