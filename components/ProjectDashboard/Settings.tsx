@@ -35,8 +35,6 @@ const SettingsSection = ({
   projectChainId,
   collectionType,
   projectOwner,
-  // serverList,
-  // discordUser,
   roleIntegrations: initialRoleIntegrations,
 }: {
   projectId: number;
@@ -44,15 +42,13 @@ const SettingsSection = ({
   projectAddress: string | null;
   collectionType: string | null;
   projectOwner: string | null;
-  // serverList: IGuild[] | null;
-  // discordUser: DiscordUserResponse | null;
   roleIntegrations: RoleIntegration[];
 }) => {
   const { account, library, chainId } = useEthers();
   const router = useRouter();
   const [basicDataBgProc, setBasicDataBgProc] = useState(0);
   const [feeAddressBgProc, setFeeAddressBgProc] = useState(0);
-  const [baseURIBgProc, setBaseURIBgProc] = useState(0);
+  // const [baseURIBgProc, setBaseURIBgProc] = useState(0);
   const [revealTimeBgProc, setRevealTimeBgProc] = useState(0);
   const [maxMintInTotalPerWalletBgProc, setMaxMintInTotalPerWalletBgProc] =
     useState(0);
@@ -229,56 +225,56 @@ const SettingsSection = ({
               );
         setFeeAddressBgProc((v) => v + 1);
         setMaxMintInTotalPerWalletBgProc((v) => v + 1);
-        setBaseURIBgProc((v) => v + 1);
+        // setBaseURIBgProc((v) => v + 1);
         const [
           feeToAddress,
-          curi,
-          baseURI,
+          // curi,
+          // baseURI,
           maxMintInTotalPerWallet,
-          token0uri,
+          // token0uri,
           revealTime,
         ] = await Promise.all([
           contract.feeDestination().catch((e) => {
             console.log("Error getting feeDestination  : ", e);
             return "";
           }),
-          contract.contractURI().catch((e) => {
-            console.log("Error getting contractURI  : ", e);
-            return "";
-          }),
-          contract.baseURI().catch((e) => {
-            console.log("Error getting baseURI  : ", e);
-            return "";
-          }),
+          // contract.contractURI().catch((e) => {
+          //   console.log("Error getting contractURI  : ", e);
+          //   return "";
+          // }),
+          // contract.baseURI().catch((e) => {
+          //   console.log("Error getting baseURI  : ", e);
+          //   return "";
+          // }),
           contract.maxMintInTotalPerWallet().catch((e) => {
             console.log("Error getting maxMintInTotalPerWallet : ", e);
             return 0;
           }),
-          contract.tokenURI(0).catch((e) => {
-            console.log("Error getting token0 uri : ", e);
-            return null;
-          }),
+          // contract.tokenURI(0).catch((e) => {
+          //   console.log("Error getting token0 uri : ", e);
+          //   return null;
+          // }),
           contract.revealTime().catch((e) => {
             console.log("Error getting revealTime  : ", e);
             return BigNumber.from(0);
           }),
         ]);
-        console.log({ curi, token0uri });
+        // console.log({ curi, token0uri });
 
         setConfigSet((c) => ({
           ...c,
           feeToAddress,
-          baseURI,
+          // baseURI,
           maxMintInTotalPerWallet: +maxMintInTotalPerWallet.toString(),
           revealTime: revealTime.toNumber(),
         }));
         setFeeAddressBgProc((v) => v - 1);
-        setBaseURIBgProc((v) => v - 1);
+        // setBaseURIBgProc((v) => v - 1);
         setMaxMintInTotalPerWalletBgProc((v) => v - 1);
       })();
     } catch (error) {
       setMaxMintInTotalPerWalletBgProc((v) => v - 1);
-      setBaseURIBgProc((v) => v - 1);
+      // setBaseURIBgProc((v) => v - 1);
       setFeeAddressBgProc((v) => v - 1);
       console.log("Error fetching : ", error);
     }
@@ -462,52 +458,52 @@ const SettingsSection = ({
       toast.error("Error updating Reveal Time");
     }
   };
-  const handleBaseUriUpdate = async () => {
-    if (!account || !library || !chainId) {
-      toast.error("Please connect your wallet");
-      return;
-    }
-    if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
-      toast.error("Error loading project");
-      return;
-    }
-    if (chainId !== projectChainId) {
-      toast.error(`Please switch to network id ${projectChainId}`);
-      return;
-    }
-    if (account !== projectOwner) {
-      toast.error("You are not project owner");
-    }
-    try {
-      const contract =
-        collectionType === "721"
-          ? new Collection721__factory(library.getSigner(account)).attach(
-              projectAddress
-            )
-          : new Collection1155__factory(library.getSigner(account)).attach(
-              projectAddress
-            );
-      setBaseURIBgProc((v) => v + 1);
-      const tx = await toast.promise(
-        contract.updateBaseURI(configSet.baseURI),
-        {
-          error: "Error sending transaction",
-          loading: "Sending transaction...",
-          success: "Transaction sent",
-        }
-      );
-      await toast.promise((tx as any).wait(), {
-        error: "Mining failed",
-        loading: "Mining transaction...",
-        success: "Transaction Completed",
-      });
-      setBaseURIBgProc((v) => v - 1);
-    } catch (error) {
-      setBaseURIBgProc((v) => v - 1);
-      console.log("Error updating base URI : ", error);
-      toast.error("Error updating Base URI");
-    }
-  };
+  // const handleBaseUriUpdate = async () => {
+  //   if (!account || !library || !chainId) {
+  //     toast.error("Please connect your wallet");
+  //     return;
+  //   }
+  //   if (!projectAddress || !projectChainId || !RPC_URLS[projectChainId]) {
+  //     toast.error("Error loading project");
+  //     return;
+  //   }
+  //   if (chainId !== projectChainId) {
+  //     toast.error(`Please switch to network id ${projectChainId}`);
+  //     return;
+  //   }
+  //   if (account !== projectOwner) {
+  //     toast.error("You are not project owner");
+  //   }
+  //   try {
+  //     const contract =
+  //       collectionType === "721"
+  //         ? new Collection721__factory(library.getSigner(account)).attach(
+  //             projectAddress
+  //           )
+  //         : new Collection1155__factory(library.getSigner(account)).attach(
+  //             projectAddress
+  //           );
+  //     // setBaseURIBgProc((v) => v + 1);
+  //     const tx = await toast.promise(
+  //       contract.updateBaseURI(configSet.baseURI),
+  //       {
+  //         error: "Error sending transaction",
+  //         loading: "Sending transaction...",
+  //         success: "Transaction sent",
+  //       }
+  //     );
+  //     await toast.promise((tx as any).wait(), {
+  //       error: "Mining failed",
+  //       loading: "Mining transaction...",
+  //       success: "Transaction Completed",
+  //     });
+  //     // setBaseURIBgProc((v) => v - 1);
+  //   } catch (error) {
+  //     // setBaseURIBgProc((v) => v - 1);
+  //     console.log("Error updating base URI : ", error);
+  //     toast.error("Error updating Base URI");
+  //   }
+  // };
 
   const handleMaxMintInTotalUpdate = async () => {
     if (!account || !library || !chainId) {
@@ -1336,7 +1332,7 @@ const SettingsSection = ({
         )}
       </div>
 
-      <details>
+      {/* <details>
         <summary className="text-xl font-medium cursor-pointer">
           Advance Settings
           <p className="text-sm text-gray-500">
@@ -1375,7 +1371,7 @@ const SettingsSection = ({
             </button>
           </div>
         </div>
-      </details>
+      </details> */}
     </div>
   );
 };

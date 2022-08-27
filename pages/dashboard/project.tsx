@@ -10,20 +10,16 @@ import BatchCreateModal from "../../components/ProjectDashboard/BatchCreateModal
 import ClaimsSection from "../../components/ProjectDashboard/Claims";
 import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
-import PermissionsSection from "../../components/ProjectDashboard/Permissions";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
 import { getCookieWallet } from "../../services/auth.service";
-import { getServerListWithAdminOrManageRole } from "../../services/discord.service";
+
 import {
   getClaimedSupplyCountByProjectChainAddress,
   getProjectByChainAddress,
   getUnclaimedSupplyCountByProjectChainAddress,
 } from "../../services/project.service";
-import {
-  getLoggedInDiscordUser,
-  getUserByWalletAddress,
-} from "../../services/user.service";
-import { DiscordUserResponse, IGuild, ProjectExtended } from "../../types";
+import { getUserByWalletAddress } from "../../services/user.service";
+import { ProjectExtended } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
@@ -159,14 +155,6 @@ const ProjectPage: NextPage<Props> = ({
               page={page}
               view={view}
               filterStatus={mintStatus}
-            />
-          )}
-        </div>
-        <div>
-          {currentTab == "permissions" && (
-            <PermissionsSection
-              projectAddress={project.address}
-              projectChainId={project.chainId}
             />
           )}
         </div>

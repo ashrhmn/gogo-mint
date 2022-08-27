@@ -85,7 +85,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
             data: { data: User; error: any };
           }) => {
             console.log(error);
-            console.log("Fetched user : ", user);
+            // console.log("Fetched user : ", user);
             setBgProcesses((v) => v - 1);
             setConnectedUser(error ? null : user);
           }
@@ -162,7 +162,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           success: "Logged in",
         }
       );
-      console.log(res.data);
+      // console.log(res.data);
       service.post(`discord/refresh-role-integrations`, {
         walletAddress: account,
       }),
