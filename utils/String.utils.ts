@@ -28,7 +28,7 @@ export const encryptToken = (token: string) =>
   CryptoJS.AES.encrypt(token, CRYPTO_SECRET).toString();
 
 export function capitalize(input: string) {
-  return input[0].toUpperCase() + input.slice(1);
+  return input.length > 0 ? input[0].toUpperCase() + input.slice(1) : "";
 }
 
 export function normalizeString(input: string) {
