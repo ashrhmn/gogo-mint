@@ -1,0 +1,83 @@
+.nav-container {
+  background: linear-gradient(
+    180.16deg,
+    #0c0013 2%,
+    #0000002e 45.98%,
+    #0000002e 45.98%,
+    #0000002e 45.98%,
+    #0000001e 98.04%
+  );
+}
+
+.nav-right-btn {
+  background: linear-gradient(
+    90.16deg,
+    #a15df8 2%,
+    #72c5fb 45.98%,
+    #60ebfe 98.04%
+  );
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 18px;
+  color: #222222;
+  @apply px-3 py-2 rounded select-none;
+}
+
+.hero-span-nft {
+  background: linear-gradient(
+    90.16deg,
+    rgba(71, 8, 181, 1),
+    rgba(137, 6, 186, 1)
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+.service-counts {
+  background: linear-gradient(
+    90.16deg,
+    rgba(161, 93, 248, 1),
+    rgba(114, 197, 251, 1),
+    rgba(96, 235, 254, 1)
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-left-bg {
+  background: #120448;
+  filter: blur(300px);
+  height: 500px;
+  width: 100%;
+}
+
+.mid-bg-grad {
+  background: #34034f;
+  filter: blur(300px);
+  height: 100%;
+  width: 100%;
+}
+
+.hr-grad-line {
+  border-image-source: linear-gradient(
+    90.16deg,
+    #a15df8 2%,
+    #72c5fb 45.98%,
+    #60ebfe 98.04%
+  );
+  background: linear-gradient(
+    90.16deg,
+    #a15df8 2%,
+    #72c5fb 45.98%,
+    #60ebfe 98.04%
+  );
+  height: 3px;
+  width: 100%;
+}
+
+.home-mid-view-more-btn {
+  background: linear-gradient(94.1deg, #4708b5 39.24%, #8906ba 60.07%);
+  transform: skew(-20deg);
+  padding: 10px 20px;
+}
