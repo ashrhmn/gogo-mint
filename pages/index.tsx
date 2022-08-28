@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,7 +20,7 @@ const HomePage: NextPage = () => {
     document.getElementsByTagName("html")[0].style.backgroundColor = "#0c0013";
   }, []);
   return (
-    <div className="text-white relative">
+    <div className="text-white relative bg-[#0c0013]">
       <div>
         <div className="fixed top-0 left-0 right-0 z-50 nav-container">
           <nav className="flex justify-between items-center w-full max-w-7xl px-6 z-50 mx-auto py-10">
@@ -61,7 +62,9 @@ const HomePage: NextPage = () => {
               </div>
             </div>
             <div className="w-full">
-              <HeroRight />
+              <img src="/assets/hero-icon.png" alt="" />
+              {/* <HeroRight /> */}
+              {/* <Image src={"/assets/hero-icon.png"} alt="" layout="fill" /> */}
             </div>
           </div>
           <div className="my-4">
@@ -199,12 +202,12 @@ const HomePage: NextPage = () => {
                 ))}
             </div>
           </div>
-          <div className="bg-purple-grad absolute -z-10 bottom-28 left-0" />
-          <div className="bg-purple-grad absolute -z-10 bottom-28 right-0" />
-          <div className="px-6 py-10 my-28 max-w-7xl mx-auto news-letter-container flex items-center gap-5">
-            <div className="w-7/12">
-              <h1 className="text-5xl my-4">Newsletter</h1>
-              <h2 className="text-2xl">
+          <div className="bg-purple-grad absolute bottom-[600px] opacity-40 left-0" />
+          <div className="bg-blue-grad absolute bottom-[600px] opacity-40 right-0" />
+          <div className="px-6 py-10 my-28 max-w-7xl mx-auto news-letter-container flex flex-col md:flex-row items-center gap-5">
+            <div className="md:w-6/12">
+              <h1 className="text-5xl my-4 font-bold">Newsletter</h1>
+              <h2 className="text-xl font-medium">
                 Get the lattest popular NFT at Lowest Price
               </h2>
               <p className="my-4">
@@ -215,8 +218,8 @@ const HomePage: NextPage = () => {
                 numquam aliquam nam.
               </p>
             </div>
-            <div className="w-5/12">
-              <div className="w-3/4 h-16 bg-white skew-x-[-25deg] mx-auto">
+            <div className="md:w-6/12">
+              <div className="md:w-3/4 h-16 bg-white skew-x-[-25deg] mx-auto">
                 <div className="skew-x-[25deg] p-4 flex items-center h-full">
                   <input
                     className="w-full focus:outline-none text-black"
@@ -230,81 +233,87 @@ const HomePage: NextPage = () => {
               </div>
             </div>
           </div>
-          <div className="bg-blue-grad absolute -z-10 bottom-0 right-0" />
+          <div className="bg-purple-grad absolute opacity-50 bottom-[400px] left-0 hidden md:block" />
           <div className="bg-[#090617] py-8">
-            <div className="max-w-7xl px-6 mb-4 flex gap-4 mx-auto">
-              <div className="w-2/12 flex justify-center items-center">
-                <Link passHref href={"/"}>
-                  <a>
-                    <div className="relative w-[80px] h-[70px]">
-                      <Image
-                        src={"/assets/logo-main.png"}
-                        alt=""
-                        layout="fill"
-                      />
-                    </div>
-                  </a>
-                </Link>
-              </div>
-              <div className="w-4/12">
-                <h1 className="mb-4 font-medium">About Us</h1>
-                <p>
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Dicta distinctio quod laudantium corrupti eligendi ipsam
-                  voluptatum veritatis illum enim harum iusto, vel earum nisi
-                  molestiae.
-                </p>
-              </div>
-              <div className="w-2/12">
-                <h1 className="mb-4 font-medium">Company</h1>
-                <div className="flex flex-col">
-                  {["about", "careeres", "newsletter"].map((l) => (
-                    <a key={l} href={`/${l}`}>
-                      {normalizeString(l)}
+            <div className="max-w-7xl px-6 mb-4 flex flex-col md:flex-row gap-4 mx-auto">
+              <div className="w-full flex gap-4">
+                <div className="w-2/12 flex justify-center items-center">
+                  <Link passHref href={"/"}>
+                    <a>
+                      <div className="relative w-[80px] h-[70px]">
+                        <Image
+                          src={"/assets/logo-main.png"}
+                          alt=""
+                          layout="fill"
+                        />
+                      </div>
                     </a>
-                  ))}
+                  </Link>
+                </div>
+                <div className="">
+                  <h1 className="mb-4 font-medium">About Us</h1>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+                    Dicta distinctio quod laudantium corrupti eligendi ipsam
+                    voluptatum veritatis illum enim harum iusto, vel earum nisi
+                    molestiae.
+                  </p>
                 </div>
               </div>
-              <div className="w-2/12">
-                <h1 className="mb-4 font-medium">Marketplace</h1>
-                <div className="flex flex-col">
-                  {["explore", "NFT", "virtual-world"].map((l) => (
-                    <a key={l} href={`/${l}`}>
-                      {normalizeString(l)}
-                    </a>
-                  ))}
+              <div className="flex flex-wrap gap-4 w-full justify-center">
+                <div className="w-2/12 min-w-[150px]">
+                  <h1 className="mb-4 font-medium">Company</h1>
+                  <div className="flex flex-col">
+                    {["about", "careeres", "newsletter"].map((l) => (
+                      <a key={l} href={`/${l}`}>
+                        {normalizeString(l)}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="w-2/12">
-                <h1 className="mb-4 font-medium">Resources</h1>
-                <div className="flex flex-col">
-                  {["partners", "blogs", "help-center", "support"].map((l) => (
-                    <a key={l} href={`/${l}`}>
-                      {normalizeString(l)}
-                    </a>
-                  ))}
+                <div className="w-2/12 min-w-[150px]">
+                  <h1 className="mb-4 font-medium">Marketplace</h1>
+                  <div className="flex flex-col">
+                    {["explore", "NFT", "virtual-world"].map((l) => (
+                      <a key={l} href={`/${l}`}>
+                        {normalizeString(l)}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                <div className="w-2/12 min-w-[150px]">
+                  <h1 className="mb-4 font-medium">Resources</h1>
+                  <div className="flex flex-col">
+                    {["partners", "blogs", "help-center", "support"].map(
+                      (l) => (
+                        <a key={l} href={`/${l}`}>
+                          {normalizeString(l)}
+                        </a>
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
             <hr />
-            <div className="flex justify-end gap-4 my-6 px-10 max-w-7xl mx-auto">
+            <div className="flex justify-end gap-4 my-6 px-10 max-w-7xl mx-auto text-[#FCDDEC]">
               <Link href={`/`}>
-                <a>
+                <a className="hover:text-white transition-colors">
                   <FacebookIcon />
                 </a>
               </Link>
               <Link href={`/`}>
-                <a>
+                <a className="hover:text-white transition-colors">
                   <InstagramIcon />
                 </a>
               </Link>
               <Link href={`/`}>
-                <a>
+                <a className="hover:text-white transition-colors">
                   <TwitterIcon />
                 </a>
               </Link>
               <Link href={`/`}>
-                <a>
+                <a className="hover:text-white transition-colors">
                   <DiscordIcon />
                 </a>
               </Link>
