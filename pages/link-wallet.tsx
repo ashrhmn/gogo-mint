@@ -19,6 +19,9 @@ import { getCookieWallet } from "../services/auth.service";
 import Layout from "../components/Layout";
 import { getLoggedInDiscordUser } from "../services/user.service";
 import { walletConnectConnector } from "../lib/connectors";
+import { DiscordIcon } from "../components/SVGs/SocialIcons";
+import WalletConnectIcon from "../components/SVGs/WalletConnectIcon";
+import MetamaskIcon from "../components/SVGs/MetamaskIcon";
 
 interface Props {
   user?: DiscordUserResponse;
@@ -167,9 +170,12 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
       setBgProcesses((v) => v - 1);
       if (!response.error) {
       } else {
+        setBgProcesses((v) => v - 1);
         console.log(response.error);
       }
-    } catch (error) {}
+    } catch (error) {
+      setBgProcesses((v) => v - 1);
+    }
   };
 
   const handleSignClick = async () => {
@@ -200,7 +206,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
       <div className="flex flex-col lg:flex-row text-3xl justify-center mt-10">
         {account ? (
           <div className="flex flex-col gap-6 items-center w-full">
-            <h1>You are logged in as</h1>
+            <h1 className="font-bold">Wallet Connected</h1>
             <div className="bg-gray-700 text-white p-8 rounded-xl flex flex-col sm:flex-row items-center gap-6 max-w-md sm:w-full">
               <h1>{shortenIfAddress(account)}</h1>
               <button
@@ -230,12 +236,15 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
-            <h1>Wallet not connected</h1>
+            <h1 className="font-bold">Wallet not connected</h1>
+            <p className="text-sm text-gray-500 px-6 text-center">
+              Connecting wallet is required to be able to link with your discord
+            </p>
             <button
-              className="mt-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
+              className="mt-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors flex justify-center items-center"
               onClick={activateBrowserWallet}
             >
-              Metamask
+              <MetamaskIcon />
             </button>
             <button
               onClick={() =>
@@ -243,8 +252,9 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                   .then(console.log)
                   .catch(console.error)
               }
-              className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
+              className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors flex justify-center items-center gap-4"
             >
+              <WalletConnectIcon />
               WalletConnect
             </button>
           </div>
@@ -254,7 +264,11 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
 
         {user ? (
           <div className="flex flex-col items-center w-full">
-            <h1>Logged in as</h1>
+            <h1 className="font-bold">Discord Connected</h1>
+            <p className="text-sm text-gray-500 px-6 text-center">
+              Connecting to discord and linking your discord with wallet is
+              required if you want to have discord roles offered by the project
+            </p>
             <div className="flex flex-col gap-4 sm:w-full sm:flex-row justify-between m-6 bg-gray-700 p-4 rounded-xl max-w-md">
               <div className="flex gap-8">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden ring-4 ring-indigo-500">
@@ -302,10 +316,15 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
-            <h1>Discord not connected</h1>
+            <h1 className="font-bold">Discord not connected</h1>
+            <p className="text-sm text-gray-500 px-6 text-center">
+              Connecting to discord and linking your discord with wallet is
+              required if you want to have discord roles offered by the project
+            </p>
             <Link href={DISCORD_AUTH_URL_BUYER} passHref>
-              <a className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors">
-                Login with Discord
+              <a className="m-6 bg-[#5B65E9] p-4 rounded-xl w-full max-w-md text-white text-center hover:bg-[#464fcb] transition-colors flex gap-3 justify-center items-center">
+                <DiscordIcon />
+                Connect with Discord
               </a>
             </Link>
           </div>
@@ -331,13 +350,16 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           onClick={handleLinkAccountClick}
           className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-400 disabled:bg-blue-500"
         >
-          {!!bgProcesses ||
-          !account ||
-          !user ||
-          (account === connectedWallet &&
-            !!connectedUser &&
-            user.username === connectedUser.discordUsername &&
-            +user.discriminator === connectedUser.discordDiscriminator)
+          {!account && !user
+            ? "Connect Wallet and Discord to link them"
+            : !account
+            ? "Connect Wallet to continue"
+            : !user
+            ? "Connect Discord to continue"
+            : account === connectedWallet &&
+              !!connectedUser &&
+              user.username === connectedUser.discordUsername &&
+              +user.discriminator === connectedUser.discordDiscriminator
             ? "Discord and Wallet Already Linked"
             : "Link Discord and Wallet"}
         </button>

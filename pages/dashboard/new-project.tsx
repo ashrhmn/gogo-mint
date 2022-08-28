@@ -371,31 +371,10 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 <span className="text-2xl text-center">Project Logo</span>
               )}
             </div>
-            <div
-              onClick={() => {
-                if (unrevealedImgInputRef && unrevealedImgInputRef.current)
-                  unrevealedImgInputRef.current.click();
-              }}
-              className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
-            >
-              <input
-                ref={unrevealedImgInputRef}
-                onChange={onSelectUnrevealedImage}
-                type="file"
-                hidden
-              />
-              {!!unrevealedImageBase64 ? (
-                <Image src={unrevealedImageBase64} alt="" layout="fill" />
-              ) : (
-                <span className="text-2xl text-center">
-                  Unrevealed NFT Image
-                </span>
-              )}
-            </div>
           </div>
           <div>
             <div>
-              <div className="space-y-2 w-full mt-4">
+              {/* <div className="space-y-2 w-full mt-4">
                 <label className="font-bold">
                   Name <span className="text-red-700">*</span>
                 </label>
@@ -408,38 +387,40 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     setConfigSet((c) => ({ ...c, name: e.target.value }))
                   }
                 />
-              </div>
-              <div className="mt-4 flex gap-2">
-                <div className="space-y-2 w-full">
+              </div> */}
+              <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+                <div className="space-y-2 w-full sm:w-[50%]">
                   <label className="font-bold">
-                    Metadata Reveal Time{" "}
-                    <span className="text-xs font-normal">
-                      ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
-                    </span>
+                    Name <span className="text-red-700">*</span>
                   </label>
-                  <p className="text-sm text-gray-500">
-                    When to reveal the metadata
-                  </p>
+                  <p className="text-sm text-gray-500">Name of the project</p>
                   <input
                     className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                    type="datetime-local"
-                    value={formatHtmlDateTime(
-                      new Date(configSet.revealTime * 1000)
-                    )}
+                    type="text"
+                    value={configSet.name}
                     onChange={(e) =>
-                      setConfigSet((c) => ({
-                        ...c,
-                        revealTime: +(+new Date(e.target.value) / 1000).toFixed(
-                          0
-                        ),
-                      }))
+                      setConfigSet((c) => ({ ...c, name: e.target.value }))
                     }
                   />
                 </div>
-                <div className="space-y-2 w-full">
+                <div className="space-y-2 w-full sm:w-[40%]">
+                  <label className="font-bold">
+                    Symbol <span className="text-red-700">*</span>
+                  </label>
+                  <p className="text-sm text-gray-500">Symbol of NFT tokens</p>
+                  <input
+                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    type="text"
+                    value={configSet.symbol}
+                    onChange={(e) =>
+                      setConfigSet((c) => ({ ...c, symbol: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2 w-full sm:w-[50%]">
                   <label className="font-bold">Collection Type</label>
                   <p className="text-sm text-gray-500">
-                    Select the ERC Standard for your project
+                    Select Project Standard
                   </p>
                   <select
                     value={configSet.collectionType}
@@ -458,21 +439,27 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 </div>
               </div>
               <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
-                <div className="space-y-2 w-full">
+                <div className="w-full space-y-2 sm:w-[60%]">
                   <label className="font-bold">
-                    Symbol <span className="text-red-700">*</span>
+                    Charge Recipient Address{" "}
+                    <span className="text-red-700">*</span>
                   </label>
-                  <p className="text-sm text-gray-500">Symbol of NFT tokens</p>
+                  <p className="text-sm text-gray-500">
+                    All the mint charges will go to this address
+                  </p>
                   <input
                     className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
                     type="text"
-                    value={configSet.symbol}
+                    value={configSet.feeToAddress}
                     onChange={(e) =>
-                      setConfigSet((c) => ({ ...c, symbol: e.target.value }))
+                      setConfigSet((c) => ({
+                        ...c,
+                        feeToAddress: e.target.value,
+                      }))
                     }
                   />
                 </div>
-                <div className="space-y-2 w-full">
+                <div className="space-y-2 w-full sm:w-[40%]">
                   <label className="font-bold">
                     Max Mint Per Wallet in Total
                   </label>
@@ -507,43 +494,67 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 Description
               </label>
               <p className="text-sm text-gray-500">Project Description</p>
-              <input
+              <textarea
                 className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                type="text"
                 value={configSet.description}
                 onChange={(e) =>
                   setConfigSet((c) => ({ ...c, description: e.target.value }))
                 }
-              />
+              ></textarea>
+            </div>
+            <div className="flex gap-4 mt-10">
+              <div
+                onClick={() => {
+                  if (unrevealedImgInputRef && unrevealedImgInputRef.current)
+                    unrevealedImgInputRef.current.click();
+                }}
+                className="relative aspect-square md:w-48 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+              >
+                <input
+                  ref={unrevealedImgInputRef}
+                  onChange={onSelectUnrevealedImage}
+                  type="file"
+                  hidden
+                />
+                {!!unrevealedImageBase64 ? (
+                  <Image src={unrevealedImageBase64} alt="" layout="fill" />
+                ) : (
+                  <span className="text-2xl text-center">
+                    Unrevealed NFT Image
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2 w-full">
+                <label className="font-bold">
+                  Reveal Time{" "}
+                  <span className="text-xs font-normal">
+                    ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
+                  </span>
+                </label>
+                <p className="text-sm text-gray-500">
+                  When to reveal the metadata
+                </p>
+                <input
+                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  type="datetime-local"
+                  value={formatHtmlDateTime(
+                    new Date(configSet.revealTime * 1000)
+                  )}
+                  onChange={(e) =>
+                    setConfigSet((c) => ({
+                      ...c,
+                      revealTime: +(+new Date(e.target.value) / 1000).toFixed(
+                        0
+                      ),
+                    }))
+                  }
+                />
+              </div>
             </div>
           </div>
-          <button
-            onClick={() =>
-              setConfigSet((c) => ({
-                ...c,
-                saleWaves: [
-                  ...c.saleWaves,
-                  {
-                    enabled: true,
-                    endTime: 0,
-                    maxMintInSale: 1000,
-                    maxMintPerWallet: c.collectionType === "721" ? 5 : 1000,
-                    mintCharge: c.collectionType === "721" ? 0.001 : 0.000001,
-                    startTime: +(Date.now() / 1000).toFixed(0),
-                    uuid: v4(),
-                    whitelistAddresses: [],
-                    saleType: "private",
-                    noDeadline: false,
-                  },
-                ],
-              }))
-            }
-            className="p-2 w-60 bg-blue-500 text-white hover:bg-blue-700 transition-colors rounded my-4"
-          >
-            Add Sale Wave
-          </button>
+
           {configSet.saleWaves.length == 0 && (
-            <div className="bg-gray-200 rounded-xl text-center font-bold p-4">
+            <div className="bg-gray-200 rounded-xl text-center font-bold p-4 mt-6">
               No Sale Wave is set. Without a Sale Wave no one will be able to
               mint
             </div>
@@ -565,8 +576,35 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               ))}
             </div>
           )}
+          <div className="flex justify-end">
+            <button
+              onClick={() =>
+                setConfigSet((c) => ({
+                  ...c,
+                  saleWaves: [
+                    ...c.saleWaves,
+                    {
+                      enabled: true,
+                      endTime: 0,
+                      maxMintInSale: 1000,
+                      maxMintPerWallet: c.collectionType === "721" ? 5 : 1000,
+                      mintCharge: c.collectionType === "721" ? 0.001 : 0.000001,
+                      startTime: +(Date.now() / 1000).toFixed(0),
+                      uuid: v4(),
+                      whitelistAddresses: [],
+                      saleType: "private",
+                      noDeadline: false,
+                    },
+                  ],
+                }))
+              }
+              className="p-2 w-60 bg-blue-500 text-white hover:bg-blue-700 transition-colors rounded my-4"
+            >
+              Add Sale Wave
+            </button>
+          </div>
 
-          <div className="mt-4 space-y-2">
+          {/* <div className="mt-4 space-y-2">
             <label className="font-bold">
               Charge Recipient Address <span className="text-red-700">*</span>
             </label>
@@ -581,13 +619,13 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
               }
             />
-          </div>
+          </div> */}
 
           <div className="mt-4 space-y-2">
             <label className="font-bold">Royalty Receiver Address</label>
             <p className="text-sm text-gray-500">
               On every resale of an NFT from this collection a RoyaltyPercentage
-              will be sent to this address
+              (Max 10%) will be sent to this address
             </p>
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
               <input

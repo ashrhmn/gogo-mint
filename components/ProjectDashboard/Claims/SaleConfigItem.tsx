@@ -113,8 +113,8 @@ const SaleConfigItem = ({
         </div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full flex justify-between items-center font-medium">
-            <h1>
-              Start Time{" "}
+            <h1 className="leading-none">
+              Start Time <br />
               <span className="text-xs font-normal">
                 ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
               </span>
@@ -163,8 +163,8 @@ const SaleConfigItem = ({
         </div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full flex justify-between items-center font-medium">
-            <h1>
-              End Time{" "}
+            <h1 className="leading-none">
+              End Time <br />
               <span className="text-xs font-normal">
                 ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
               </span>
@@ -197,7 +197,7 @@ const SaleConfigItem = ({
                       checkboxRef.current.click();
                     }
                   }}
-                  className="cursor-pointer select-none"
+                  className="cursor-pointer select-none whitespace-nowrap"
                 >
                   No End
                 </label>

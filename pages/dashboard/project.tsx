@@ -75,13 +75,13 @@ const ProjectPage: NextPage<Props> = ({
       <div className="flex flex-col sm:flex-row gap-2 justify-between my-4">
         <div className="flex gap-4">
           {project.imageUrl && (
-            <div className="h-20 w-20 relative hidden sm:block">
+            <a className="h-28 w-28 relative">
               <Image src={project.imageUrl} alt={""} layout="fill" />
-            </div>
+            </a>
           )}
           <div>
             <h1 className="text-4xl font-bold">{project.name}</h1>
-            <h2 className="text-2xl font-medium">
+            <h2 className="text-2xl font-medium mt-4">
               {!!project.address && (
                 <CopyAddressToClipboard address={project.address} shorten />
               )}
@@ -100,7 +100,7 @@ const ProjectPage: NextPage<Props> = ({
           )}
           {project.collectionType === "721" && (
             <button
-              className="bg-sky-600 text-white p-2 w-32 rounded hover:bg-sky-700 transition-colors"
+              className="bg-sky-600 text-white p-2 w-36 rounded hover:bg-sky-700 transition-colors"
               onClick={() => setIsBatchCreateModalOpen(true)}
             >
               + Create Batch

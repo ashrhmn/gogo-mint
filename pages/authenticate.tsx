@@ -19,6 +19,9 @@ import { getCookieWallet } from "../services/auth.service";
 import Layout from "../components/Layout";
 import { getLoggedInDiscordUser } from "../services/user.service";
 import { walletConnectConnector } from "../lib/connectors";
+import { DiscordIcon } from "../components/SVGs/SocialIcons";
+import MetamaskIcon from "../components/SVGs/MetamaskIcon";
+import WalletConnectIcon from "../components/SVGs/WalletConnectIcon";
 
 interface Props {
   user?: DiscordUserResponse;
@@ -179,7 +182,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
       <div className="flex flex-col lg:flex-row text-3xl justify-center mt-10">
         {account ? (
           <div className="flex flex-col gap-6 items-center w-full">
-            <h1>You are logged in as</h1>
+            <h1 className="font-bold">Wallet Connected</h1>
             <div className="bg-gray-700 text-white p-8 rounded-xl flex flex-col sm:flex-row items-center gap-6 max-w-md sm:w-full">
               <h1>{shortenIfAddress(account)}</h1>
               <button
@@ -189,32 +192,18 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                 Disconnect
               </button>
             </div>
-            {/* {!bgProcesses && (
-              <>
-                {connectedUser &&
-                connectedUser.discordUsername &&
-                connectedUser.discordDiscriminator ? (
-                  <div className="text-center">
-                    Your wallet is linked to the user{" "}
-                    {connectedUser.discordUsername} #
-                    {connectedUser.discordDiscriminator}
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    Your wallet is not linked to any discord account
-                  </div>
-                )}
-              </>
-            )} */}
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
-            <h1>Wallet not connected</h1>
+            <h1 className="font-bold">Wallet not connected</h1>
+            <p className="text-sm text-gray-500 px-6 text-center">
+              Connecting wallet is required to enter your dashboard
+            </p>
             <button
-              className="mt-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
+              className="mt-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors flex justify-center items-center"
               onClick={activateBrowserWallet}
             >
-              Metamask
+              <MetamaskIcon />
             </button>
             <button
               onClick={() =>
@@ -222,8 +211,9 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                   .then(console.log)
                   .catch(console.error)
               }
-              className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors"
+              className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors flex justify-center items-center gap-4"
             >
+              <WalletConnectIcon />
               WalletConnect
             </button>
           </div>
@@ -233,7 +223,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
 
         {user ? (
           <div className="flex flex-col items-center w-full">
-            <h1>Logged in as</h1>
+            <h1 className="font-bold">Discord Connected</h1>
             <div className="flex flex-col gap-4 sm:w-full sm:flex-row justify-between m-6 bg-gray-700 p-4 rounded-xl max-w-md">
               <div className="flex gap-8">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden ring-4 ring-indigo-500">
@@ -264,27 +254,18 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
                 </button>
               </div>
             </div>
-            {/* {!bgProcesses && (
-              <>
-                {connectedWallet ? (
-                  <div className="text-center">
-                    Your Discord account is linked to the wallet{" "}
-                    <strong>{shortenIfAddress(connectedWallet)}</strong>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    Your Discord account is not linked to any wallet
-                  </div>
-                )}
-              </>
-            )} */}
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center">
-            <h1>Discord not connected</h1>
+            <h1 className="font-bold">Discord not connected</h1>
+            <p className="text-sm text-gray-500 px-6 text-center">
+              Connecting discord is required if you want to integrate role for
+              NFT holders from your project
+            </p>
             <Link href={DISCORD_AUTH_URL} passHref>
-              <a className="m-6 bg-gray-700 p-4 rounded-xl w-full max-w-md text-white text-center hover:text-blue-400 transition-colors">
-                Login with Discord
+              <a className="m-6 bg-[#5B65E9] p-4 rounded-xl w-full max-w-md text-white text-center hover:bg-[#464fcb] transition-colors flex gap-3 justify-center items-center">
+                <DiscordIcon />
+                Connect with Discord
               </a>
             </Link>
           </div>
@@ -292,12 +273,34 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
       </div>
       <div className="flex flex-col gap-4 justify-center items-center text-3xl my-10">
         <button
-          className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-500 disabled:bg-blue-400 w-60"
+          className="bg-blue-600 text-white p-6 rounded hover:bg-blue-700 transition-colors disabled:text-gray-500 disabled:bg-blue-400"
           onClick={handleSignClick}
-          disabled={account === cookieAddress}
+          disabled={!account || account === cookieAddress}
         >
-          {account === cookieAddress ? "Signed" : "Sign Wallet"}
+          {!account
+            ? "Connect Wallet to continue"
+            : account === cookieAddress
+            ? "Signed"
+            : "Sign Wallet"}
         </button>
+
+        {!!account && account !== cookieAddress && (
+          <span className="text-sm">
+            Sign required to enter dashboard with {shortenIfAddress(account)}{" "}
+            account
+          </span>
+        )}
+        {!account && (
+          <span className="text-sm">
+            Please connect wallet to continue to dashboard
+          </span>
+        )}
+        {account === cookieAddress && (
+          <span className="text-sm">
+            Already signed with {shortenIfAddress(account)}, you can enter
+            dashboard now
+          </span>
+        )}
       </div>
     </Layout>
   );
