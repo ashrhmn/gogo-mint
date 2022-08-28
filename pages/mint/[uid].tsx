@@ -417,8 +417,8 @@ const MintPage: NextPage<Props> = ({
           </h2>
         )}
         <div className="mx-4">
-          <div className="mx-auto max-w-md border-2 border-gray-400 bg-gray-200 rounded-xl p-4 mt-10">
-            <div className="divide-y-2 divide-gray-300 space-y-2">
+          <div className="mx-auto max-w-md border-2 border-gray-600 bg-gray-700 rounded-xl p-4 mt-10">
+            <div className="divide-y-2 divide-gray-600 space-y-2">
               {account ? (
                 <div className="flex justify-between items-center">
                   <h1>Wallet</h1>
@@ -481,24 +481,24 @@ const MintPage: NextPage<Props> = ({
                   )}
                 </h1>
               </div>
-              <div className="flex flex-col justify-between items-center border-2 rounded p-1 m-1">
-                <h1>Sale Status</h1>
-                <h1 className="text-center text-lg">
-                  {!!currentSale
-                    ? normalizeString(currentSale.saleType)
-                    : !!nextSale
-                    ? `${normalizeString(
-                        nextSale.saleType
-                      )} Sale starts at ${new Date(
-                        nextSale.startTime * 1000
-                      ).toLocaleString()} ${
-                        new Date(nextSale.startTime * 1000)
-                          .toString()
-                          .match(/\(([^\)]+)\)$/)?.[1]
-                      }`
-                    : "No Sale is running"}
-                </h1>
-              </div>
+            </div>
+            <div className="flex flex-col justify-between items-center border-2 border-gray-600 rounded p-1 m-1">
+              <h1>Sale Status</h1>
+              <h1 className="text-center text-lg">
+                {!!currentSale
+                  ? normalizeString(currentSale.saleType)
+                  : !!nextSale
+                  ? `${normalizeString(
+                      nextSale.saleType
+                    )} Sale starts at ${new Date(
+                      nextSale.startTime * 1000
+                    ).toLocaleString()} ${
+                      new Date(nextSale.startTime * 1000)
+                        .toString()
+                        .match(/\(([^\)]+)\)$/)?.[1]
+                    }`
+                  : "No Sale is running"}
+              </h1>
             </div>
 
             <div className="flex gap-4 justify-center select-none bg-gray-700 my-4 py-3 text-gray-200 rounded p-2">
@@ -529,7 +529,7 @@ const MintPage: NextPage<Props> = ({
               </button>
             </div>
             <button
-              className="bg-teal-500 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
+              className="bg-teal-700 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
               onClick={handleMintClick}
               disabled={
                 mintBgProc > 0 ||

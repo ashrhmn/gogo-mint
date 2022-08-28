@@ -346,7 +346,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
 
   return (
     <Layout dashboard>
-      <div className="text-xl border-2 rounded-xl p-4">
+      <div className="text-xl border-2 border-gray-600 rounded-xl p-4">
         <h1 className="text-4xl my-3 font-bold">NFT Drop</h1>
         <h1 className="text-2xl font-medium my-1">Contract Information</h1>
         <h2>Customize your new project</h2>
@@ -357,7 +357,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 if (imgInputRef && imgInputRef.current)
                   imgInputRef.current.click();
               }}
-              className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+              className="relative aspect-square md:w-40 flex justify-center items-center bg-gray-700 rounded cursor-pointer"
             >
               <input
                 ref={imgInputRef}
@@ -374,28 +374,14 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           </div>
           <div>
             <div>
-              {/* <div className="space-y-2 w-full mt-4">
-                <label className="font-bold">
-                  Name <span className="text-red-700">*</span>
-                </label>
-                <p className="text-sm text-gray-500">Name of the project</p>
-                <input
-                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-                  type="text"
-                  value={configSet.name}
-                  onChange={(e) =>
-                    setConfigSet((c) => ({ ...c, name: e.target.value }))
-                  }
-                />
-              </div> */}
               <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
                 <div className="space-y-2 w-full sm:w-[50%]">
                   <label className="font-bold">
                     Name <span className="text-red-700">*</span>
                   </label>
-                  <p className="text-sm text-gray-500">Name of the project</p>
+                  <p className="text-sm text-gray-300">Name of the project</p>
                   <input
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="text"
                     value={configSet.name}
                     onChange={(e) =>
@@ -407,9 +393,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   <label className="font-bold">
                     Symbol <span className="text-red-700">*</span>
                   </label>
-                  <p className="text-sm text-gray-500">Symbol of NFT tokens</p>
+                  <p className="text-sm text-gray-300">Symbol of NFT tokens</p>
                   <input
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="text"
                     value={configSet.symbol}
                     onChange={(e) =>
@@ -419,7 +405,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 </div>
                 <div className="space-y-2 w-full sm:w-[50%]">
                   <label className="font-bold">Collection Type</label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-300">
                     Select Project Standard
                   </p>
                   <select
@@ -431,7 +417,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                           e.target.value === "721" ? "721" : "1155",
                       }))
                     }
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                   >
                     <option value={"721"}>ERC721</option>
                     <option value={"1155"}>ERC1155</option>
@@ -444,11 +430,11 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     Charge Recipient Address{" "}
                     <span className="text-red-700">*</span>
                   </label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-300">
                     All the mint charges will go to this address
                   </p>
                   <input
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="text"
                     value={configSet.feeToAddress}
                     onChange={(e) =>
@@ -463,11 +449,11 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   <label className="font-bold">
                     Max Mint Per Wallet in Total
                   </label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-300">
                     Max mint limit for a wallet in this collection
                   </p>
                   <input
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="text"
                     value={configSet.maxMintInTotalPerWallet || ""}
                     placeholder="Unlimited"
@@ -493,9 +479,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               >
                 Description
               </label>
-              <p className="text-sm text-gray-500">Project Description</p>
+              <p className="text-sm text-gray-300">Project Description</p>
               <textarea
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 value={configSet.description}
                 onChange={(e) =>
                   setConfigSet((c) => ({ ...c, description: e.target.value }))
@@ -508,7 +494,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   if (unrevealedImgInputRef && unrevealedImgInputRef.current)
                     unrevealedImgInputRef.current.click();
                 }}
-                className="relative aspect-square md:w-48 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+                className="relative aspect-square md:w-48 flex justify-center items-center bg-gray-700 rounded cursor-pointer"
               >
                 <input
                   ref={unrevealedImgInputRef}
@@ -531,11 +517,11 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
                   </span>
                 </label>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-300">
                   When to reveal the metadata
                 </p>
                 <input
-                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                   type="datetime-local"
                   value={formatHtmlDateTime(
                     new Date(configSet.revealTime * 1000)
@@ -554,7 +540,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           </div>
 
           {configSet.saleWaves.length == 0 && (
-            <div className="bg-gray-200 rounded-xl text-center font-bold p-4 mt-6">
+            <div className="bg-gray-700 rounded-xl text-center font-bold p-4 mt-6">
               No Sale Wave is set. Without a Sale Wave no one will be able to
               mint
             </div>
@@ -562,7 +548,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           {configSet.saleWaves.length > 0 && (
             <div className="mt-4 space-y-2">
               <label className="font-bold">Sale Waves</label>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-300">
                 {configSet.saleWaves.length} salewave
                 {configSet.saleWaves.length > 1 && "s"} added
               </p>
@@ -598,38 +584,21 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   ],
                 }))
               }
-              className="p-2 w-60 bg-blue-500 text-white hover:bg-blue-700 transition-colors rounded my-4"
+              className="p-2 w-60 bg-blue-800 text-white hover:bg-blue-700 transition-colors rounded my-4"
             >
               Add Sale Wave
             </button>
           </div>
 
-          {/* <div className="mt-4 space-y-2">
-            <label className="font-bold">
-              Charge Recipient Address <span className="text-red-700">*</span>
-            </label>
-            <p className="text-sm text-gray-500">
-              All the mint charges will go to this address
-            </p>
-            <input
-              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-              type="text"
-              value={configSet.feeToAddress}
-              onChange={(e) =>
-                setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
-              }
-            />
-          </div> */}
-
           <div className="mt-4 space-y-2">
             <label className="font-bold">Royalty Receiver Address</label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-300">
               On every resale of an NFT from this collection a RoyaltyPercentage
               (Max 10%) will be sent to this address
             </p>
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
               <input
-                className="flex-grow rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="flex-grow rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
                 value={configSet.roayltyReceiver}
                 onChange={(e) =>
@@ -639,13 +608,13 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   }))
                 }
               />
-              <div className="flex items-center gap-2 bg-gray-100 rounded">
+              <div className="flex items-center gap-2 bg-gray-700 rounded">
                 <input
                   type="number"
                   min={0}
                   max={10}
                   step={0.01}
-                  className="bg-gray-100 h-14 p-3 focus:bg-white transition-colors rounded"
+                  className="bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors rounded"
                   defaultValue={configSet.roayltyPercentage}
                   placeholder="0"
                   onChange={(e) =>
@@ -660,7 +629,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     }))
                   }
                 />
-                <span className="p-2">%</span>
+                <span className="p-2 bg-gray-700">%</span>
               </div>
             </div>
           </div>
@@ -672,7 +641,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             >
               Deploy Contract
             </button>
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-sm text-gray-300 text-center">
               Requires Transaction on Deploy
             </p>
           </div>

@@ -85,7 +85,7 @@ const CreateModal = ({
   };
   return (
     <div
-      className={`fixed inset-0 sm:left-auto shadow-xl bg-white transition-transform duration-300 p-6 overflow-y-auto sm:min-w-[500px] ${
+      className={`fixed inset-0 sm:left-auto shadow-xl bg-gray-800 transition-transform duration-300 p-6 overflow-y-auto sm:min-w-[500px] ${
         isCreateModalOpen ? "z-50" : "translate-x-full"
       }`}
     >
@@ -103,7 +103,7 @@ const CreateModal = ({
         </label>
 
         <input
-          className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+          className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
           type="text"
           value={configSet.name}
           onChange={(e) =>
@@ -116,7 +116,7 @@ const CreateModal = ({
           onClick={() => {
             if (imgInputRef && imgInputRef.current) imgInputRef.current.click();
           }}
-          className="relative aspect-square sm:w-40 flex justify-center items-center bg-gray-300 rounded cursor-pointer"
+          className="relative aspect-square sm:w-40 flex justify-center items-center bg-gray-700 rounded cursor-pointer"
         >
           <input
             ref={imgInputRef}
@@ -134,7 +134,7 @@ const CreateModal = ({
       <div className="mt-4 space-y-2">
         <label className="font-bold">Description</label>
         <textarea
-          className="w-full rounded bg-gray-100 h-28 p-3 focus:bg-white transition-colors"
+          className="w-full rounded bg-gray-700 h-28 p-3 focus:bg-gray-800 transition-colors"
           value={configSet.description}
           onChange={(e) =>
             setConfigSet((c) => ({ ...c, description: e.target.value }))
@@ -148,7 +148,7 @@ const CreateModal = ({
             <div key={trait.uuid} className="flex gap-1 items-center">
               <input
                 placeholder="type"
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
                 value={trait.trait_type}
                 onChange={(e) => {
@@ -165,7 +165,7 @@ const CreateModal = ({
                 }}
               />
               <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
                 placeholder="value"
                 value={trait.value}
@@ -197,7 +197,7 @@ const CreateModal = ({
           ))}
         </div>
         <button
-          className="bg-purple-600 text-white p-2 rounded hover:bg-purple-700 transition-colors w-32"
+          className="bg-purple-800 text-white p-2 rounded hover:bg-purple-700 transition-colors w-32"
           onClick={() =>
             setConfigSet((c) => ({
               ...c,
@@ -214,7 +214,7 @@ const CreateModal = ({
       <div className="mt-4 space-y-2">
         <label className="font-bold">Background Color</label>
         <input
-          className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+          className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
           type="text"
           value={configSet.openSeaBgColor}
           onChange={(e) =>
@@ -225,7 +225,7 @@ const CreateModal = ({
       <div className="mt-4 space-y-2">
         <label className="font-bold">External URL</label>
         <input
-          className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+          className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
           type="text"
           value={configSet.openSeaExternalUrl}
           onChange={(e) =>
@@ -237,12 +237,12 @@ const CreateModal = ({
         />
       </div>
       <div className="flex justify-end gap-4 my-4">
-        <button className="border-2 border-gray-400 rounded p-2 w-32 hover:bg-gray-200">
+        <button className="border-2 border-gray-400 rounded p-2 w-32 hover:bg-gray-600">
           Cancel
         </button>
         <button
           onClick={handleAddNft}
-          className="rounded p-2 w-32 bg-sky-500 text-white hover:bg-sky-700 transition-colors"
+          className="rounded p-2 w-32 bg-sky-800 text-white hover:bg-sky-700 transition-colors"
         >
           Create NFT
         </button>

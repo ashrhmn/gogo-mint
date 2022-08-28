@@ -19,7 +19,6 @@ const OverviewSection = ({
   address,
   projectChainId,
   collectionType,
-  ownerAddress,
   nftCount: allNftCount,
   claimedSupply,
   unclaimedSupply,
@@ -31,7 +30,6 @@ const OverviewSection = ({
   address: string | null;
   projectChainId: number | null;
   collectionType: string | null;
-  ownerAddress: string | null;
   nftCount: number;
   claimedSupply: number;
   unclaimedSupply: number;
@@ -104,15 +102,15 @@ const OverviewSection = ({
     <div>
       {collectionType === "721" && (
         <div className="flex justify-start w-full gap-4 p-4 overflow-x-auto">
-          <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
+          <div className="bg-gray-800 rounded p-3 w-full min-w-[180px]">
             <h1>Total Supply</h1>
             <h2>{allNftCount}</h2>
           </div>
-          <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
+          <div className="bg-gray-800 rounded p-3 w-full min-w-[180px]">
             <h1>Claimed Supply</h1>
             <h2>{claimedSupply}</h2>
           </div>
-          <div className="bg-gray-300 rounded p-3 w-full min-w-[180px]">
+          <div className="bg-gray-800 rounded p-3 w-full min-w-[180px]">
             <h1>Unclaimed Supply</h1>
             <h2>{unclaimedSupply}</h2>
           </div>
@@ -121,7 +119,7 @@ const OverviewSection = ({
       {collectionType === "721" && (
         <div className="flex flex-wrap items-center justify-center sm:justify-end my-3 gap-4">
           <select
-            className="bg-gray-100 rounded p-2"
+            className="bg-gray-800 rounded p-2"
             value={filterStatus}
             onChange={(e) => {
               router
@@ -149,14 +147,14 @@ const OverviewSection = ({
                 });
                 router.reload();
               }}
-              className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+              className="hover:bg-gray-700 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-600"
             >
               Prev
             </button>
-            <div className="bg-gray-100 py-1 px-3 rounded">
+            <div className="bg-gray-800 py-1 px-3 rounded">
               Page{" "}
               <select
-                className="rounded p-1"
+                className="rounded p-1 bg-gray-700"
                 value={page}
                 onChange={async (e) => {
                   await router.push({
@@ -189,15 +187,15 @@ const OverviewSection = ({
                 });
                 router.reload();
               }}
-              className="hover:bg-gray-100 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-100"
+              className="hover:bg-gray-800 rounded transition-colors p-1 disabled:cursor-not-allowed border-2 border-gray-600"
             >
               Next
             </button>
           </div>
-          <div className="bg-gray-100 py-1 px-3 rounded">
+          <div className="bg-gray-800 py-1 px-3 rounded">
             View Per Page{" "}
             <select
-              className="rounded p-1"
+              className="rounded p-1 bg-gray-700"
               value={view}
               onChange={async (e) => {
                 await router.push({
@@ -221,15 +219,15 @@ const OverviewSection = ({
       <div className="overflow-y-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b-2 border-t-2 border-gray-600 bg-gray-200">
+            <tr className="border-b-2 border-t-2 border-gray-600 bg-gray-800">
               <th>ID</th>
-              <th>Token ID</th>
+              {collectionType === "721" && <th>Token ID</th>}
               <th>Media</th>
               <th>Name</th>
               <th>Description</th>
               <th>Properties</th>
               {collectionType === "721" && <th>Owner</th>}
-              <th>Action</th>
+              {collectionType === "721" && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
@@ -238,9 +236,11 @@ const OverviewSection = ({
               .map((nft) => (
                 <tr className="border-b-2 border-gray-500" key={nft.id}>
                   <td className="p-4 text-center min-w-[100px]">{nft.id}</td>
-                  <td className="p-4 text-center min-w-[100px]">
-                    {nft.tokenId}
-                  </td>
+                  {collectionType === "721" && (
+                    <td className="p-4 text-center min-w-[100px]">
+                      {nft.tokenId}
+                    </td>
+                  )}
                   <td className="p-4 text-center min-w-[100px]">
                     {nft.imageUrl && (
                       <div className="h-20 w-20 relative">
@@ -265,11 +265,6 @@ const OverviewSection = ({
                             priority
                           />
                         )}
-                        {/* <Image
-                          layout="fill"
-                          src={resolveIPFS(nft.imageUrl)}
-                          alt=""
-                        /> */}
                       </div>
                     )}
                   </td>
@@ -278,7 +273,7 @@ const OverviewSection = ({
                     {nft.description}
                   </td>
                   <td className="p-4 min-w-[100px]">
-                    <pre className="bg-gray-300 p-2 rounded">
+                    <pre className="bg-gray-700 p-2 rounded">
                       {JSON.stringify(
                         nft.properties.map((p) => ({
                           trait_type: p.type,
@@ -300,18 +295,20 @@ const OverviewSection = ({
                       )}
                     </td>
                   )}
-                  <td className="p-4 text-center min-w-[100px]">
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => handleDeleteNft(nft.id)}
-                    >
-                      {nft.tokenId === null && (
-                        <button className="bg-red-500 text-white p-1 rounded w-28 hover:bg-red-700 transition-colors">
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  {collectionType === "721" && (
+                    <td className="p-4 text-center min-w-[100px]">
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => handleDeleteNft(nft.id)}
+                      >
+                        {nft.tokenId === null && (
+                          <button className="bg-red-500 text-white p-1 rounded w-28 hover:bg-red-700 transition-colors">
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
           </tbody>

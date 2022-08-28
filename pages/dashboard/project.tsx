@@ -148,7 +148,6 @@ const ProjectPage: NextPage<Props> = ({
               projectChainId={project.chainId}
               nfts={project.nfts}
               collectionType={project.collectionType}
-              ownerAddress={project.owner.walletAddress}
               nftCount={project._count.nfts}
               claimedSupply={claimedSupply}
               unclaimedSupply={unclaimedSupply}

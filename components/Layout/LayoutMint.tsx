@@ -8,34 +8,23 @@ const LayoutMint = ({ children }: { children: React.ReactNode }) => {
   const { activateBrowserWallet, account, deactivate, activate } = useEthers();
   return (
     <>
-      <div className="fixed shadow-md shadow-gray-300 top-0 left-0 right-0 z-40 bg-white">
-        <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-white h-16">
+      <div className="fixed shadow-md top-0 left-0 right-0 z-40 bg-[#0e001c]">
+        <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-[#0e001c] h-16">
           <div className="w-0 sm:w-16 sm:h-14 overflow-hidden relative text-3xl font-bold">
             <Image src={"/assets/logo-main.png"} alt="" layout="fill" />
           </div>
           <div className="flex overflow-auto">
-            {/* <Link href={`/dashboard`}>
-              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                temp
-              </a>
-            </Link> */}
-            {/* <Link href={`/mint`}>
-              <a className="p-2 font-bold text-gray-600 hover:text-black transition-colors">
-                All Projects
-              </a>
-            </Link> */}
-
             <a
               target="_blank"
               href={`/link-wallet`}
-              className="p-2 font-bold text-gray-600 hover:text-black transition-colors"
+              className="p-2 font-bold text-gray-300 hover:text-white transition-colors"
               rel="noreferrer"
             >
               Link Wallet
             </a>
 
             <div
-              className="flex items-center justify-center group p-2 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors"
+              className="flex items-center justify-center group p-1 font-bold text-gray-300 hover:text-gray-200 cursor-pointer w-36 border-2 rounded bg-gray-900 hover:bg-gray-800 transition-colors"
               onClick={
                 !!account
                   ? deactivate
@@ -68,7 +57,7 @@ const LayoutMint = ({ children }: { children: React.ReactNode }) => {
           </div>
         </nav>
       </div>
-      <main className="mx-auto mt-20">{children}</main>
+      <main className="mx-auto mt-20 text-white">{children}</main>
     </>
   );
 };

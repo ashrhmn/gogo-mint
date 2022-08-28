@@ -8,7 +8,7 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
   const { activateBrowserWallet, account, deactivate, activate } = useEthers();
   return (
     <>
-      <div className="fixed shadow-md shadow-gray-400 top-0 left-0 right-0 z-40 bg-[#0c0013]">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-[#0e001c]">
         <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-[#0e001c] h-12 sm:h-16">
           <Link href={"/"} passHref>
             <a className="w-0 sm:w-14 sm:h-12 overflow-hidden relative text-3xl font-bold">
@@ -28,7 +28,7 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
               </a>
             </Link>
             <div
-              className="flex items-center justify-center group p-1 font-bold text-gray-600 hover:text-black cursor-pointer w-36 border-2 rounded bg-gray-200 hover:bg-white transition-colors"
+              className="flex items-center justify-center group p-1 font-bold text-gray-300 hover:text-gray-200 cursor-pointer w-36 border-2 rounded bg-gray-900 hover:bg-gray-800 transition-colors"
               onClick={
                 !!account
                   ? deactivate
@@ -61,7 +61,7 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
           </div>
         </nav>
       </div>
-      <main className="max-w-7xl mx-auto mt-20 p-4">{children}</main>
+      <main className="max-w-7xl mx-auto pt-20 p-4 text-white">{children}</main>
     </>
   );
 };

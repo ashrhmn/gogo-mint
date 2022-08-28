@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { parse as parseCsv } from "papaparse";
 import toast from "react-hot-toast";
 import { z } from "zod";
@@ -80,7 +80,7 @@ const BatchCreateModal = ({
 
   return (
     <div
-      className={`fixed inset-0 sm:left-auto shadow-xl bg-white transition-transform duration-300 p-6 overflow-y-auto sm:min-w-[500px] ${
+      className={`fixed inset-0 sm:left-auto shadow-xl bg-gray-800 transition-transform duration-300 p-6 overflow-y-auto sm:min-w-[500px] ${
         isBatchCreateModalOpen ? "z-50" : "translate-x-full"
       }`}
     >
@@ -250,14 +250,14 @@ const BatchCreateModal = ({
         {nftsAdded.length === 0 && "No NFTs added, try adding some"}
         {nftsAdded.length > 0 && `${nftsAdded.length} NFT(s) added`}
       </h1>
-      <div className="max-h-96 overflow-y-auto my-6 bg-gray-200 rounded-xl">
+      <div className="max-h-96 overflow-y-auto my-6 bg-gray-800 border-2 border-gray-600 rounded-xl">
         {nftsAdded.map((nft) => (
           <div
-            className="flex gap-4 mx-2 my-6 bg-gray-100 p-2 rounded-xl pt-8 relative"
+            className="flex gap-4 mx-2 my-6 bg-gray-700 p-2 rounded-xl pt-8 relative"
             key={nft.uid}
           >
             <div
-              className="absolute top-2 right-2 cursor-pointer hover:bg-gray-200 rounded"
+              className="absolute top-2 right-2 cursor-pointer hover:bg-gray-600 rounded"
               onClick={() =>
                 setNftsAdded((prev) =>
                   prev.filter((prevNft) => prevNft.uid !== nft.uid)

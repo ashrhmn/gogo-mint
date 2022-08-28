@@ -83,7 +83,7 @@ const Dashboard: NextPage<Props> = ({
             {projects &&
               projects.map((p) => (
                 <div
-                  className="flex justify-between items-center text-center hover:bg-gray-100 transition-colors"
+                  className="flex justify-between items-center text-center hover:bg-gray-700 transition-colors"
                   key={p.id}
                 >
                   <Link

@@ -28,7 +28,7 @@ const SaleConfigItem = ({
   const checkboxRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <details className="p-2 m-3 border-2 rounded-xl bg-gray-200">
+    <details className="p-2 m-3 border-2 rounded-xl bg-gray-800">
       <summary className="flex items-center w-full">
         <span className="cursor-pointer select-none w-full font-bold text-xl">
           Wave {index + 1}
@@ -65,7 +65,7 @@ const SaleConfigItem = ({
             </div>
           )}
           <div className="w-full font-medium">Status</div>
-          <div className="w-full bg-gray-100 p-1 rounded">
+          <div className="w-full bg-gray-700 p-1 rounded">
             <select
               value={saleWaveConfig.enabled ? "enabled" : "disabled"}
               onChange={(e) =>
@@ -89,7 +89,7 @@ const SaleConfigItem = ({
         </div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full font-medium">Wave Type</div>
-          <div className="w-full bg-gray-100 p-1 rounded">
+          <div className="w-full bg-gray-700 p-1 rounded">
             <select
               value={saleWaveConfig.saleType}
               onChange={(e) =>
@@ -121,7 +121,7 @@ const SaleConfigItem = ({
             </h1>
             <div>
               <button
-                className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
+                className="bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
                 onClick={(e) =>
                   setSaleConfigs((prev) =>
                     prev.map((sc) =>
@@ -139,7 +139,7 @@ const SaleConfigItem = ({
               </button>
             </div>
           </div>
-          <div className="w-full flex bg-gray-100 rounded p-1">
+          <div className="w-full flex bg-gray-700 rounded p-1">
             <input
               className="w-full bg-transparent disabled:text-gray-400"
               type="datetime-local"
@@ -170,7 +170,7 @@ const SaleConfigItem = ({
               </span>
             </h1>
             <div className="flex items-center gap-1">
-              <div className="flex items-center gap-1 bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors cursor-pointer select-none">
+              <div className="flex items-center gap-1 bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors cursor-pointer select-none">
                 <input
                   className="cursor-pointer select-none"
                   ref={checkboxRef}
@@ -215,13 +215,13 @@ const SaleConfigItem = ({
                     )
                   )
                 }
-                className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
+                className="bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
               >
                 Today
               </button>
             </div>
           </div>
-          <div className="w-full flex bg-gray-100 rounded p-1">
+          <div className="w-full flex bg-gray-700 rounded p-1">
             {saleWaveConfig.endTime === 0 ? (
               <input
                 type="text"
@@ -257,11 +257,11 @@ const SaleConfigItem = ({
           <label className="font-bold">
             Mint Charge <span className="text-red-700">*</span>
           </label>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-300">
             Charge in ETH buyer will pay in this sale
           </p>
           <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
             type="number"
             min={0}
             step={0.00001}
@@ -288,11 +288,11 @@ const SaleConfigItem = ({
           <label className="font-bold">
             Max Mint Per Wallet <span className="text-red-700">*</span>
           </label>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-300">
             Max a wallet can mint in this salewave
           </p>
           <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
             type="number"
             min={0}
             value={saleWaveConfig.maxMintPerWallet || ""}
@@ -318,11 +318,11 @@ const SaleConfigItem = ({
           <label className="font-bold">
             Max Mint In Sale <span className="text-red-700">*</span>
           </label>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-300">
             Max number of mint in this salewave
           </p>
           <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
             type="number"
             placeholder="0 (Equivalent to Mint-Disabled)"
             min={0}
@@ -385,14 +385,14 @@ const SaleConfigItem = ({
                   }}
                 />
                 <label className="font-bold">Add Whitelist addresses</label>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-300">
                   Only whitelisted addresses can mint in private sale. Add a
                   signle wallet here or add in batch using CSV.
                 </p>
                 <div>
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <input
-                      className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                      className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                       type="text"
                       value={tempWhitelistAddress}
                       onChange={(e) => setTempWhitelistAddress(e.target.value)}
@@ -467,19 +467,19 @@ const SaleConfigItem = ({
               </div>
             </div>
             {saleWaveConfig.whitelist.length === 0 && (
-              <div className="text-center text-gray-600 my-4">
+              <div className="text-center text-gray-300 my-4">
                 No address is currently in whitelist
               </div>
             )}
             {saleWaveConfig.whitelist.length > 0 && (
-              <div className="text-center text-gray-600 my-4">
+              <div className="text-center text-gray-300 my-4">
                 {saleWaveConfig.whitelist.length} address(es) in whitelist
               </div>
             )}
             {saleWaveConfig.whitelist.length > 0 && (
               <div className="my-4">
                 <details open>
-                  <summary className="cursor-pointer hover:text-gray-700">
+                  <summary className="cursor-pointer hover:text-gray-400">
                     Whitelisted Addresses
                   </summary>
                   <div className="max-h-96 overflow-y-scroll">

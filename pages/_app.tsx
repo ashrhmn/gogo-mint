@@ -16,7 +16,15 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>HydroMint</title>
       </Head>
       <Component {...pageProps} />
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#363636",
+            color: "#fff",
+          },
+        }}
+      />
     </DAppProvider>
   );
 }

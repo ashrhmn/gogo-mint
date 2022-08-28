@@ -732,13 +732,13 @@ const SettingsSection = ({
 
   return (
     <div className="mt-4">
-      <div className="bg-gray-200 p-4 rounded relative overflow-hidden">
+      <div className="bg-gray-800 p-4 rounded relative overflow-hidden">
         {!!basicDataBgProc && (
           <div className="absolute right-5 top-5 z-10 scale-150">
             <LoaderIcon />
           </div>
         )}
-        <div className="absolute top-0 right-0 left-0 text-gray-700 bg-white text-3xl font-medium text-center py-1 shadow-2xl z-10">
+        <div className="absolute top-0 right-0 left-0 text-white0 bg-gray-800 text-3xl font-medium text-center py-1 shadow-2xl z-10">
           <h1>Mint Page Preview</h1>
           <a href={`/mint/${configSet.uid}`} target="_blank" rel="noreferrer">
             <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://${PUBLIC_HOST_ROOT}/mint/${
@@ -806,10 +806,10 @@ const SettingsSection = ({
             <div className="mt-4 space-y-2">
               <label className="font-bold">
                 Name <span className="text-red-700">*</span>
-                <p className="text-sm text-gray-500">Name of the project</p>
+                <p className="text-sm text-gray-300">Name of the project</p>
               </label>
               <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
                 disabled={!!basicDataBgProc}
                 value={configSet.name}
@@ -820,11 +820,11 @@ const SettingsSection = ({
             </div>
             <div className="mt-4 space-y-2">
               <label className="font-bold">Description</label>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-300">
                 Description of the project
               </p>
               <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
                 disabled={!!basicDataBgProc}
                 value={configSet.description}
@@ -835,12 +835,12 @@ const SettingsSection = ({
             </div>
             <div className="mt-4 space-y-2">
               <label className="font-bold">Project UID</label>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-300">
                 This UID is set as the project mint page URL. See preview above
                 for reference.
               </p>
               <input
-                className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
                 disabled={!!basicDataBgProc}
                 value={configSet.uid}
@@ -856,13 +856,13 @@ const SettingsSection = ({
             </div>
             <div className="mt-4 space-y-2">
               <label className="font-bold">Royalty Receiver</label>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-300">
                 On every resale of an NFT from this collection a
                 RoyaltyPercentage will be sent to this address
               </p>
               <div className="flex items-center gap-4">
                 <input
-                  className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                  className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                   type="text"
                   disabled={!!basicDataBgProc}
                   value={configSet.roayltyReceiver}
@@ -874,9 +874,9 @@ const SettingsSection = ({
                     }))
                   }
                 />
-                <div className="flex items-center bg-gray-100 rounded">
+                <div className="flex items-center bg-gray-700 rounded">
                   <input
-                    className="rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="number"
                     max={10}
                     min={0}
@@ -901,50 +901,19 @@ const SettingsSection = ({
             </div>
           </div>
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-end">
           <button
             onClick={handleUpdateBasic}
             disabled={!!basicDataBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="rounded bg-blue-500 text-white p-2 w-36 hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             Update
           </button>
         </div>
       </div>
-      <div className="bg-gray-200 rounded p-4 my-6 relative">
-        {!!feeAddressBgProc && (
-          <div className="absolute right-5 top-5 z-10 scale-150">
-            <LoaderIcon />
-          </div>
-        )}
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">Charge Recipient Address</label>
-          <p className="text-sm text-gray-500">
-            All the mint charges will go to this address (Requires Transaction
-            on update)
-          </p>
-          <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-            type="text"
-            disabled={!!feeAddressBgProc}
-            value={configSet.feeToAddress}
-            onChange={(e) =>
-              setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
-            }
-          />
-        </div>
-        <div>
-          <button
-            disabled={!!feeAddressBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
-            onClick={handleFeetoAddressUpdate}
-          >
-            Update
-          </button>
-        </div>
-      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-stretch sm:gap-4">
-        <div className="bg-gray-200 rounded p-4 my-6 relative w-full">
+        <div className="bg-gray-800 rounded p-4 my-6 relative w-full flex flex-col justify-between">
           {!!revealTimeBgProc && (
             <div className="absolute right-5 top-5 z-10 scale-150">
               <LoaderIcon />
@@ -957,12 +926,12 @@ const SettingsSection = ({
                 ( {new Date().toString().match(/\(([^\)]+)\)$/)?.[1]} )
               </span>
             </label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-300">
               Update the time when NFT metadata is revealed (Requires
               Transaction on update)
             </p>
             <input
-              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
               type="datetime-local"
               disabled={!!revealTimeBgProc}
               value={formatHtmlDateTime(new Date(configSet.revealTime * 1000))}
@@ -974,33 +943,29 @@ const SettingsSection = ({
               }
             />
           </div>
-          <div>
+          <div className="flex justify-end">
             <button
               disabled={!!revealTimeBgProc}
-              className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="rounded bg-blue-500 text-white p-2 w-36 hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
               onClick={handleRevealTimeUpdate}
             >
               Update
             </button>
           </div>
         </div>
-        <div className="bg-gray-200 rounded p-4 my-6 relative w-full">
+        <div className="bg-gray-800 rounded p-4 my-6 relative w-full flex flex-col justify-between">
           {!!basicDataBgProc && (
             <div className="absolute right-5 top-5 z-10 scale-150">
               <LoaderIcon />
             </div>
           )}
-          <div className="mt-4 space-y-2">
-            <label className="font-bold">Unrevealed NFT Image</label>
-            <p className="text-sm text-gray-500">
-              This image will be shown when an NFT has not been revealed yet
-            </p>
+          <div className="mt-4 space-y-2 flex gap-3">
             <div
               onClick={() => {
                 if (unrevealedImgInputRef && unrevealedImgInputRef.current)
                   unrevealedImgInputRef.current.click();
               }}
-              className="relative aspect-square w-40 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer shadow-xl"
+              className="relative aspect-square w-60 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer shadow-xl"
             >
               <input
                 ref={unrevealedImgInputRef}
@@ -1034,11 +999,17 @@ const SettingsSection = ({
                 <span className="text-2xl">+</span>
               )}
             </div>
+            <div>
+              <label className="font-bold">Unrevealed NFT Image</label>
+              <p className="text-sm text-gray-300">
+                This image will be shown when an NFT has not been revealed yet
+              </p>
+            </div>
           </div>
-          <div>
+          <div className="flex justify-end">
             <button
               disabled={!!basicDataBgProc}
-              className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="rounded bg-blue-500 text-white p-2 w-36 hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
               onClick={handleUpdateUnrevealedImage}
             >
               Update
@@ -1046,46 +1017,80 @@ const SettingsSection = ({
           </div>
         </div>
       </div>
-      <div className="bg-gray-200 rounded p-4 my-6 relative">
-        {!!maxMintInTotalPerWalletBgProc && (
-          <div className="absolute right-5 top-5 z-10 scale-150">
-            <LoaderIcon />
+      <div className="sm:flex sm:gap-4 w-full">
+        <div className="bg-gray-800 rounded p-4 my-6 relative w-full">
+          {!!maxMintInTotalPerWalletBgProc && (
+            <div className="absolute right-5 top-5 z-10 scale-150">
+              <LoaderIcon />
+            </div>
+          )}
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Max Mint Per Wallet in Total</label>
+            <p className="text-sm text-gray-300">
+              Max mint limit for a wallet in this collection (Requires
+              Transaction on update)
+            </p>
+            <input
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+              type="number"
+              disabled={!!maxMintInTotalPerWalletBgProc}
+              placeholder="Unlimited"
+              value={configSet.maxMintInTotalPerWallet || ""}
+              onChange={(e) =>
+                setConfigSet((c) => ({
+                  ...c,
+                  maxMintInTotalPerWallet:
+                    isNaN(+e.target.value) || e.target.value === ""
+                      ? 0
+                      : +e.target.valueAsNumber.toFixed(0),
+                }))
+              }
+            />
           </div>
-        )}
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">Max Mint Per Wallet in Total</label>
-          <p className="text-sm text-gray-500">
-            Max mint limit for a wallet in this collection (Requires Transaction
-            on update)
-          </p>
-          <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
-            type="number"
-            disabled={!!maxMintInTotalPerWalletBgProc}
-            placeholder="Unlimited"
-            value={configSet.maxMintInTotalPerWallet || ""}
-            onChange={(e) =>
-              setConfigSet((c) => ({
-                ...c,
-                maxMintInTotalPerWallet:
-                  isNaN(+e.target.value) || e.target.value === ""
-                    ? 0
-                    : +e.target.valueAsNumber.toFixed(0),
-              }))
-            }
-          />
+          <div className="flex justify-end">
+            <button
+              disabled={!!maxMintInTotalPerWalletBgProc}
+              className="rounded bg-blue-500 text-white p-2 w-36 hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              onClick={handleMaxMintInTotalUpdate}
+            >
+              Update
+            </button>
+          </div>
         </div>
-        <div>
-          <button
-            disabled={!!maxMintInTotalPerWalletBgProc}
-            className="rounded bg-blue-500 text-white p-2 w-full hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
-            onClick={handleMaxMintInTotalUpdate}
-          >
-            Update
-          </button>
+        <div className="bg-gray-800 rounded p-4 my-6 relative w-full">
+          {!!feeAddressBgProc && (
+            <div className="absolute right-5 top-5 z-10 scale-150">
+              <LoaderIcon />
+            </div>
+          )}
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Charge Recipient Address</label>
+            <p className="text-sm text-gray-300">
+              All the mint charges will go to this address (Requires Transaction
+              on update)
+            </p>
+            <input
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+              type="text"
+              disabled={!!feeAddressBgProc}
+              value={configSet.feeToAddress}
+              onChange={(e) =>
+                setConfigSet((c) => ({ ...c, feeToAddress: e.target.value }))
+              }
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              disabled={!!feeAddressBgProc}
+              className="rounded bg-blue-500 text-white p-2 w-36 hover:bg-blue-700 transition-colors mt-4 disabled:bg-blue-400 disabled:text-gray-400 disabled:cursor-not-allowed"
+              onClick={handleFeetoAddressUpdate}
+            >
+              Update
+            </button>
+          </div>
         </div>
       </div>
-      <div className="bg-gray-200 rounded p-4 my-6 relative">
+      <div className="bg-gray-800 rounded p-4 my-6 relative">
         <div className="mt-4">
           <div className="flex flex-col sm:flex-row justify-between mb-5">
             <div>
@@ -1098,14 +1103,14 @@ const SettingsSection = ({
                   </span>
                 )}
               </label>
-              <p className="text-sm text-gray-500 mt-1 mb-4">
+              <p className="text-sm text-gray-300 mt-1 mb-4">
                 Here you can set discord roles to be assigned to NFT holders
                 from this project
               </p>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-end gap-2">
               <button
-                className="bg-blue-500 text-white hover:bg-blue-700 transition-colors p-2 rounded"
+                className="bg-blue-500 text-white hover:bg-blue-700 transition-colors p-2 rounded whitespace-nowrap"
                 onClick={() => {
                   setDiscordUserRefetcher((v) => !v);
                   setServerlistRefetcher((v) => !v);
@@ -1155,7 +1160,7 @@ const SettingsSection = ({
                     <div className="w-full flex gap-2 items-center">
                       <label className="min-w-fit">Select Server</label>
                       <select
-                        className="w-full p-1 rounded h-8"
+                        className="w-full p-1 rounded h-8 bg-gray-700"
                         onChange={(e) =>
                           setSelectedServer(
                             e.target.value !== "select" ? e.target.value : null
@@ -1179,16 +1184,13 @@ const SettingsSection = ({
                     <div className="w-full flex gap-2 items-center">
                       <label className="min-w-fit">Select Role</label>
                       <select
-                        className="w-full p-1 rounded h-8"
+                        className="w-full p-1 rounded h-8 bg-gray-700"
                         onChange={(e) =>
                           setSelectedRole(
                             e.target.value !== "select" ? e.target.value : null
                           )
                         }
                       >
-                        {/* {selectedGuild === null && (
-                    <option value={"select"}>Select a server</option>
-                  )} */}
                         <option value={"select"}>Select</option>
                         {selectedGuild !== null &&
                           selectedGuild.guildRoles.map((role) => (
@@ -1209,7 +1211,7 @@ const SettingsSection = ({
                         Minimum NFTs required for this role
                       </label>
                       <input
-                        className="w-full p-1 rounded h-8"
+                        className="w-full p-1 rounded h-8 bg-gray-700 focus:bg-gray-800"
                         type="number"
                         value={minValidNfts || ""}
                         onChange={(e) =>
@@ -1229,7 +1231,7 @@ const SettingsSection = ({
                     </button>
                   </div>
                   {selectedServerGuildMember !== null && (
-                    <div className="my-4 text-xl bg-gray-100 rounded">
+                    <div className="my-2 py-2 text-xl bg-gray-700 rounded">
                       {!!discordUser && !!selectedGuild && (
                         <h1 className="text-center">
                           On server {"'" + selectedGuild.guild.name + "' "}
@@ -1278,7 +1280,7 @@ const SettingsSection = ({
               </div>
             )}
             <label className="font-bold">Existing Rules</label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-300">
               These are the rules for discord roles added from this project
             </p>
             {roleIntegrations.length === 0 && (
@@ -1318,6 +1320,7 @@ const SettingsSection = ({
                       </td>
                       <td className="text-center p-2 border-2 border-gray-400">
                         <button
+                          className="text-red-400 hover:text-red-600 transition-colors"
                           onClick={() => handleDeleteRoleIntegration(ri.id)}
                         >
                           Delete
@@ -1335,11 +1338,11 @@ const SettingsSection = ({
       {/* <details>
         <summary className="text-xl font-medium cursor-pointer">
           Advance Settings
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-300">
             Only change when you know what you are doing
           </p>
         </summary>
-        <div className="bg-gray-200 rounded p-4 my-6 relative">
+        <div className="bg-gray-800 rounded p-4 my-6 relative">
           {!!baseURIBgProc && (
             <div className="absolute right-5 top-5 z-10 scale-150">
               <LoaderIcon />
@@ -1347,12 +1350,12 @@ const SettingsSection = ({
           )}
           <div className="mt-4 space-y-2">
             <label className="font-bold">Base URI</label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-300">
               Base URL for token and contract metadata (Requires Transaction on
               update)
             </p>
             <input
-              className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
               type="text"
               disabled={!!baseURIBgProc}
               value={configSet.baseURI}
