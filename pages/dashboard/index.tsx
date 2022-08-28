@@ -60,12 +60,11 @@ const Dashboard: NextPage<Props> = ({
     <Layout dashboard>
       <div className="flex justify-between my-4 items-center">
         <h1 className="text-4xl font-medium">Your Projects</h1>
-        <button
-          className="bg-sky-600 text-white rounded w-40 p-2 text-xl"
-          onClick={() => router.push(`/dashboard/new-project`)}
-        >
-          New Project
-        </button>
+        <Link href={"/dashboard/new-project"} passHref>
+          <a className="bg-sky-600 text-white rounded w-40 p-2 text-xl text-center">
+            New Project
+          </a>
+        </Link>
       </div>
       {!projects && (
         <div className="text-center text-3xl mt-20">Error Loading Projects</div>

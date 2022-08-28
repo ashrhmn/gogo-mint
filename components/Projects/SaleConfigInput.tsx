@@ -19,9 +19,9 @@ const SaleConfigInput = ({
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const checkboxRef = useRef<HTMLInputElement | null>(null);
   return (
-    <details className="p-2 m-3 border-2 rounded-xl bg-gray-200">
+    <details className="p-2 m-3 border-2 border-gray-600 rounded-xl bg-gray-800">
       <summary className="flex items-center w-full">
-        <span className="cursor-pointer select-none w-full font-bold text-xl hover:text-blue-900 transition-colors">
+        <span className="cursor-pointer select-none w-full font-bold text-xl hover:text-blue-500 transition-colors">
           Wave {index + 1}
           <span className="font-light mx-2 text-xs">
             {normalizeString(saleWaveConfig.saleType)}
@@ -36,7 +36,7 @@ const SaleConfigInput = ({
               ),
             }))
           }
-          className="text-red-500 hover:text-red-700 hover:bg-gray-100 rounded p-1 transition-colors"
+          className="text-red-500 hover:text-red-700 hover:bg-gray-500 rounded p-1 transition-colors"
         >
           Delete
         </button>
@@ -44,7 +44,7 @@ const SaleConfigInput = ({
       <div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full font-medium">Status</div>
-          <div className="w-full bg-gray-100 p-1 rounded">
+          <div className="w-full bg-gray-700 p-1 rounded">
             <select
               value={saleWaveConfig.enabled ? "enabled" : "disabled"}
               onChange={(e) => {
@@ -66,7 +66,7 @@ const SaleConfigInput = ({
         </div>
         <div className="flex flex-col sm:flex-row my-1 gap-2">
           <div className="w-full font-medium">Wave Type</div>
-          <div className="w-full bg-gray-100 p-1 rounded">
+          <div className="w-full bg-gray-700 p-1 rounded">
             <select
               value={saleWaveConfig.saleType}
               onChange={(e) =>
@@ -99,7 +99,7 @@ const SaleConfigInput = ({
             </h1>
             <div>
               <button
-                className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
+                className="bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
                 onClick={() =>
                   setConfigSet((prev) => ({
                     ...prev,
@@ -115,7 +115,7 @@ const SaleConfigInput = ({
               </button>
             </div>
           </div>
-          <div className="w-full flex bg-gray-100 rounded p-1">
+          <div className="w-full flex bg-gray-700 rounded p-1">
             <input
               className="w-full bg-transparent disabled:text-gray-400"
               type="datetime-local"
@@ -144,7 +144,7 @@ const SaleConfigInput = ({
               </span>
             </h1>
             <div className="flex items-center gap-1">
-              <div className="flex items-center gap-1 bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors cursor-pointer select-none">
+              <div className="flex items-center gap-1 bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors cursor-pointer select-none">
                 <input
                   className="cursor-pointer select-none"
                   ref={checkboxRef}
@@ -172,7 +172,7 @@ const SaleConfigInput = ({
                       checkboxRef.current.click();
                     }
                   }}
-                  className="cursor-pointer select-none"
+                  className="cursor-pointer select-none whitespace-nowrap"
                 >
                   No End
                 </label>
@@ -188,13 +188,13 @@ const SaleConfigInput = ({
                     ),
                   }))
                 }
-                className="bg-gray-300 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
+                className="bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
               >
                 Today
               </button>
             </div>
           </div>
-          <div className="w-full flex bg-gray-100 rounded p-1">
+          <div className="w-full flex bg-gray-700 rounded p-1">
             {saleWaveConfig.endTime === 0 ? (
               <input
                 type="text"
@@ -229,7 +229,7 @@ const SaleConfigInput = ({
             Mint Charge <span className="text-red-700">*</span>
           </label>
           <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
             type="number"
             min={0}
             step={0.00001}
@@ -258,7 +258,7 @@ const SaleConfigInput = ({
             Max Mint Per Wallet <span className="text-red-700">*</span>
           </label>
           <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
             type="number"
             min={0}
             placeholder="0 (Equivalent to Mint-Disabled)"
@@ -286,7 +286,7 @@ const SaleConfigInput = ({
             Max Mint In Sale <span className="text-red-700">*</span>
           </label>
           <input
-            className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
             type="number"
             min={0}
             value={saleWaveConfig.maxMintInSale || ""}
@@ -353,7 +353,7 @@ const SaleConfigInput = ({
                 <label className="font-bold">Add Whitelist addresses</label>
                 <div className="flex items-center gap-3">
                   <input
-                    className="w-full rounded bg-gray-100 h-14 p-3 focus:bg-white transition-colors"
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="text"
                     value={tempWhitelistAddress}
                     onChange={(e) => setTempWhitelistAddress(e.target.value)}
@@ -429,12 +429,12 @@ const SaleConfigInput = ({
               </div>
             </div>
             {saleWaveConfig.whitelistAddresses.length === 0 && (
-              <div className="text-center text-gray-600 my-4">
+              <div className="text-center text-gray-300 my-4">
                 No address is currently in whitelist
               </div>
             )}
             {saleWaveConfig.whitelistAddresses.length > 0 && (
-              <div className="text-center text-gray-600 my-4">
+              <div className="text-center text-gray-300 my-4">
                 {saleWaveConfig.whitelistAddresses.length} address(es) in
                 whitelist
               </div>
@@ -442,7 +442,7 @@ const SaleConfigInput = ({
             {saleWaveConfig.whitelistAddresses.length > 0 && (
               <div className="my-4">
                 <details open>
-                  <summary className="cursor-pointer hover:text-gray-700">
+                  <summary className="cursor-pointer hover:text-gray-300">
                     Whitelisted Addresses
                   </summary>
                   <div className="max-h-96 overflow-y-scroll">
