@@ -92,7 +92,7 @@ const ProjectPage: NextPage<Props> = ({
           {(project.collectionType === "721" ||
             (project.collectionType === "1155" && project._count.nfts < 1)) && (
             <button
-              className="bg-sky-600 text-white p-2 w-24 rounded hover:bg-sky-700 transition-colors"
+              className="bg-sky-600 text-white px-3 py-2 w-24 rounded hover:bg-sky-700 transition-colors"
               onClick={() => setIsCreateModalOpen(true)}
             >
               + Create
@@ -100,7 +100,7 @@ const ProjectPage: NextPage<Props> = ({
           )}
           {project.collectionType === "721" && (
             <button
-              className="bg-sky-600 text-white p-2 w-36 rounded hover:bg-sky-700 transition-colors"
+              className="bg-sky-600 text-white px-3 py-2 w-36 rounded hover:bg-sky-700 transition-colors whitespace-nowrap"
               onClick={() => setIsBatchCreateModalOpen(true)}
             >
               + Create Batch
