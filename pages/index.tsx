@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 /* eslint-disable @next/next/no-img-element */
 import { NextPage } from "next";
 import Image from "next/image";
@@ -30,9 +31,9 @@ const HomePage: NextPage = () => {
               </a>
             </Link>
             <div>
-              <Link href={"/dashboard"}>
-                <a className="nav-right-btn">Go To Dashboard</a>
-              </Link>
+              <a href="/dashboard" className="nav-right-btn">
+                Go To Dashboard
+              </a>
             </div>
           </nav>
         </div>
