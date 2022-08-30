@@ -12,6 +12,8 @@ export default async function handler(
   if (req.method !== "POST")
     return res.status(405).json({ msg: "Method not allowed" });
   try {
+    console.log(req.body);
+
     const transport = createTransport({
       host: "smtp.sendgrid.net",
       port: 25,
@@ -21,8 +23,9 @@ export default async function handler(
         pass: process.env.SENDGRID_API_KEY,
       },
     });
-    // const sendMail =
-    await transport.sendMail({
+    console.log("Transport create");
+
+    const sendMail = await transport.sendMail({
       from: "hydromint@ashrhmn.com",
       to: "ashrhmn@outlook.com",
       // to: "hydromint.xyz@domainsbyproxy.com",
@@ -31,7 +34,7 @@ export default async function handler(
       ${req.body.email} has contacted through https://hydromint.xyz/
       `,
     });
-    // console.log({ sendMail });
+    console.log(JSON.stringify({ sendMail }));
 
     return res.status(200).json({ msg: "sent" });
   } catch (error: any) {
