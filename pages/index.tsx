@@ -16,22 +16,20 @@ import {
 } from "../components/SVGs/SocialIcons";
 import toast from "react-hot-toast";
 import { service } from "../service";
+import { z } from "zod";
 
 const HomePage: NextPage = () => {
   const [email, setEmail] = useState("");
   const handleConnectClick = async () => {
-    toast.promise(
-      service
-        .post(`/email`, { email })
-        .then((res) => res.data)
-        .then(console.log)
-        .catch(console.error),
-      {
-        error: "An unknown error occured",
-        loading: "Connecting...",
-        success: "Thanks for connecting. We will be in touch with you soon.",
-      }
-    );
+    if (!z.string().email().safeParse(email).success) {
+      toast.error("Invalid email");
+      return;
+    }
+    toast.promise(service.post(`/email`, { email }), {
+      error: "An unknown error occured",
+      loading: "Connecting...",
+      success: "Thanks for connecting. We will be in touch with you soon.",
+    });
   };
   return (
     <div className="text-white relative bg-[#0c0013]">
