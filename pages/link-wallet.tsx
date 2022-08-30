@@ -203,7 +203,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
 
   return (
     <Layout mint>
-      <div className="flex flex-col lg:flex-row text-3xl justify-center mt-10">
+      <div className="flex flex-col lg:flex-row text-3xl justify-center mt-10 text-center gap-10">
         {account ? (
           <div className="flex flex-col gap-6 items-center w-full">
             <h1 className="font-bold">Wallet Connected</h1>
