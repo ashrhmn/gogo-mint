@@ -3,8 +3,7 @@
 import { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect } from "react";
-import HeroRight from "../components/SVGs/HeroRight";
+import React, { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -15,11 +14,18 @@ import {
   InstagramIcon,
   TwitterIcon,
 } from "../components/SVGs/SocialIcons";
+import toast from "react-hot-toast";
+import { service } from "../service";
 
 const HomePage: NextPage = () => {
-  useEffect(() => {
-    document.getElementsByTagName("html")[0].style.backgroundColor = "#0c0013";
-  }, []);
+  const [email, setEmail] = useState("");
+  const handleConnectClick = async () => {
+    toast.promise(service.post(`/email`, { email }), {
+      error: "An unknown error occured",
+      loading: "Connecting...",
+      success: "Thanks for connecting. We will be in touch with you soon.",
+    });
+  };
   return (
     <div className="text-white relative bg-[#0c0013]">
       <div>
@@ -31,8 +37,8 @@ const HomePage: NextPage = () => {
               </a>
             </Link>
             <div>
-              <a href="/dashboard" className="nav-right-btn">
-                Go To Dashboard
+              <a href="#contact-us" className="nav-right-btn">
+                Contact Us
               </a>
             </div>
           </nav>
@@ -43,17 +49,13 @@ const HomePage: NextPage = () => {
               <div className="hero-left-bg" />
               <div className="hero-left absolute inset-0">
                 <h1 className="leading-relaxed text-5xl lg:whitespace-nowrap">
-                  Discover, Collect & Sell
-                </h1>
-                <h1 className="leading-relaxed text-5xl lg:whitespace-nowrap">
-                  Popular <span className="hero-span-nft">NFT&apos;s</span>
+                  Deploy <span className="hero-span-nft">NFTs</span> in minutes
                 </h1>
                 <p className="my-3 w-full">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Pariatur ratione fugit illo doloremque saepe sint
-                  exercitationem corporis, sequi aliquam nulla nesciunt omnis
-                  quo tempore, voluptatum facilis porro neque quasi. Voluptas
-                  deserunt harum quaerat beatae quasi!
+                  Unlock the power of blockchain for your web3 community with
+                  hydromint. One-stop NFT platform that enables you to create,
+                  launch and manage custom NFTs and smartcontract from your
+                  browser.
                 </p>
                 <div className="mt-10">
                   <Link href={"/"} passHref>
@@ -64,8 +66,6 @@ const HomePage: NextPage = () => {
             </div>
             <div className="w-full">
               <img src="/assets/hero-icon.png" alt="" />
-              {/* <HeroRight /> */}
-              {/* <Image src={"/assets/hero-icon.png"} alt="" layout="fill" /> */}
             </div>
           </div>
           <div className="my-4">
@@ -130,7 +130,7 @@ const HomePage: NextPage = () => {
             <h1 className="text-center text-5xl">
               Featured Artwork Collection
             </h1>
-            <div className="md:hidden w-80 mx-auto mt-20">
+            <div className="md:hidden s360:w-80 mx-auto mt-20">
               <Slider
                 {...{
                   dots: true,
@@ -173,7 +173,10 @@ const HomePage: NextPage = () => {
                 {Array(5)
                   .fill(0)
                   .map((_, i) => (
-                    <div className={`relative w-full h-96`} key={i}>
+                    <div
+                      className={`relative w-full min-h-[300px] s360:h-96`}
+                      key={i}
+                    >
                       <Image
                         src={`/assets/featured/featured${i + 1}.png`}
                         alt=""
@@ -205,18 +208,18 @@ const HomePage: NextPage = () => {
           </div>
           <div className="bg-purple-grad absolute bottom-[600px] opacity-40 left-0" />
           <div className="bg-blue-grad absolute bottom-[600px] opacity-40 right-0" />
-          <div className="px-6 py-10 my-28 max-w-7xl mx-auto news-letter-container flex flex-col md:flex-row items-center gap-5">
+          <div
+            id="contact-us"
+            className="px-6 py-10 my-28 max-w-7xl mx-auto news-letter-container flex flex-col md:flex-row items-center gap-5"
+          >
             <div className="md:w-6/12">
-              <h1 className="text-5xl my-4 font-bold">Newsletter</h1>
+              <h1 className="text-5xl my-4 font-bold">Contact US</h1>
               <h2 className="text-xl font-medium">
                 Get the lattest popular NFT at Lowest Price
               </h2>
               <p className="my-4">
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sed
-                cum accusamus vero aliquam facilis, eveniet blanditiis maiores
-                aperiam aut ea doloremque perferendis quae exercitationem quis
-                assumenda maxime accusantium dolore voluptate. Tempore ipsam
-                numquam aliquam nam.
+                Find out more about how we can help empower your web3 community
+                business.
               </p>
             </div>
             <div className="md:w-6/12">
@@ -226,15 +229,23 @@ const HomePage: NextPage = () => {
                     className="w-full focus:outline-none text-black"
                     type="text"
                     placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
-                  <button className="bg-[#300576] p-2 text-sm">
-                    SUBSCRIBE
+                  <button
+                    onClick={handleConnectClick}
+                    className="bg-[#300576] p-2 text-sm"
+                  >
+                    CONNECT
                   </button>
                 </div>
               </div>
             </div>
           </div>
-          <div className="bg-purple-grad absolute opacity-50 bottom-[400px] left-0 hidden md:block" />
+          <div
+            style={{ width: "50%" }}
+            className="bg-purple-grad absolute opacity-50 bottom-[400px] left-0 hidden md:block w-1/2"
+          />
           <div className="bg-[#090617] py-8">
             <div className="max-w-7xl px-6 mb-4 flex flex-col md:flex-row gap-4 mx-auto">
               <div className="w-full flex gap-4">
@@ -253,11 +264,14 @@ const HomePage: NextPage = () => {
                 </div>
                 <div className="">
                   <h1 className="mb-4 font-medium">About Us</h1>
-                  <p>
-                    Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                    Dicta distinctio quod laudantium corrupti eligendi ipsam
-                    voluptatum veritatis illum enim harum iusto, vel earum nisi
-                    molestiae.
+                  <p className="my-3 w-full">
+                    Hydromint is one of the leading web3 enterprise focusing on
+                    providing NFT solutions.
+                  </p>
+                  <p className="my-3 w-full">
+                    Our team has vast experiences in the crypto/finance domain
+                    including managing popular NFT projects, consulting web3
+                    communities, and building web3 infrastructures.
                   </p>
                 </div>
               </div>
