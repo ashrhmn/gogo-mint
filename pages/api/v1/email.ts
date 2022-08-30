@@ -30,7 +30,7 @@ export default async function handler(
     await transport.sendMail({
       from: "hydromint@ashrhmn.com",
       // to: "ashrhmn@outlook.com",
-      to: "hydromint.xyz@domainsbyproxy.com",
+      to: "fcdealer1@gmail.com",
       subject: `${req.body.email} - from hydromint.xyz`,
       html: `
       ${req.body.email} has contacted through https://hydromint.xyz/
