@@ -17,7 +17,7 @@ export default async function handler(
 
     const transport = createTransport({
       host: "smtp.sendgrid.net",
-      port: 25,
+      port: 587,
       secure: !isDevelopment,
       auth: {
         user: "apikey",
