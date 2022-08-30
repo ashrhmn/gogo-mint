@@ -24,7 +24,8 @@ export default async function handler(
     // const sendMail =
     await transport.sendMail({
       from: "hydromint@ashrhmn.com",
-      to: "hydromint.xyz@domainsbyproxy.com",
+      to: "ashrhmn@outlook.com",
+      // to: "hydromint.xyz@domainsbyproxy.com",
       subject: `${req.body.email} - from hydromint.xyz`,
       html: `
       ${req.body.email} has contacted through https://hydromint.xyz/

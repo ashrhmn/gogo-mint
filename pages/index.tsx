@@ -20,11 +20,18 @@ import { service } from "../service";
 const HomePage: NextPage = () => {
   const [email, setEmail] = useState("");
   const handleConnectClick = async () => {
-    toast.promise(service.post(`/email`, { email }), {
-      error: "An unknown error occured",
-      loading: "Connecting...",
-      success: "Thanks for connecting. We will be in touch with you soon.",
-    });
+    toast.promise(
+      service
+        .post(`/email`, { email })
+        .then((res) => res.data)
+        .then(console.log)
+        .catch(console.error),
+      {
+        error: "An unknown error occured",
+        loading: "Connecting...",
+        success: "Thanks for connecting. We will be in touch with you soon.",
+      }
+    );
   };
   return (
     <div className="text-white relative bg-[#0c0013]">
