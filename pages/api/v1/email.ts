@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createTransport } from "nodemailer";
+import { isDevelopment } from "../../../constants/configuration";
 
 type Data = {
   msg: string;
@@ -17,7 +18,7 @@ export default async function handler(
     const transport = createTransport({
       host: "smtp.sendgrid.net",
       port: 25,
-      secure: false,
+      secure: !isDevelopment,
       auth: {
         user: "apikey",
         pass: process.env.SENDGRID_API_KEY,

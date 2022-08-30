@@ -95,7 +95,7 @@ const HomePage: NextPage = () => {
             </div>
             <div className="hr-grad-line" />
           </div>
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between md:gap-4 px-6 my-4">
+          {/* <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between md:gap-4 px-6 my-4">
             <div className="relative h-96 w-full my-4">
               <div className="mid-bg-grad" />
               <Image
@@ -132,8 +132,8 @@ const HomePage: NextPage = () => {
                 </div>
               </div>
             </div>
-          </div>
-          <div className="px-6 my-4 max-w-7xl mx-auto">
+          </div> */}
+          <div className="px-6 my-8 max-w-7xl mx-auto">
             <h1 className="text-center text-5xl">
               Featured Artwork Collection
             </h1>
