@@ -280,40 +280,6 @@ const HomePage: NextPage = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-4 w-full justify-center">
-                <div className="w-2/12 min-w-[150px]">
-                  <h1 className="mb-4 font-medium">Company</h1>
-                  <div className="flex flex-col">
-                    {["about", "careeres", "newsletter"].map((l) => (
-                      <a key={l} href={`/${l}`}>
-                        {normalizeString(l)}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                <div className="w-2/12 min-w-[150px]">
-                  <h1 className="mb-4 font-medium">Marketplace</h1>
-                  <div className="flex flex-col">
-                    {["explore", "NFT", "virtual-world"].map((l) => (
-                      <a key={l} href={`/${l}`}>
-                        {normalizeString(l)}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                <div className="w-2/12 min-w-[150px]">
-                  <h1 className="mb-4 font-medium">Resources</h1>
-                  <div className="flex flex-col">
-                    {["partners", "blogs", "help-center", "support"].map(
-                      (l) => (
-                        <a key={l} href={`/${l}`}>
-                          {normalizeString(l)}
-                        </a>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
             <hr />
             <div className="flex justify-end gap-4 my-6 px-10 max-w-7xl mx-auto text-[#FCDDEC]">

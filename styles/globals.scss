@@ -47,7 +47,7 @@
   // height: 500px;
   // height: 100%;
   width: 100%;
-  @apply h-[250px] md:h-[500px];
+  @apply h-[550px] s360:h-[400px] sm:h-[250px] md:h-[500px];
 }
 
 .mid-bg-grad {
