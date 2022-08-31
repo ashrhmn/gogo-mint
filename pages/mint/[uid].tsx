@@ -32,6 +32,7 @@ import {
   normalizeString,
 } from "../../utils/String.utils";
 import { walletConnectConnector } from "../../lib/connectors";
+import useChainId from "../../hooks/useChainId";
 
 interface Props {
   project: Project & {
@@ -58,8 +59,8 @@ const MintPage: NextPage<Props> = ({
   totalSupply,
   randomMsgSign,
 }) => {
-  const { account, chainId, library, activateBrowserWallet, activate } =
-    useEthers();
+  const { account, library, activateBrowserWallet, activate } = useEthers();
+  const chainId = useChainId();
   const [mintBgProc, setMintBgProc] = useState(0);
   const [config, setConfig] = useState({
     userBalance: -1,

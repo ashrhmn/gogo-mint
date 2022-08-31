@@ -8,7 +8,11 @@ import { Toaster } from "react-hot-toast";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const config: DAppProviderProps["config"] = {
-    readOnlyUrls: RPC_URLS,
+    // readOnlyUrls: RPC_URLS,
+    // readOnlyUrls: {
+    //   2611: RPC_URLS[2611],
+    //   8457: RPC_URLS[8457],
+    // },
   };
   return (
     <DAppProvider config={config}>

@@ -14,6 +14,7 @@ import {
   Collection1155__factory,
   Collection721__factory,
 } from "../../ContractFactory";
+import useChainId from "../../hooks/useChainId";
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
@@ -30,11 +31,14 @@ interface Props {
 }
 
 const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
-  const { account, library, chainId } = useEthers();
+  const { account, library } = useEthers();
   const imgInputRef = useRef<HTMLInputElement | null>(null);
   const unrevealedImgInputRef = useRef<HTMLInputElement | null>(null);
   const [bgProcessRunning, setBgProcessRunning] = useState(0);
   const router = useRouter();
+  const chainId = useChainId();
+  console.log({ chainId });
+
   const [configSet, setConfigSet] = useState<IDeployConfigSet>({
     name: "",
     description: "",

@@ -10,6 +10,7 @@ import {
   Collection1155__factory,
   Collection721__factory,
 } from "../../../ContractFactory";
+import useChainId from "../../../hooks/useChainId";
 import { service } from "../../../service";
 import { ISaleConfigInput } from "../../../types";
 import SaleConfigItem from "./SaleConfigItem";
@@ -27,7 +28,8 @@ const ClaimsSection = ({
   collectionType: string | null;
   projectOwner: string | null;
 }) => {
-  const { account, library, chainId } = useEthers();
+  const { account, library } = useEthers();
+  const chainId = useChainId();
   const [saleConfigs, setSaleConfigs] = useState<
     (Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean })[]
   >([]);
