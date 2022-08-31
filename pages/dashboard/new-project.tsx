@@ -424,7 +424,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   </select>
                 </div>
               </div>
-              <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+              <div className="mt-4 flex flex-col sm:flex-row items-end gap-4">
                 <div className="w-full space-y-2 sm:w-[60%]">
                   <label className="font-bold">
                     Charge Recipient Address{" "}
@@ -481,7 +481,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               </label>
               <p className="text-sm text-gray-300">Project Description</p>
               <textarea
-                className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+                rows={5}
+                className="w-full rounded bg-gray-700 p-3 focus:bg-gray-800 transition-colors min-h-[4rem]"
                 value={configSet.description}
                 onChange={(e) =>
                   setConfigSet((c) => ({ ...c, description: e.target.value }))

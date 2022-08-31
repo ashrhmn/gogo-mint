@@ -298,11 +298,14 @@ const HomePage: NextPage = () => {
                   <TwitterIcon />
                 </a>
               </Link>
-              <Link href={`/`}>
-                <a className="hover:text-white transition-colors">
-                  <DiscordIcon />
-                </a>
-              </Link>
+              <a
+                target="_blank"
+                href="https://discord.gg/HnePMhYhb7"
+                className="hover:text-white transition-colors"
+                rel="noreferrer"
+              >
+                <DiscordIcon />
+              </a>
             </div>
           </div>
         </div>
