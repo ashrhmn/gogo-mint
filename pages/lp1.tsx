@@ -219,9 +219,6 @@ const HomePage2: NextPage = () => {
           >
             <div className="md:w-6/12">
               <h1 className="text-5xl my-4 font-bold">Contact US</h1>
-              <h2 className="text-xl font-medium">
-                Get the lattest popular NFT at Lowest Price
-              </h2>
               <p className="my-4">
                 Find out more about how we can help empower your web3 community
                 business.
