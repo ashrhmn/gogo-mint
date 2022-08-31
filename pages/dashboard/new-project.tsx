@@ -326,8 +326,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         return;
       }
       await service
-        .get(`/discord/test6`)
-        // .get(`http://54.153.49.223:4200/restart`)
+        .get(`/restart-listeners`)
         .then((res) => res.data)
         .then(console.log)
         .catch(console.error);
