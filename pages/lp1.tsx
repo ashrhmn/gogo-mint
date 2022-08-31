@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 import { service } from "../service";
 import { z } from "zod";
 
-const HomePage: NextPage = () => {
+const HomePage2: NextPage = () => {
   const [email, setEmail] = useState("");
   const handleConnectClick = async () => {
     if (!z.string().email().safeParse(email).success) {
@@ -42,8 +42,8 @@ const HomePage: NextPage = () => {
               </a>
             </Link>
             <div>
-              <a href="#contact-us" className="nav-right-btn">
-                Contact Us
+              <a href="/dashboard" className="nav-right-btn">
+                Dashboard
               </a>
             </div>
           </nav>
@@ -315,4 +315,4 @@ const HomePage: NextPage = () => {
   );
 };
 
-export default HomePage;
+export default HomePage2;
