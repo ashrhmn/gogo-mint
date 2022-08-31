@@ -11,6 +11,8 @@ export const RPC_URLS: { [chainId: number]: string } = {
   4002: `https://rpc.testnet.fantom.network`,
   43113: `https://api.avax-test.network/ext/bc/C/rpc`,
   137: `https://polygon-rpc.com`,
+  2611: `https://dataseed2.redlightscan.finance/`,
+  8457: `https://dataseed-testnet.redlightscan.finance/`,
 };
 // export const RPC_URLS: { [chainId: number]: string } = {
 //   1: `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` as string,
