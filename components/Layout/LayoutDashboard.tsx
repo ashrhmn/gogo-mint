@@ -3,11 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { walletConnectConnector } from "../../lib/connectors";
+import DisclaimerModal from "../ProjectDashboard/DisclaimerModal";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
   const { activateBrowserWallet, account, deactivate, activate } = useEthers();
   return (
     <>
+      <DisclaimerModal />
       <div className="fixed top-0 left-0 right-0 z-40 bg-[#0e001c]">
         <nav className="flex max-w-6xl mx-auto justify-between items-center px-4 bg-[#0e001c] h-12 sm:h-16">
           <Link href={"/"} passHref>
