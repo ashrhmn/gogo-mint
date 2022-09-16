@@ -26,7 +26,7 @@ const DisclaimerModal = () => {
       <div className="text-gray-300 fixed inset-0 bg-black/80 z-50 flex justify-center items-center">
         <div className="bg-gray-800 max-w-2xl mx-auto p-7 rounded-xl shadow-2xl shadow-gray-800/30">
           <h1 className="text-3xl md:text-4xl my-4 font-medium">
-            Terms and Conditions
+            Welcome to HydroMint
           </h1>
           <div className="flex items-center gap-3">
             <input
