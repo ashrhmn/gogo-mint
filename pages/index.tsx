@@ -278,6 +278,24 @@ const HomePage: NextPage = () => {
                 </div>
               </div>
             </div>
+            <div className="flex justify-center gap-4 my-3 whitespace-nowrap items-center">
+              <a
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+                href="/docs/1. Terms of Service.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Terms Of Service
+              </a>
+              <a
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+                href="/docs/2. Privacy Policy.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Privacy Policy
+              </a>
+            </div>
             <hr />
             <div className="flex justify-end gap-4 my-6 px-10 max-w-7xl mx-auto text-[#FCDDEC]">
               <h1>Hey, come check out Discord with me</h1>
