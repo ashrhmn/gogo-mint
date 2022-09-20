@@ -8,6 +8,8 @@ export const WALLET_ADDRESS_COOKIE_KEY =
 export const WALLET_SIGN_COOKIE_KEY =
   "Y6PKU6SKTAzT4NR67GdQSsy6PKxJ6k8KQprY7H7m";
 
+export const IS_DISCLAIMER_SHOWN_KEY = "4yK79gwV4UkbUgVyX8N4PN5Y";
+
 export const ENV_PROTOCOL =
   process.env.NODE_ENV === "production" ? "https" : "http";
 
