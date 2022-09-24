@@ -171,6 +171,10 @@ const MintPage: NextPage<Props> = ({
       toast.error("Error loading project data");
       return;
     }
+    if (mintCount < 1) {
+      toast.error("Mint Count must be at least 1");
+      return;
+    }
     if (!currentSale) {
       toast.error("No Sale Running");
       return;
@@ -510,7 +514,19 @@ const MintPage: NextPage<Props> = ({
                 >
                   -
                 </button>
-                <span className="w-10 text-center text-2xl">{mintCount}</span>
+                {/* <span className="w-10 text-center text-2xl">{mintCount}</span> */}
+                <input
+                  type="number"
+                  className="w-20 text-center text-2xl bg-transparent border-2 border-gray-300 rounded"
+                  value={mintCount || ""}
+                  onChange={(e) =>
+                    setMintCount(
+                      isNaN(e.target.valueAsNumber)
+                        ? 0
+                        : Math.max(1, +e.target.valueAsNumber.toFixed(0))
+                    )
+                  }
+                />
                 <button
                   className="border-2 border-gray-400 rounded-full w-8 h-8 flex justify-center items-center hover:bg-gray-400 hover:text-black transition-colors disabled:cursor-not-allowed"
                   onClick={() => setMintCount((v) => v + 1)}
@@ -520,13 +536,13 @@ const MintPage: NextPage<Props> = ({
                 </button>
               </div>
 
-              <button
+              {/* <button
                 className="border-2 border-gray-400 rounded py-1 px-2 hover:bg-gray-400 hover:text-black transition-colors text-xs disabled:cursor-not-allowed"
                 onClick={() => setMintCount(1)}
                 disabled={mintBgProc > 0}
               >
                 Reset
-              </button>
+              </button> */}
             </div>
             <button
               className="bg-teal-700 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
@@ -549,11 +565,19 @@ const MintPage: NextPage<Props> = ({
                 : "Mint "}
               {!!currentSale && !!account && (
                 <span className="text-lg">
-                  {+(currentSale.mintCharge * mintCount).toFixed(8) === 0 ? (
-                    "(Free)"
+                  {mintCount < 1 ? (
+                    <>Invalid</>
                   ) : (
                     <>
-                      ({+(currentSale.mintCharge * mintCount).toFixed(8)} ETH)
+                      {+(currentSale.mintCharge * mintCount).toFixed(8) ===
+                      0 ? (
+                        "(Free)"
+                      ) : (
+                        <>
+                          ({+(currentSale.mintCharge * mintCount).toFixed(8)}{" "}
+                          ETH)
+                        </>
+                      )}
                     </>
                   )}
                 </span>
