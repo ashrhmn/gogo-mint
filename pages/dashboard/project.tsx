@@ -89,7 +89,7 @@ const ProjectPage: NextPage<Props> = ({
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          {(project.collectionType === "721" ||
+          {/* {(project.collectionType === "721" ||
             (project.collectionType === "1155" && project._count.nfts < 1)) && (
             <button
               className="bg-sky-600 text-white px-3 py-2 w-24 rounded hover:bg-sky-700 transition-colors"
@@ -105,7 +105,23 @@ const ProjectPage: NextPage<Props> = ({
             >
               + Create Batch
             </button>
-          )}
+          )} */}
+
+          {project.collectionType === "721" ? (
+            <button
+              className="bg-sky-600 text-white px-3 py-2 w-36 rounded hover:bg-sky-700 transition-colors whitespace-nowrap"
+              onClick={() => setIsBatchCreateModalOpen(true)}
+            >
+              + Create Batch
+            </button>
+          ) : project.collectionType === "1155" ? (
+            <button
+              className="bg-sky-600 text-white px-3 py-2 w-24 rounded hover:bg-sky-700 transition-colors"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              + Create
+            </button>
+          ) : null}
         </div>
       </div>
       <div>
