@@ -209,7 +209,7 @@ const MintPage: NextPage<Props> = ({
 
     if (
       currentSale.saleType === "private" &&
-      currentSale.whitelist.length <= 0
+      currentSale.whitelist.length <= 1
     ) {
       toast.error("No one is allowed to mint (Empty Whitelist)");
       return;
