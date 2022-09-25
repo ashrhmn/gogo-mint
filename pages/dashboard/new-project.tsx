@@ -105,17 +105,6 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     revealTime: number,
     factory: Collection721__factory
   ) => {
-    console.log("Deploy 721 with : ", {
-      name,
-      symbol,
-      feeToAddress,
-      maxMintInTotalPerWallet,
-      saleConfigRoot,
-      platformSignerAddress,
-      baseURI,
-      revealTime,
-    });
-
     const contract = await toast.promise(
       factory.deploy(
         name,
@@ -146,16 +135,6 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     revealTime: number,
     factory: Collection1155__factory
   ) => {
-    console.log("Deploy 1155 with : ", {
-      name,
-      feeToAddress,
-      maxMintInTotalPerWallet,
-      saleConfigRoot,
-      platformSignerAddress,
-      baseURI,
-      revealTime,
-    });
-
     const contract = await toast.promise(
       factory.deploy(
         name,
