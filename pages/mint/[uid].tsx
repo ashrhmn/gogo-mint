@@ -66,6 +66,8 @@ const MintPage: NextPage<Props> = ({
     totalMintInSale: -1,
     mintCountInSaleByUser: -1,
     maxMintInTotalPerWallet: -1,
+    maxMintCap: -1,
+    totalMintCount: -1,
   });
   const router = useRouter();
   const [mintCount, setMintCount] = useState(1);
@@ -112,7 +114,11 @@ const MintPage: NextPage<Props> = ({
           contract.maxMintInTotalPerWallet(),
         ])
       ).map((v) => +v.toString());
-      setConfig((c) => ({ ...c, userBalance, maxMintInTotalPerWallet }));
+      setConfig((c) => ({
+        ...c,
+        userBalance,
+        maxMintInTotalPerWallet,
+      }));
     })();
   }, [
     account,
@@ -149,16 +155,29 @@ const MintPage: NextPage<Props> = ({
               project.address,
               new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             );
-      const [totalMintInSale, mintCountInSaleByUser] = (
+      const [
+        totalMintInSale,
+        mintCountInSaleByUser,
+        maxMintCap,
+        totalMintCount,
+      ] = (
         await Promise.all([
           contract.mintCountByIdentifier(currentSale.saleIdentifier),
           contract.mintCountByIdentifierWallet(
             currentSale.saleIdentifier,
             account
           ),
+          contract.maxMintCap().catch(() => -1),
+          contract.mintCount().catch(() => -1),
         ])
       ).map((v) => +v.toString());
-      setConfig((c) => ({ ...c, totalMintInSale, mintCountInSaleByUser }));
+      setConfig((c) => ({
+        ...c,
+        totalMintInSale,
+        mintCountInSaleByUser,
+        maxMintCap,
+        totalMintCount,
+      }));
     })();
   }, [
     account,
@@ -186,7 +205,9 @@ const MintPage: NextPage<Props> = ({
       config.maxMintInTotalPerWallet === -1 ||
       config.mintCountInSaleByUser === -1 ||
       config.totalMintInSale === -1 ||
-      config.userBalance === -1
+      config.userBalance === -1 ||
+      config.maxMintCap === -1 ||
+      config.totalMintCount === -1
     ) {
       toast.error("Error loading data");
       return;
@@ -202,6 +223,11 @@ const MintPage: NextPage<Props> = ({
 
     if (chainId !== project.chainId) {
       toast.error(`Please connect to network ID : ${project.chainId}`);
+      return;
+    }
+
+    if (config.totalMintCount + mintCount > config.maxMintCap) {
+      toast.error("Max Mint Cap Reached");
       return;
     }
 

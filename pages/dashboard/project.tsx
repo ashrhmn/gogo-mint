@@ -1,4 +1,5 @@
 import { shortenIfAddress, useEthers } from "@usedapp/core";
+import { providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
@@ -11,6 +12,11 @@ import ClaimsSection from "../../components/ProjectDashboard/Claims";
 import CreateModal from "../../components/ProjectDashboard/CreateModal";
 import OverviewSection from "../../components/ProjectDashboard/Overview";
 import SettingsSection from "../../components/ProjectDashboard/Settings";
+import { RPC_URLS } from "../../constants/RPC_URL";
+import {
+  Collection721__factory,
+  Collection1155__factory,
+} from "../../ContractFactory";
 import { getCookieWallet } from "../../services/auth.service";
 
 import {
@@ -49,6 +55,7 @@ const ProjectPage: NextPage<Props> = ({
 }) => {
   const router = useRouter();
   const { account } = useEthers();
+  const [maxCapLimit, setMaxCapLimit] = useState(-1);
   useEffect(() => {
     if (account && account !== cookieAddress)
       router.push(
@@ -61,6 +68,34 @@ const ProjectPage: NextPage<Props> = ({
         )
       );
   }, [account, cookieAddress, router]);
+
+  useEffect(() => {
+    (async () => {
+      setMaxCapLimit(
+        await (async () => {
+          const rpcUrl = RPC_URLS[project.chainId || 0];
+          if (!rpcUrl || !project.address) return -1;
+          const contract =
+            project.collectionType === "721"
+              ? Collection721__factory.connect(
+                  project.address,
+                  new providers.JsonRpcBatchProvider(rpcUrl)
+                )
+              : project.collectionType === "1155"
+              ? Collection1155__factory.connect(
+                  project.address,
+                  new providers.JsonRpcBatchProvider(rpcUrl)
+                )
+              : null;
+          if (!contract) return -1;
+          return await contract
+            .maxMintCap()
+            .then((v) => v.toNumber())
+            .catch(() => -1);
+        })()
+      );
+    })();
+  }, [project.address, project.chainId, project.collectionType]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBatchCreateModalOpen, setIsBatchCreateModalOpen] = useState(false);
   const setTab = (tab: string) =>
@@ -222,6 +257,8 @@ const ProjectPage: NextPage<Props> = ({
         ownerAddress={project.owner.walletAddress}
         projectId={project.id}
         setIsBatchCreateModalOpen={setIsBatchCreateModalOpen}
+        maxCapLimit={maxCapLimit}
+        totalSupply={claimedSupply + unclaimedSupply}
       />
     </Layout>
   );

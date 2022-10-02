@@ -19,11 +19,15 @@ const BatchCreateModal = ({
   isBatchCreateModalOpen,
   setIsBatchCreateModalOpen,
   projectId,
+  maxCapLimit,
+  totalSupply,
 }: {
   projectId: number;
   ownerAddress: string | null;
   setIsBatchCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isBatchCreateModalOpen: boolean;
+  maxCapLimit: number;
+  totalSupply: number;
 }) => {
   const [parseBgProc, setParseBgProc] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -32,6 +36,19 @@ const BatchCreateModal = ({
 
   const handleSaveBtn = async () => {
     try {
+      if (maxCapLimit === -1) {
+        toast.error("Informations still loading...", { icon: "" });
+        return;
+      }
+      if (totalSupply + nftsAdded.length > maxCapLimit) {
+        toast.error(
+          `Max Cap Limit Exceeds\n\nMax Cap : ${maxCapLimit}\nAlready Added: ${totalSupply}\n\n${Math.max(
+            maxCapLimit - totalSupply,
+            0
+          )} NFTs can be added`
+        );
+        return;
+      }
       const nfts: {
         // signature: string | null;
         // message: string | null;
@@ -74,6 +91,7 @@ const BatchCreateModal = ({
       console.log(response);
       router.reload();
     } catch (error) {
+      if (typeof error === "string") toast.error(error);
       console.log(error);
     }
   };

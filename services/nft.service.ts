@@ -2,6 +2,12 @@ import Cookies from "cookies";
 import { prisma } from "../lib/db";
 import { getCookieWallet } from "./auth.service";
 import { NFT, Prisma } from "@prisma/client";
+import {
+  Collection1155__factory,
+  Collection721__factory,
+} from "../ContractFactory";
+import { RPC_URLS } from "../constants/RPC_URL";
+import { providers } from "ethers";
 
 export const addNftsInQueue = async (
   promises: Prisma.Prisma__NFTClient<NFT>[],
@@ -74,10 +80,36 @@ export const addBatchNftsToProject = async (
   const cookieAddress = getCookieWallet(cookies);
   const project = await prisma.project.findFirstOrThrow({
     where: { id: projectId },
-    include: { owner: true },
+    include: { owner: true, _count: { select: { nfts: true } } },
   });
+
   if (project.owner.walletAddress !== cookieAddress)
     throw "Logged in user is not project owner";
+
+  const maxCapLimit = await (async () => {
+    const rpcUrl = RPC_URLS[project.chainId || 0];
+    if (!rpcUrl || !project.address) return -1;
+    const contract =
+      project.collectionType === "721"
+        ? Collection721__factory.connect(
+            project.address,
+            new providers.JsonRpcBatchProvider(rpcUrl)
+          )
+        : project.collectionType === "1155"
+        ? Collection1155__factory.connect(
+            project.address,
+            new providers.JsonRpcBatchProvider(rpcUrl)
+          )
+        : null;
+    if (!contract) return -1;
+    return await contract
+      .maxMintCap()
+      .then((v) => v.toNumber())
+      .catch(() => -1);
+  })();
+
+  if (project._count.nfts + nftsData.length > maxCapLimit)
+    throw "Max Cap Limit exceeds";
 
   const promises = nftsData.map((data, index) => {
     return prisma.nFT.create({
