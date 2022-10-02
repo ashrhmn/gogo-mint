@@ -48,11 +48,12 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     symbol: "",
     saleWaves: [],
     uid: "",
-    roayltyPercentage: 0,
+    roayltyPercentage: 2.5,
     roayltyReceiver: "",
     maxMintInTotalPerWallet: 0,
     collectionType: "721",
     revealTime: +(+Date.now() / 1000).toFixed(0),
+    maxLimitCap: 1000,
   });
   useEffect(() => {
     if (account)
@@ -107,6 +108,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     baseURI: string,
     revealTime: number,
     deployCharge: BigNumber,
+    royaltyBasis: number,
+    maxMintCap: number,
     factory: Collection721__factory
   ) => {
     const contract = await toast.promise(
@@ -114,19 +117,19 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         {
           _baseURI: baseURI,
           _feeDestination: feeToAddress,
-          _maxMintCap: 1000,
+          _maxMintCap: maxMintCap,
           _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
           _msgSigner: platformSignerAddress,
           _name: name,
           _platformOwner: "0xdc4704bc72159fb4e626c8623B7d012FA928D5d6",
           _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
           _revealTime: revealTime,
-          _royaltyBasis: 1000,
+          _royaltyBasis: royaltyBasis,
           _saleConfigRoot: saleConfigRoot,
           _symbol: symbol,
         },
         {
-          value: deployCharge.mul(1000),
+          value: deployCharge.mul(maxMintCap),
         }
       ),
       {
@@ -147,6 +150,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     baseURI: string,
     revealTime: number,
     deployCharge: BigNumber,
+    royaltyBasis: number,
+    maxMintCap: number,
     factory: Collection1155__factory
   ) => {
     const contract = await toast.promise(
@@ -154,18 +159,18 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         {
           _baseURI: baseURI,
           _feeDestination: feeToAddress,
-          _maxMintCap: 1000,
+          _maxMintCap: maxMintCap,
           _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
           _msgSigner: platformSignerAddress,
           _name: name,
           _platformOwner: "0xdc4704bc72159fb4e626c8623B7d012FA928D5d6",
           _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
           _revealTime: revealTime,
-          _royaltyBasis: 1000,
+          _royaltyBasis: royaltyBasis,
           _saleConfigRoot: saleConfigRoot,
         },
         {
-          value: deployCharge.mul(1000),
+          value: deployCharge.mul(maxMintCap),
         }
       ),
       {
@@ -298,6 +303,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               baseUri,
               configSet.revealTime,
               deployCharge,
+              configSet.roayltyPercentage * 100,
+              +configSet.maxLimitCap.toFixed(0),
               new Collection721__factory(library.getSigner(account))
             )
           : await deploy1155(
@@ -309,6 +316,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               baseUri,
               configSet.revealTime,
               deployCharge,
+              configSet.roayltyPercentage * 100,
+              +configSet.maxLimitCap.toFixed(0),
               new Collection1155__factory(library.getSigner(account))
             );
 
@@ -448,6 +457,52 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                     <option value={"721"}>ERC721</option>
                     <option value={"1155"}>ERC1155</option>
                   </select>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+                <div className="space-y-2 w-full">
+                  <label className="font-bold">Max Mint Cap</label>
+                  <p className="text-sm text-gray-300">
+                    Total Supply Limit for the collection
+                  </p>
+                  <input
+                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+                    type="text"
+                    value={configSet.maxLimitCap || ""}
+                    placeholder="0"
+                    onChange={(e) =>
+                      setConfigSet((c) => ({
+                        ...c,
+                        maxLimitCap: isNaN(+e.target.value)
+                          ? 0
+                          : +(+e.target.value).toFixed(0),
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2 w-full">
+                  <label className="font-bold">Royalty Percentage</label>
+                  <p className="text-sm text-gray-300">
+                    On every resale you will be earning this Percentage (Max
+                    10%)
+                  </p>
+                  <input
+                    type="number"
+                    step={0.01}
+                    min={0}
+                    max={10}
+                    className="bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors rounded w-full"
+                    value={configSet.roayltyPercentage || ""}
+                    placeholder="0"
+                    onChange={(e) =>
+                      setConfigSet((c) => ({
+                        ...c,
+                        roayltyPercentage: isNaN(+e.target.value)
+                          ? 0
+                          : Math.min(+(+e.target.value).toFixed(2), 10),
+                      }))
+                    }
+                  />
                 </div>
               </div>
               <div className="mt-4 space-y-2">
@@ -626,7 +681,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               On every resale of an NFT from this collection a RoyaltyPercentage
               (Max 10%) will be sent to this address
             </p>
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
+            {/* <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
               <input
                 className="flex-grow rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
@@ -661,7 +716,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 />
                 <span className="p-2 bg-gray-700">%</span>
               </div>
-            </div>
+            </div> */}
           </div>
           <div>
             <button

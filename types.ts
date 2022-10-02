@@ -52,6 +52,7 @@ export interface IDeployConfigSet {
   roayltyPercentage: number;
   uid: string;
   collectionType: "721" | "1155";
+  maxLimitCap: number;
 }
 
 export type ContractFile = {
