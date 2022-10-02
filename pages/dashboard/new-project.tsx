@@ -254,7 +254,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             const priceFeedAddress = PRICE_FEED_ADDRESSES[chainId || 0];
             const rpcUrl = RPC_URLS[chainId || 0];
             if (!priceFeedAddress || !rpcUrl)
-              return BigNumber.from(parseEther("0.0001"));
+              return BigNumber.from(parseEther("0.00015"));
             try {
               const contract = new Contract(
                 priceFeedAddress,
@@ -269,7 +269,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 .div(100);
             } catch (error) {
               console.log("Error fetching eth price : ", error);
-              return BigNumber.from(parseEther("0.0001"));
+              return BigNumber.from(parseEther("0.00015"));
             }
           })(),
         ]),
