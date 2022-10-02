@@ -855,7 +855,7 @@ const SettingsSection = ({
                 </span>
               )}
             </div>
-            <div className="mt-4 space-y-2">
+            {/* <div className="mt-4 space-y-2">
               <label className="font-bold">Royalty Receiver</label>
               <p className="text-sm text-gray-300">
                 On every resale of an NFT from this collection a
@@ -899,7 +899,7 @@ const SettingsSection = ({
                   <span className="p-2">%</span>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="flex justify-end">
