@@ -396,7 +396,7 @@ const MintPage: NextPage<Props> = ({
               objectFit="cover"
             />
           )}
-          {!project.bannerUrl && <div className="h-full w-full bg-gray-200" />}
+          {!project.bannerUrl && <div className="h-full w-full bg-gray-600" />}
         </div>
         <div
           className={`relative h-40 rounded overflow-hidden mx-auto aspect-square shadow-xl transition-all ${
@@ -411,7 +411,7 @@ const MintPage: NextPage<Props> = ({
               objectFit="cover"
             />
           ) : (
-            <div className="h-full w-full bg-gray-200 border-2 border-gray-300 rounded" />
+            <div className="h-full w-full bg-gray-700 border-2 border-gray-500 rounded" />
           )}
         </div>
         <h1 className="font-bold text-4xl text-center my-4 p-1">

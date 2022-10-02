@@ -753,7 +753,7 @@ const SettingsSection = ({
                 if (bannerImgInputRef && bannerImgInputRef.current)
                   bannerImgInputRef.current.click();
               }}
-              className="relative w-full h-60 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer translate-y-16"
+              className="relative w-full h-60 flex mx-auto justify-center items-center bg-gray-600 rounded cursor-pointer translate-y-16"
             >
               <input
                 ref={bannerImgInputRef}
@@ -777,7 +777,7 @@ const SettingsSection = ({
                 if (logoImgInputRef && logoImgInputRef.current)
                   logoImgInputRef.current.click();
               }}
-              className="relative aspect-square w-40 flex mx-auto justify-center items-center bg-gray-300 rounded cursor-pointer shadow-xl"
+              className="relative aspect-square w-40 flex mx-auto justify-center items-center bg-gray-700 rounded cursor-pointer shadow-xl"
             >
               <input
                 ref={logoImgInputRef}

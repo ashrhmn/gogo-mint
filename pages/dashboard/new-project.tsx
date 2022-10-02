@@ -128,14 +128,6 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         {
           value: deployCharge.mul(1000),
         }
-        // name,
-        // symbol,
-        // feeToAddress,
-        // maxMintInTotalPerWallet,
-        // saleConfigRoot,
-        // platformSignerAddress,
-        // baseURI,
-        // revealTime
       ),
       {
         success: "Transaction sent",
@@ -175,13 +167,6 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         {
           value: deployCharge.mul(1000),
         }
-        // name,
-        // feeToAddress,
-        // maxMintInTotalPerWallet,
-        // saleConfigRoot,
-        // platformSignerAddress,
-        // baseURI,
-        // revealTime
       ),
       {
         success: "Transaction sent",
