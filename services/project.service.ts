@@ -292,7 +292,11 @@ export const getProjectsWithValidUid = async () => {
   return await prisma.project.findMany({ where: { uid: { not: null } } });
 };
 
-export const getProjectMetadata = async (address: string, chainId: number) => {
+export const getProjectMetadata = async (
+  address: string,
+  chainId: number,
+  royaltyBasis: number | undefined
+) => {
   const project = await prisma.project.findFirst({
     where: { address: { mode: "insensitive", equals: address }, chainId },
     include: { owner: true },
@@ -310,8 +314,10 @@ export const getProjectMetadata = async (address: string, chainId: number) => {
     description: project.description,
     image: project.imageUrl,
     external_link: project.uid,
-    seller_fee_basis_points: +(project.royaltyPercentage * 100).toFixed(0),
-    fee_recipient: project.royaltyReceiver || project.owner.walletAddress,
+    seller_fee_basis_points:
+      royaltyBasis || +(project.royaltyPercentage * 100).toFixed(0),
+    // fee_recipient: project.royaltyReceiver || project.owner.walletAddress,
+    fee_recipient: address,
   };
 };
 

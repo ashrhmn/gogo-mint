@@ -229,7 +229,7 @@ export const getContractUri = async (
   res: NextApiResponse
 ) => {
   try {
-    const { address, network } = req.query;
+    const { address, network, royalty } = req.query;
     if (!address || typeof address !== "string" || !isAddress(address))
       return res.status(400).json(errorResponse("Invalid address"));
     if (!network || typeof network !== "string" || isNaN(+network))
@@ -241,7 +241,14 @@ export const getContractUri = async (
       message: "Query for contract",
     });
 
-    return res.json(await ProjectService.getProjectMetadata(address, +network));
+    const royaltyBasis =
+      !royalty || typeof royalty !== "string" || isNaN(+royalty)
+        ? undefined
+        : +royalty;
+
+    return res.json(
+      await ProjectService.getProjectMetadata(address, +network, royaltyBasis)
+    );
   } catch (error) {
     console.log("Error getting contract URI : ", error);
     return res.status(500).json(errorResponse(error));

@@ -1,6 +1,6 @@
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import { ContractFactory } from "ethers";
-import { isAddress } from "ethers/lib/utils";
+import { BigNumber, Contract, ContractFactory, providers } from "ethers";
+import { isAddress, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -9,7 +9,10 @@ import toast from "react-hot-toast";
 import { v4 } from "uuid";
 import Layout from "../../components/Layout";
 import SaleConfigInput from "../../components/Projects/SaleConfigInput";
-import { BASE_URI } from "../../constants/configuration";
+import { aggregatorV3InterfaceABI } from "../../constants/abis";
+import { PRICE_FEED_ADDRESSES } from "../../constants/chainlink.map";
+import { BASE_URI, ZERO_ADDRESS } from "../../constants/configuration";
+import { RPC_URLS } from "../../constants/RPC_URL";
 import {
   Collection1155__factory,
   Collection721__factory,
@@ -103,18 +106,36 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     platformSignerAddress: string,
     baseURI: string,
     revealTime: number,
+    deployCharge: BigNumber,
     factory: Collection721__factory
   ) => {
     const contract = await toast.promise(
       factory.deploy(
-        name,
-        symbol,
-        feeToAddress,
-        maxMintInTotalPerWallet,
-        saleConfigRoot,
-        platformSignerAddress,
-        baseURI,
-        revealTime
+        {
+          _baseURI: baseURI,
+          _feeDestination: feeToAddress,
+          _maxMintCap: 1000,
+          _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
+          _msgSigner: platformSignerAddress,
+          _name: name,
+          _platformOwner: "0xdc4704bc72159fb4e626c8623B7d012FA928D5d6",
+          _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
+          _revealTime: revealTime,
+          _royaltyBasis: 1000,
+          _saleConfigRoot: saleConfigRoot,
+          _symbol: symbol,
+        },
+        {
+          value: deployCharge.mul(1000),
+        }
+        // name,
+        // symbol,
+        // feeToAddress,
+        // maxMintInTotalPerWallet,
+        // saleConfigRoot,
+        // platformSignerAddress,
+        // baseURI,
+        // revealTime
       ),
       {
         success: "Transaction sent",
@@ -133,17 +154,34 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     platformSignerAddress: string,
     baseURI: string,
     revealTime: number,
+    deployCharge: BigNumber,
     factory: Collection1155__factory
   ) => {
     const contract = await toast.promise(
       factory.deploy(
-        name,
-        feeToAddress,
-        maxMintInTotalPerWallet,
-        saleConfigRoot,
-        platformSignerAddress,
-        baseURI,
-        revealTime
+        {
+          _baseURI: baseURI,
+          _feeDestination: feeToAddress,
+          _maxMintCap: 1000,
+          _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
+          _msgSigner: platformSignerAddress,
+          _name: name,
+          _platformOwner: "0xdc4704bc72159fb4e626c8623B7d012FA928D5d6",
+          _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
+          _revealTime: revealTime,
+          _royaltyBasis: 1000,
+          _saleConfigRoot: saleConfigRoot,
+        },
+        {
+          value: deployCharge.mul(1000),
+        }
+        // name,
+        // feeToAddress,
+        // maxMintInTotalPerWallet,
+        // saleConfigRoot,
+        // platformSignerAddress,
+        // baseURI,
+        // revealTime
       ),
       {
         success: "Transaction sent",
@@ -204,6 +242,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         { data: saleConfigRoot },
         // { data: initCode },
         { data: platformSignerAddress },
+        deployCharge,
       ] = await toast.promise(
         Promise.all([
           uploadFileToFirebase(configSet.logo),
@@ -221,6 +260,28 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           }),
           // service.get(`contract/collection721?name=${configSet.name}`),
           service.get(`platform-signer/public-address`),
+          (async () => {
+            const priceFeedAddress = PRICE_FEED_ADDRESSES[chainId || 0];
+            const rpcUrl = RPC_URLS[chainId || 0];
+            if (!priceFeedAddress || !rpcUrl)
+              return BigNumber.from(parseEther("0.0001"));
+            try {
+              const contract = new Contract(
+                priceFeedAddress,
+                aggregatorV3InterfaceABI,
+                new providers.StaticJsonRpcProvider(rpcUrl)
+              );
+              const price = (await contract.latestRoundData())
+                .answer as BigNumber;
+              return BigNumber.from(parseEther("1"))
+                .div(price.div(10 ** 8))
+                .mul(15)
+                .div(100);
+            } catch (error) {
+              console.log("Error fetching eth price : ", error);
+              return BigNumber.from(parseEther("0.0001"));
+            }
+          })(),
         ]),
         {
           success: "Contract Compiled Successfully",
@@ -251,6 +312,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               platformSignerAddress.data,
               baseUri,
               configSet.revealTime,
+              deployCharge,
               new Collection721__factory(library.getSigner(account))
             )
           : await deploy1155(
@@ -261,6 +323,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               platformSignerAddress.data,
               baseUri,
               configSet.revealTime,
+              deployCharge,
               new Collection1155__factory(library.getSigner(account))
             );
 

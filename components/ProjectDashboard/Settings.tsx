@@ -228,8 +228,8 @@ const SettingsSection = ({
         // setBaseURIBgProc((v) => v + 1);
         const [
           feeToAddress,
-          // curi,
-          // baseURI,
+          curi,
+          baseURI,
           maxMintInTotalPerWallet,
           // token0uri,
           revealTime,
@@ -238,14 +238,14 @@ const SettingsSection = ({
             console.log("Error getting feeDestination  : ", e);
             return "";
           }),
-          // contract.contractURI().catch((e) => {
-          //   console.log("Error getting contractURI  : ", e);
-          //   return "";
-          // }),
-          // contract.baseURI().catch((e) => {
-          //   console.log("Error getting baseURI  : ", e);
-          //   return "";
-          // }),
+          contract.contractURI().catch((e) => {
+            console.log("Error getting contractURI  : ", e);
+            return "";
+          }),
+          contract.baseURI().catch((e) => {
+            console.log("Error getting baseURI  : ", e);
+            return "";
+          }),
           contract.maxMintInTotalPerWallet().catch((e) => {
             console.log("Error getting maxMintInTotalPerWallet : ", e);
             return 0;
@@ -259,7 +259,7 @@ const SettingsSection = ({
             return BigNumber.from(0);
           }),
         ]);
-        // console.log({ curi, token0uri });
+        console.log({ curi, baseURI });
 
         setConfigSet((c) => ({
           ...c,

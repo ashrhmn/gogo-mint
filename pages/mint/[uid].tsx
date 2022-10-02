@@ -152,7 +152,10 @@ const MintPage: NextPage<Props> = ({
       const [totalMintInSale, mintCountInSaleByUser] = (
         await Promise.all([
           contract.mintCountByIdentifier(currentSale.saleIdentifier),
-          contract.balanceByIdentifier(currentSale.saleIdentifier, account),
+          contract.mintCountByIdentifierWallet(
+            currentSale.saleIdentifier,
+            account
+          ),
         ])
       ).map((v) => +v.toString());
       setConfig((c) => ({ ...c, totalMintInSale, mintCountInSaleByUser }));
@@ -369,7 +372,7 @@ const MintPage: NextPage<Props> = ({
         ]),
         {
           error: "Error updating NFT",
-          loading: "Updating informations...",
+          loading: "Updating informations...(Page will refresh automatically)",
           success: "Mint Successful",
         }
       );
