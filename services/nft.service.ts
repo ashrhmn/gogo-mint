@@ -8,6 +8,7 @@ import {
 } from "../ContractFactory";
 import { RPC_URLS } from "../constants/RPC_URL";
 import { providers } from "ethers";
+import { PUBLIC_URL } from "../constants/configuration";
 
 export const addNftsInQueue = async (
   promises: Prisma.Prisma__NFTClient<NFT>[],
@@ -194,12 +195,12 @@ export const getOnChainMetadata = async (
       project: { address: { mode: "insensitive", equals: address }, chainId },
       tokenId,
     },
-    include: { properties: true },
+    include: { properties: true, project: { select: { uid: true } } },
   });
   return {
     name: nft.name,
     description: nft.description,
-    external_link: nft.externalUrl,
+    external_link: nft.externalUrl || `${PUBLIC_URL}mint/${nft.project.uid}`,
     traits: nft.properties.map((p) => ({ trait_type: p.type, value: p.value })),
     attributes: nft.properties.map((p) => ({
       trait_type: p.type,

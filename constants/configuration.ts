@@ -55,6 +55,10 @@ export const PLATFORM_SIGNER_PRIVATE_KEY =
 export const PUBLIC_HOST_ROOT =
   process.env.NEXT_PUBLIC_HOST_ROOT || "hydromint.xyz";
 
+export const PUBLIC_URL = `${
+  isDevelopment ? "http" : "https"
+}://${PUBLIC_HOST_ROOT}/`;
+
 export const BASE_API_URL = `${
   isDevelopment ? "http" : "https"
 }://${PUBLIC_HOST_ROOT}/api/v1/`;

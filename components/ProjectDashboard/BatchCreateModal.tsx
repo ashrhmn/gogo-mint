@@ -45,7 +45,7 @@ const BatchCreateModal = ({
           `Max Cap Limit Exceeds\n\nMax Cap : ${maxCapLimit}\nAlready Added: ${totalSupply}\n\n${Math.max(
             maxCapLimit - totalSupply,
             0
-          )} NFTs can be added`
+          )} more NFT(s) can be added`
         );
         return;
       }

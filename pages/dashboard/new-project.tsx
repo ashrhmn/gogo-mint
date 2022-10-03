@@ -48,7 +48,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     symbol: "",
     saleWaves: [],
     uid: "",
-    roayltyPercentage: 2.5,
+    roayltyPercentage: 10,
     roayltyReceiver: "",
     maxMintInTotalPerWallet: 0,
     collectionType: "721",
