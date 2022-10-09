@@ -55,6 +55,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     revealTime: +(+Date.now() / 1000).toFixed(0),
     maxLimitCap: 1000,
   });
+  
   useEffect(() => {
     if (account)
       setConfigSet((c) => ({
