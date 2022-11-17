@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push --accept-data-loss && next build",
+    "build": "prisma db push && next build",
     "start": "next start",
     "lint": "next lint",
-    "dbpush": "prisma db push --accept-data-loss",
+    "dbpush": "prisma db push",
     "pgen": "prisma generate",
     "pst": "prisma studio",
     "get-abi": "cp -R ~/clones/gogo-mint/hardhat/artifacts/contracts/ ./ABIs && rm -f ./ABIs/**/*.dbg.json",
