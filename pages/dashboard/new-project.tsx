@@ -129,7 +129,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
           _msgSigner: platformSignerAddress,
           _name: name,
-          _platformOwner: "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
+          _platformOwner:
+            process.env.NEXT_PUBLIC_PLATFORM_OWNER ||
+            "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
           // _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
           _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
           _revealTime: revealTime,
@@ -172,7 +174,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
           _msgSigner: platformSignerAddress,
           _name: name,
-          _platformOwner: "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
+          _platformOwner:
+            process.env.NEXT_PUBLIC_PLATFORM_OWNER ||
+            "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
           // _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
           _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
           _revealTime: revealTime,
