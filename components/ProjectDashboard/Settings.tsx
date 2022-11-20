@@ -227,39 +227,47 @@ const SettingsSection = ({
         setFeeAddressBgProc((v) => v + 1);
         setMaxMintInTotalPerWalletBgProc((v) => v + 1);
         // setBaseURIBgProc((v) => v + 1);
-        const [
-          feeToAddress,
-          curi,
+        // const [
+        //   feeToAddress,
+        //   curi,
+        //   baseURI,
+        //   maxMintInTotalPerWallet,
+        //   // token0uri,
+        //   revealTime,
+        // ] = await Promise.all([
+        //   contract.feeDestination().catch((e) => {
+        //     console.log("Error getting feeDestination  : ", e);
+        //     return "";
+        //   }),
+        //   contract.contractURI().catch((e) => {
+        //     console.log("Error getting contractURI  : ", e);
+        //     return "";
+        //   }),
+        //   contract.baseURI().catch((e) => {
+        //     console.log("Error getting baseURI  : ", e);
+        //     return "";
+        //   }),
+        //   contract.maxMintInTotalPerWallet().catch((e) => {
+        //     console.log("Error getting maxMintInTotalPerWallet : ", e);
+        //     return 0;
+        //   }),
+        //   // contract.tokenURI(0).catch((e) => {
+        //   //   console.log("Error getting token0 uri : ", e);
+        //   //   return null;
+        //   // }),
+        //   contract.revealTime().catch((e) => {
+        //     console.log("Error getting revealTime  : ", e);
+        //     return BigNumber.from(0);
+        //   }),
+        // ]);
+
+        const {
+          feeDestination: feeToAddress,
           baseURI,
           maxMintInTotalPerWallet,
-          // token0uri,
           revealTime,
-        ] = await Promise.all([
-          contract.feeDestination().catch((e) => {
-            console.log("Error getting feeDestination  : ", e);
-            return "";
-          }),
-          contract.contractURI().catch((e) => {
-            console.log("Error getting contractURI  : ", e);
-            return "";
-          }),
-          contract.baseURI().catch((e) => {
-            console.log("Error getting baseURI  : ", e);
-            return "";
-          }),
-          contract.maxMintInTotalPerWallet().catch((e) => {
-            console.log("Error getting maxMintInTotalPerWallet : ", e);
-            return 0;
-          }),
-          // contract.tokenURI(0).catch((e) => {
-          //   console.log("Error getting token0 uri : ", e);
-          //   return null;
-          // }),
-          contract.revealTime().catch((e) => {
-            console.log("Error getting revealTime  : ", e);
-            return BigNumber.from(0);
-          }),
-        ]);
+        } = await contract.state();
+        const curi = await contract.contractURI();
         console.log({ curi, baseURI });
 
         setConfigSet((c) => ({

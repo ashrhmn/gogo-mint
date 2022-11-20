@@ -89,7 +89,8 @@ const ProjectPage: NextPage<Props> = ({
               : null;
           if (!contract) return -1;
           return await contract
-            .maxMintCap()
+            .state()
+            .then((s) => s.maxMintCap)
             .then((v) => v.toNumber())
             .catch(() => -1);
         })()
@@ -149,7 +150,7 @@ const ProjectPage: NextPage<Props> = ({
             >
               + Create Batch
             </button>
-          ) : project.collectionType === "1155" ? (
+          ) : project.collectionType === "1155" && project._count.nfts === 0 ? (
             <button
               className="bg-sky-600 text-white px-3 py-2 w-24 rounded hover:bg-sky-700 transition-colors"
               onClick={() => setIsCreateModalOpen(true)}

@@ -148,6 +148,7 @@ export interface ISaleConfigSol {
   whitelistRoot: string;
   maxMintPerWallet: number;
   maxMintInSale: number;
+  tokenGatedAddress: string;
 }
 
 export interface ISaleConfigInput {
@@ -160,6 +161,7 @@ export interface ISaleConfigInput {
   whitelistAddresses: string[];
   maxMintPerWallet: number;
   maxMintInSale: number;
+  tokenGatedAddress: string;
 }
 
 export interface IGuild {

@@ -14,6 +14,7 @@ export const getSolVersionConfig = (
   maxMintInSale: config.maxMintInSale,
   maxMintPerWallet: config.maxMintPerWallet,
   mintCharge: parseEther(config.mintCharge.toString()).toString(),
+  tokenGatedAddress: config.tokenGatedAddress,
   whitelistRoot:
     config.saleType === "public"
       ? EMPTY_WHITELIST_ROOT

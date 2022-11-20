@@ -123,6 +123,7 @@ export const addNewProject = async (
             whitelist: c.whitelistAddresses,
             saleIdentifier: c.uuid,
             saleType: c.saleType,
+            tokenGatedAddress: c.tokenGatedAddress,
           })),
         },
       },

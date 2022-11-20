@@ -1,7 +1,7 @@
 import { SaleConfig } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
-import { Contract } from "ethers";
-import { isAddress } from "ethers/lib/utils";
+import { Contract, ethers } from "ethers";
+import { deepCopy, isAddress } from "ethers/lib/utils";
 import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { v4 } from "uuid";
@@ -11,6 +11,7 @@ import {
   Collection721__factory,
 } from "../../../ContractFactory";
 import { service } from "../../../service";
+import { is721 } from "../../../services/ethereum.service";
 import { ISaleConfigInput } from "../../../types";
 import SaleConfigItem from "./SaleConfigItem";
 
@@ -74,19 +75,34 @@ const ClaimsSection = ({
     }
 
     try {
-      const rootPayload: ISaleConfigInput[] = saleConfigs.map((sc) => ({
-        enabled: sc.enabled,
-        startTime: sc.startTime,
-        endTime: sc.endTime,
-        maxMintInSale: sc.maxMintInSale,
-        maxMintPerWallet: sc.maxMintPerWallet,
-        mintCharge: sc.mintCharge,
-        whitelistAddresses: sc.whitelist.includes(account)
-          ? sc.whitelist
-          : [...sc.whitelist, account],
-        saleType: sc.saleType as "private" | "public",
-        uuid: sc.saleIdentifier,
-      }));
+      const rootPayload: ISaleConfigInput[] = await Promise.all(
+        saleConfigs.map(async (sc) => ({
+          enabled: sc.enabled,
+          startTime: sc.startTime,
+          endTime: sc.endTime,
+          maxMintInSale: sc.maxMintInSale,
+          maxMintPerWallet:
+            isAddress(sc.tokenGatedAddress) &&
+            (await is721(sc.tokenGatedAddress, chainId))
+              ? 0
+              : sc.maxMintPerWallet,
+          mintCharge: sc.mintCharge,
+          whitelistAddresses: sc.whitelist.includes(account)
+            ? sc.whitelist
+            : [...sc.whitelist, account],
+          saleType:
+            isAddress(sc.tokenGatedAddress) &&
+            (await is721(sc.tokenGatedAddress, chainId))
+              ? "private"
+              : (sc.saleType as "private" | "public"),
+          uuid: sc.saleIdentifier,
+          tokenGatedAddress:
+            isAddress(sc.tokenGatedAddress) &&
+            (await is721(sc.tokenGatedAddress, chainId))
+              ? sc.tokenGatedAddress
+              : ethers.constants.AddressZero,
+        }))
+      );
 
       const { data: saleConfigRoot } = await toast.promise(
         service.post(`/sale-config/root`, {
@@ -122,18 +138,27 @@ const ClaimsSection = ({
         }
       );
 
+      const dbPayload = await Promise.all(
+        saleConfigs.map(async (sc) => ({
+          ...sc,
+          id: undefined,
+          projectId: undefined,
+          invalid: undefined,
+          whitelist: sc.whitelist.includes(account)
+            ? sc.whitelist
+            : [...sc.whitelist, account],
+          tokenGatedAddress:
+            isAddress(sc.tokenGatedAddress) &&
+            (await is721(sc.tokenGatedAddress, chainId))
+              ? sc.tokenGatedAddress
+              : ethers.constants.AddressZero,
+        }))
+      );
+
       const [{ data: response }] = await toast.promise(
         Promise.all([
           service.put(`sale-config/${projectId}`, {
-            saleConfigs: saleConfigs.map((sc) => ({
-              ...sc,
-              id: undefined,
-              projectId: undefined,
-              invalid: undefined,
-              whitelist: sc.whitelist.includes(account)
-                ? sc.whitelist
-                : [...sc.whitelist, account],
-            })),
+            saleConfigs: dbPayload,
           }),
           updateSaleConfigRootTx.wait(),
         ]),
@@ -179,6 +204,7 @@ const ClaimsSection = ({
                 saleIdentifier: v4(),
                 saleType: "private",
                 whitelist: [],
+                tokenGatedAddress: "",
               },
             ])
           }
@@ -200,8 +226,15 @@ const ClaimsSection = ({
         <SaleConfigItem
           index={index}
           key={sc.saleIdentifier}
-          saleWaveConfig={sc}
+          saleWaveConfig={{
+            ...sc,
+            tokenGatedAddress:
+              sc.tokenGatedAddress === ethers.constants.AddressZero
+                ? ""
+                : sc.tokenGatedAddress,
+          }}
           setSaleConfigs={setSaleConfigs}
+          collectionType={collectionType as "721" | "1155"}
         />
       ))}
     </div>

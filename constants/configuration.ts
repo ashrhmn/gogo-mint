@@ -65,3 +65,30 @@ export const BASE_API_URL = `${
 
 export const BASE_URI =
   process.env.BASE_URI || "http://54.153.49.223:3001/api/v1/";
+
+export const CONTRACT_INTERFACE_ID = {
+  ERC_721_INTERFACE_ID: "0x80ac58cd",
+  ERC_1155_INTERFACE_ID: "0xd9b67a26",
+};
+
+export const SUPPORTS_INTERFACE_ABI = [
+  {
+    inputs: [
+      {
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];

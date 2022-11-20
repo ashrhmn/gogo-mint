@@ -59,6 +59,7 @@ export const getSaleConfigProofByProjectId = async (
     startTime: config.startTime,
     uuid: config.saleIdentifier,
     whitelistAddresses: config.whitelist,
+    tokenGatedAddress: config.tokenGatedAddress,
   };
   const configInputs: ISaleConfigInput[] = configs.map((config) => ({
     enabled: config.enabled,
@@ -70,6 +71,7 @@ export const getSaleConfigProofByProjectId = async (
     startTime: config.startTime,
     uuid: config.saleIdentifier,
     whitelistAddresses: config.whitelist,
+    tokenGatedAddress: config.tokenGatedAddress,
   }));
   return getSaleConfigProof(configInputs, configInput);
 };

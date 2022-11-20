@@ -1,5 +1,11 @@
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import { BigNumber, Contract, ContractFactory, providers } from "ethers";
+import {
+  BigNumber,
+  Contract,
+  ContractFactory,
+  ethers,
+  providers,
+} from "ethers";
 import { isAddress, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
@@ -20,8 +26,9 @@ import {
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
+import { is721 } from "../../services/ethereum.service";
 import { getUserByWalletAddress } from "../../services/user.service";
-import { IDeployConfigSet } from "../../types";
+import { IDeployConfigSet, ISaleConfigInput } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
@@ -55,7 +62,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     revealTime: +(+Date.now() / 1000).toFixed(0),
     maxLimitCap: 1000,
   });
-  
+
   useEffect(() => {
     if (account)
       setConfigSet((c) => ({
@@ -122,7 +129,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
           _msgSigner: platformSignerAddress,
           _name: name,
-          _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
+          _platformOwner: "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
+          // _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
           _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
           _revealTime: revealTime,
           _royaltyBasis: royaltyBasis,
@@ -164,7 +172,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
           _msgSigner: platformSignerAddress,
           _name: name,
-          _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
+          _platformOwner: "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
+          // _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
           _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
           _revealTime: revealTime,
           _royaltyBasis: royaltyBasis,
@@ -184,7 +193,9 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
   };
 
   const onDeployClick = async () => {
-    if (!library) {
+    console.log({ configSet });
+
+    if (!library || !chainId) {
       toast.error("No signer connected");
       return;
     }
@@ -227,6 +238,25 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     }
     setBgProcessRunning((v) => v + 1);
     try {
+      const salewaves: ISaleConfigInput[] = await Promise.all(
+        configSet.saleWaves.map(async (sw) =>
+          sw.tokenGatedAddress !== ethers.constants.AddressZero &&
+          (await is721(sw.tokenGatedAddress, chainId))
+            ? { ...sw, maxMintPerWallet: 0, saleType: "private" }
+            : { ...sw, tokenGatedAddress: ethers.constants.AddressZero }
+        )
+      );
+      // const config: ISaleConfigInput[] = await Promise.all(
+      //   configSet.saleWaves.map(async (sw) => {
+      //     if (
+      //       sw.tokenGatedAddress !== ethers.constants.AddressZero &&
+      //       (await is721(sw.tokenGatedAddress, chainId))
+      //     ) {
+      //       return { ...sw, maxMintPerWallet: 0, saleType: "private" };
+      //     }
+      //     return { ...sw, tokenGatedAddress: ethers.constants.AddressZero };
+      //   })
+      // );
       const [
         imageUrl,
         unrevealedImageUrl,
@@ -239,7 +269,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
           uploadFileToFirebase(configSet.logo),
           uploadFileToFirebase(configSet.unrevealedImage),
           service.post(`sale-config/root`, {
-            saleConfigs: configSet.saleWaves.map((sw) => ({
+            saleConfigs: salewaves.map((sw) => ({
               ...sw,
               whitelistAddresses:
                 sw.saleType === "public"
@@ -336,7 +366,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             uid: v4(),
             royaltyReceiver: configSet.roayltyReceiver,
             royaltyPercentage: configSet.roayltyPercentage,
-            saleConfigs: configSet.saleWaves.map((sw) => ({
+            saleConfigs: salewaves.map((sw) => ({
               ...sw,
               whitelistAddresses:
                 sw.saleType === "public"
@@ -644,6 +674,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                   saleWaveConfig={sw}
                   setConfigSet={setConfigSet}
                   index={idx}
+                  collectionType={configSet.collectionType}
                 />
               ))}
             </div>
@@ -666,6 +697,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                       whitelistAddresses: [],
                       saleType: "private",
                       noDeadline: false,
+                      tokenGatedAddress: "",
                     },
                   ],
                 }))

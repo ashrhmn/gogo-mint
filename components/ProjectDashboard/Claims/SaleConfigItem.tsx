@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   formatHtmlDateTime,
   normalizeString,
@@ -9,11 +9,14 @@ import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import CopyAddressToClipboard from "../../Common/CopyAddressToClipboard";
+import { useEthers } from "@usedapp/core";
+import { is721 } from "../../../services/ethereum.service";
 
 const SaleConfigItem = ({
   saleWaveConfig,
   setSaleConfigs,
   index,
+  collectionType,
 }: {
   saleWaveConfig: Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean };
   setSaleConfigs: React.Dispatch<
@@ -22,10 +25,42 @@ const SaleConfigItem = ({
     >
   >;
   index: number;
+  collectionType: "721" | "1155";
 }) => {
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const checkboxRef = useRef<HTMLInputElement | null>(null);
+
+  const { chainId } = useEthers();
+  const [isTokenGated, setIsTokenGated] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setIsTokenGated(
+          await is721(saleWaveConfig.tokenGatedAddress, chainId!)
+        );
+        setSaleConfigs((prev) =>
+          prev.map((sc) =>
+            sc.saleIdentifier !== saleWaveConfig.saleIdentifier
+              ? sc
+              : {
+                  ...sc,
+                  saleType: "private",
+                  maxMintPerWallet: 0,
+                }
+          )
+        );
+      } catch (error) {
+        setIsTokenGated(false);
+      }
+    })();
+  }, [
+    chainId,
+    saleWaveConfig.saleIdentifier,
+    saleWaveConfig.tokenGatedAddress,
+    setSaleConfigs,
+  ]);
 
   return (
     <details className="p-2 m-3 border-2 rounded-xl bg-gray-800">
@@ -107,7 +142,9 @@ const SaleConfigItem = ({
               className="border-none bg-transparent p-1 w-full disabled:text-gray-400"
             >
               <option value="private">Private</option>
-              <option value="public">Public</option>
+              {!(collectionType === "721" && isTokenGated) && (
+                <option value="public">Public</option>
+              )}
             </select>
           </div>
         </div>
@@ -253,6 +290,41 @@ const SaleConfigItem = ({
             )}
           </div>
         </div>
+        {collectionType === "721" && (
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Token Gated Contract Address</label>
+            <p className="text-sm text-gray-300">
+              Max Mint per wallet is dependent on this collection
+            </p>
+            {saleWaveConfig.tokenGatedAddress !== "" && !isTokenGated && (
+              <>
+                <br />
+                <span className="text-sm text-red-500">
+                  Invalid ERC721 address, Please put a valid ERC721 contract
+                  address or remove it for non-token gated sale wave.
+                </span>
+              </>
+            )}
+            <input
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+              type="text"
+              placeholder="Token Gated Contract Address"
+              defaultValue={saleWaveConfig.tokenGatedAddress}
+              onChange={(e) =>
+                setSaleConfigs((prev) =>
+                  prev.map((sc) =>
+                    sc.saleIdentifier !== saleWaveConfig.saleIdentifier
+                      ? sc
+                      : {
+                          ...sc,
+                          tokenGatedAddress: e.target.value,
+                        }
+                  )
+                )
+              }
+            />
+          </div>
+        )}
         <div className="mt-4 space-y-2">
           <label className="font-bold">
             Mint Charge <span className="text-red-700">*</span>
@@ -284,36 +356,38 @@ const SaleConfigItem = ({
             }
           />
         </div>
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">
-            Max Mint Per Wallet <span className="text-red-700">*</span>
-          </label>
-          <p className="text-sm text-gray-300">
-            Max a wallet can mint in this salewave
-          </p>
-          <input
-            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
-            type="number"
-            min={0}
-            value={saleWaveConfig.maxMintPerWallet || ""}
-            placeholder="0 (Equivalent to Mint-Disabled)"
-            onChange={(e) =>
-              setSaleConfigs((prev) =>
-                prev.map((sc) =>
-                  sc.saleIdentifier !== saleWaveConfig.saleIdentifier
-                    ? sc
-                    : {
-                        ...sc,
-                        maxMintPerWallet:
-                          isNaN(+e.target.value) || e.target.value === ""
-                            ? 0
-                            : +e.target.valueAsNumber.toFixed(0),
-                      }
+        {!(collectionType === "721" && isTokenGated) && (
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">
+              Max Mint Per Wallet <span className="text-red-700">*</span>
+            </label>
+            <p className="text-sm text-gray-300">
+              Max a wallet can mint in this salewave
+            </p>
+            <input
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+              type="number"
+              min={0}
+              value={saleWaveConfig.maxMintPerWallet || ""}
+              placeholder="0 (Equivalent to Mint-Disabled)"
+              onChange={(e) =>
+                setSaleConfigs((prev) =>
+                  prev.map((sc) =>
+                    sc.saleIdentifier !== saleWaveConfig.saleIdentifier
+                      ? sc
+                      : {
+                          ...sc,
+                          maxMintPerWallet:
+                            isNaN(+e.target.value) || e.target.value === ""
+                              ? 0
+                              : +e.target.valueAsNumber.toFixed(0),
+                        }
+                  )
                 )
-              )
-            }
-          />
-        </div>
+              }
+            />
+          </div>
+        )}
         <div className="mt-4 space-y-2">
           <label className="font-bold">
             Max Mint In Sale <span className="text-red-700">*</span>

@@ -46,18 +46,19 @@ model Project {
 }
 
 model SaleConfig {
-  id               Int      @id @default(autoincrement())
-  saleIdentifier   String   @unique
-  enabled          Boolean
-  saleType         String
-  startTime        Int
-  endTime          Int
-  mintCharge       Float
-  whitelist        String[]
-  maxMintPerWallet Int
-  maxMintInSale    Int
-  Project          Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId        Int?
+  id                Int      @id @default(autoincrement())
+  saleIdentifier    String   @unique
+  enabled           Boolean
+  saleType          String
+  startTime         Int
+  endTime           Int
+  mintCharge        Float
+  whitelist         String[]
+  maxMintPerWallet  Int
+  maxMintInSale     Int
+  tokenGatedAddress String
+  Project           Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId         Int?
 
   @@map("sale_configs")
 }

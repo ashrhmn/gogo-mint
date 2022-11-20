@@ -59,6 +59,7 @@ export const getSaleConfigHash = (conf: ISaleConfigSol) =>
       "bytes32",
       "uint256",
       "uint256",
+      "address",
     ],
     [
       conf.saleIdentifier,
@@ -69,6 +70,7 @@ export const getSaleConfigHash = (conf: ISaleConfigSol) =>
       conf.whitelistRoot,
       conf.maxMintPerWallet,
       conf.maxMintInSale,
+      conf.tokenGatedAddress,
     ]
   );
 
@@ -94,4 +96,5 @@ export const getSolVersionConfig = (
             { sortPairs: true }
           ).getRoot()
         ),
+  tokenGatedAddress: config.tokenGatedAddress,
 });

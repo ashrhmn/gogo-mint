@@ -104,7 +104,8 @@ export const addBatchNftsToProject = async (
         : null;
     if (!contract) return -1;
     return await contract
-      .maxMintCap()
+      .state()
+      .then((s) => s.maxMintCap)
       .then((v) => v.toNumber())
       .catch(() => -1);
   })();

@@ -1,22 +1,73 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IDeployConfigSet, ISaleConfigInput } from "../../types";
 import { formatHtmlDateTime, normalizeString } from "../../utils/String.utils";
 import { parse as parseCsv } from "papaparse";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { is721 } from "../../services/ethereum.service";
+import { useEthers } from "@usedapp/core";
+import { ethers } from "ethers";
 
 const SaleConfigInput = ({
   saleWaveConfig,
   setConfigSet,
   index,
+  collectionType,
 }: {
   saleWaveConfig: ISaleConfigInput;
   setConfigSet: React.Dispatch<React.SetStateAction<IDeployConfigSet>>;
   index: number;
+  collectionType: "721" | "1155";
 }) => {
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
+  const { chainId } = useEthers();
+  const [isTokenGated, setIsTokenGated] = useState(false);
+
+  useEffect(() => {
+    if (collectionType === "1155")
+      setConfigSet((prev) => ({
+        ...prev,
+        saleWaves: prev.saleWaves.map((sw) =>
+          sw.uuid !== saleWaveConfig.uuid
+            ? { ...sw }
+            : {
+                ...sw,
+                tokenGatedAddress: ethers.constants.AddressZero,
+              }
+        ),
+      }));
+    if (collectionType === "721")
+      (async () => {
+        try {
+          setIsTokenGated(
+            await is721(saleWaveConfig.tokenGatedAddress, chainId!)
+          );
+          setConfigSet((prev) => ({
+            ...prev,
+            saleWaves: prev.saleWaves.map((sw) =>
+              sw.uuid !== saleWaveConfig.uuid
+                ? { ...sw }
+                : {
+                    ...sw,
+                    saleType: "private",
+                    maxMintPerWallet: 0,
+                  }
+            ),
+          }));
+        } catch (error) {
+          setIsTokenGated(false);
+        }
+      })();
+  }, [
+    chainId,
+    collectionType,
+    saleWaveConfig.tokenGatedAddress,
+    saleWaveConfig.uuid,
+    setConfigSet,
+  ]);
+
   const checkboxRef = useRef<HTMLInputElement | null>(null);
   return (
     <details className="p-2 m-3 border-2 border-gray-600 rounded-xl bg-gray-800">
@@ -85,7 +136,9 @@ const SaleConfigInput = ({
               className="border-none bg-transparent p-1 w-full disabled:text-gray-400"
             >
               <option value="private">Private</option>
-              <option value="public">Public</option>
+              {!(collectionType === "721" && isTokenGated) && (
+                <option value="public">Public</option>
+              )}
             </select>
           </div>
         </div>
@@ -224,6 +277,39 @@ const SaleConfigInput = ({
             )}
           </div>
         </div>
+        {collectionType === "721" && (
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">Token Gated Contract Address</label>
+            {saleWaveConfig.tokenGatedAddress !== "" && !isTokenGated && (
+              <>
+                <br />
+                <span className="text-sm text-red-500">
+                  Invalid ERC721 address, Please put a valid ERC721 contract
+                  address or remove it for non-token gated sale wave.
+                </span>
+              </>
+            )}
+            <input
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+              type="text"
+              defaultValue={saleWaveConfig.tokenGatedAddress}
+              placeholder="Token Gated Contract Address"
+              onChange={(e) => {
+                setConfigSet((prev) => ({
+                  ...prev,
+                  saleWaves: prev.saleWaves.map((sw) =>
+                    sw.uuid !== saleWaveConfig.uuid
+                      ? { ...sw }
+                      : {
+                          ...sw,
+                          tokenGatedAddress: e.target.value,
+                        }
+                  ),
+                }));
+              }}
+            />
+          </div>
+        )}
         <div className="mt-4 space-y-2">
           <label className="font-bold">
             Mint Charge <span className="text-red-700">*</span>
@@ -253,34 +339,36 @@ const SaleConfigInput = ({
             }}
           />
         </div>
-        <div className="mt-4 space-y-2">
-          <label className="font-bold">
-            Max Mint Per Wallet <span className="text-red-700">*</span>
-          </label>
-          <input
-            className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
-            type="number"
-            min={0}
-            placeholder="0 (Equivalent to Mint-Disabled)"
-            value={saleWaveConfig.maxMintPerWallet || ""}
-            onChange={(e) => {
-              setConfigSet((prev) => ({
-                ...prev,
-                saleWaves: prev.saleWaves.map((sw) =>
-                  sw.uuid !== saleWaveConfig.uuid
-                    ? { ...sw }
-                    : {
-                        ...sw,
-                        maxMintPerWallet:
-                          isNaN(+e.target.value) || e.target.value === ""
-                            ? 0
-                            : +e.target.valueAsNumber.toFixed(0),
-                      }
-                ),
-              }));
-            }}
-          />
-        </div>
+        {!(collectionType === "721" && isTokenGated) && (
+          <div className="mt-4 space-y-2">
+            <label className="font-bold">
+              Max Mint Per Wallet <span className="text-red-700">*</span>
+            </label>
+            <input
+              className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+              type="number"
+              min={0}
+              placeholder="0 (Equivalent to Mint-Disabled)"
+              value={saleWaveConfig.maxMintPerWallet || ""}
+              onChange={(e) => {
+                setConfigSet((prev) => ({
+                  ...prev,
+                  saleWaves: prev.saleWaves.map((sw) =>
+                    sw.uuid !== saleWaveConfig.uuid
+                      ? { ...sw }
+                      : {
+                          ...sw,
+                          maxMintPerWallet:
+                            isNaN(+e.target.value) || e.target.value === ""
+                              ? 0
+                              : +e.target.valueAsNumber.toFixed(0),
+                        }
+                  ),
+                }));
+              }}
+            />
+          </div>
+        )}
         <div className="mt-4 space-y-2">
           <label className="font-bold">
             Max Mint In Sale <span className="text-red-700">*</span>
