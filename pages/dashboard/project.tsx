@@ -70,6 +70,8 @@ const ProjectPage: NextPage<Props> = ({
   }, [account, cookieAddress, router]);
 
   useEffect(() => {
+    console.log({ project });
+
     (async () => {
       setMaxCapLimit(
         await (async () => {
@@ -79,12 +81,12 @@ const ProjectPage: NextPage<Props> = ({
             project.collectionType === "721"
               ? Collection721__factory.connect(
                   project.address,
-                  new providers.JsonRpcBatchProvider(rpcUrl)
+                  new providers.StaticJsonRpcProvider(rpcUrl)
                 )
               : project.collectionType === "1155"
               ? Collection1155__factory.connect(
                   project.address,
-                  new providers.JsonRpcBatchProvider(rpcUrl)
+                  new providers.StaticJsonRpcProvider(rpcUrl)
                 )
               : null;
           if (!contract) return -1;

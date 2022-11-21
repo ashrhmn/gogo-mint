@@ -16,7 +16,7 @@ export const getSigner = (
 };
 
 export const is721 = async (address: string, chainId: number) => {
-  if (!isAddress(address)) throw "Invalid Token Gated Contract Address";
+  if (!isAddress(address)) return false;
   const rpc = RPC_URLS[chainId];
   if (!rpc) throw "Network not supported";
   const contract = new ethers.Contract(

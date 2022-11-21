@@ -94,12 +94,12 @@ export const addBatchNftsToProject = async (
       project.collectionType === "721"
         ? Collection721__factory.connect(
             project.address,
-            new providers.JsonRpcBatchProvider(rpcUrl)
+            new providers.StaticJsonRpcProvider(rpcUrl)
           )
         : project.collectionType === "1155"
         ? Collection1155__factory.connect(
             project.address,
-            new providers.JsonRpcBatchProvider(rpcUrl)
+            new providers.StaticJsonRpcProvider(rpcUrl)
           )
         : null;
     if (!contract) return -1;
