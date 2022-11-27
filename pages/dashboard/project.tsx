@@ -70,8 +70,6 @@ const ProjectPage: NextPage<Props> = ({
   }, [account, cookieAddress, router]);
 
   useEffect(() => {
-    console.log({ project });
-
     (async () => {
       setMaxCapLimit(
         await (async () => {
