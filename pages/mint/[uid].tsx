@@ -234,23 +234,23 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
-    if (
-      currentSale.saleType === "private" &&
-      currentSale.whitelist.length <= 0
-    ) {
-      toast.error("No one is allowed to mint (Empty Whitelist)");
-      return;
-    }
+    // if (
+    //   currentSale.saleType === "private" &&
+    //   currentSale.whitelist.length <= 0
+    // ) {
+    //   toast.error("No one is allowed to mint (Empty Whitelist)");
+    //   return;
+    // }
 
-    if (
-      currentSale.saleType === "private" &&
-      !currentSale.whitelist
-        .map((v) => v.toLowerCase())
-        .includes(account.toLowerCase())
-    ) {
-      toast.error("You are not whitelisted");
-      return;
-    }
+    // if (
+    //   currentSale.saleType === "private" &&
+    //   !currentSale.whitelist
+    //     .map((v) => v.toLowerCase())
+    //     .includes(account.toLowerCase())
+    // ) {
+    //   toast.error("You are not whitelisted");
+    //   return;
+    // }
 
     // if (
     //   // config.maxMintInTotalPerWallet === 0 ||
