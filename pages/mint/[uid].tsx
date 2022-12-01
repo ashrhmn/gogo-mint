@@ -244,7 +244,9 @@ const MintPage: NextPage<Props> = ({
 
     if (
       currentSale.saleType === "private" &&
-      !currentSale.whitelist.includes(account)
+      !currentSale.whitelist
+        .map((v) => v.toLowerCase())
+        .includes(account.toLowerCase())
     ) {
       toast.error("You are not whitelisted");
       return;
