@@ -23,26 +23,46 @@ model User {
 }
 
 model Project {
-  id                 Int               @id @default(autoincrement())
-  userId             Int
-  name               String
-  description        String?
-  imageUrl           String?
-  unrevealedImageUrl String?
-  bannerUrl          String?
-  owner              User              @relation(fields: [userId], references: [id])
-  address            String?
-  nfts               NFT[]
-  chainId            Int?
-  collectionType     String?
-  uid                String?           @unique
-  saleConfigs        SaleConfig[]
-  royaltyReceiver    String?
-  royaltyPercentage  Float             @default(0.0)
-  roleIntegrations   RoleIntegration[]
+  id                       Int                        @id @default(autoincrement())
+  userId                   Int
+  name                     String
+  description              String?
+  imageUrl                 String?
+  unrevealedImageUrl       String?
+  bannerUrl                String?
+  owner                    User                       @relation(fields: [userId], references: [id])
+  address                  String?
+  nfts                     NFT[]
+  chainId                  Int?
+  collectionType           String?
+  uid                      String?                    @unique
+  saleConfigs              SaleConfig[]
+  royaltyReceiver          String?
+  royaltyPercentage        Float                      @default(0.0)
+  roleIntegrations         RoleIntegration[]
+  possibleFirstBlockNumber Int?
+  lastUpdatedBlockNumber   Int?
+  tokenGatedTransferEvents TokenGatedTransferEvents[]
 
   @@unique([address, chainId])
   @@map("projects")
+}
+
+model TokenGatedTransferEvents {
+  id               Int     @id @default(autoincrement())
+  from             String
+  to               String
+  tokenId          Int
+  blockNumber      Int
+  logIndex         Int
+  transactionIndex Int
+  blockHash        String
+  transactionHash  String
+  project          Project @relation(fields: [projectId], references: [id])
+  projectId        Int
+
+  @@unique([projectId, blockNumber, blockHash, transactionHash, transactionIndex, logIndex])
+  @@map("token_gated_transfer_events")
 }
 
 model SaleConfig {
