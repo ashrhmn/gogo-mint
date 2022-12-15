@@ -57,7 +57,7 @@ const MintPage: NextPage<Props> = ({
   configProof,
   claimedSupply,
   totalSupply,
-  randomMsgSign,
+  // randomMsgSign,
 }) => {
   const { account, chainId, library, activateBrowserWallet, activate } =
     useEthers();
@@ -126,66 +126,6 @@ const MintPage: NextPage<Props> = ({
     project.chainId,
     project.collectionType,
   ]);
-  // useEffect(() => {
-  //   (async () => {
-  //     if (
-  //       !project.address ||
-  //       !project.chainId ||
-  //       !RPC_URLS[project.chainId] ||
-  //       !account ||
-  //       !chainId ||
-  //       !currentSale
-  //     ) {
-  //       setConfig((c) => ({
-  //         ...c,
-  //         totalMintInSale: 0,
-  //         mintCountInSaleByUser: 0,
-  //       }));
-  //       return;
-  //     }
-  //     const contract =
-  //       project.collectionType === "721"
-  //         ? Collection721__factory.connect(
-  //             project.address,
-  //             new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
-  //           )
-  //         : Collection1155__factory.connect(
-  //             project.address,
-  //             new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
-  //           );
-  //     const [
-  //       totalMintInSale,
-  //       mintCountInSaleByUser,
-  //       maxMintCap,
-  //       totalMintCount,
-  //     ] = (
-  //       await Promise.all([
-  //         contract.mintCountByIdentifier(currentSale.saleIdentifier),
-  //         contract.mintCountByIdentifierWallet(
-  //           currentSale.saleIdentifier,
-  //           account
-  //         ),
-  //         contract.maxMintCap().catch(() => -1),
-  //         contract.mintCount().catch(() => -1),
-  //       ])
-  //     ).map((v) => +v.toString());
-  //     setConfig((c) => ({
-  //       ...c,
-  //       totalMintInSale,
-  //       mintCountInSaleByUser,
-  //       maxMintCap,
-  //       totalMintCount,
-  //     }));
-  //   })();
-  // }, [
-  //   account,
-  //   chainId,
-  //   currentSale,
-  //   project.address,
-  //   project.chainId,
-  //   project.collectionType,
-  // ]);
-
   const handleMintClick = async () => {
     if (!project.address || !project.chainId || !RPC_URLS[project.chainId]) {
       toast.error("Error loading project data");
@@ -199,17 +139,7 @@ const MintPage: NextPage<Props> = ({
       toast.error("No Sale Running");
       return;
     }
-    // if (
-    //   config.maxMintInTotalPerWallet === -1 ||
-    //   config.mintCountInSaleByUser === -1 ||
-    //   config.totalMintInSale === -1 ||
-    //   config.userBalance === -1 ||
-    //   config.maxMintCap === -1 ||
-    //   config.totalMintCount === -1
-    // ) {
-    //   toast.error("Error loading data");
-    //   return;
-    // }
+
     if (configProof === null) {
       toast.error("Error config proof");
       return;
@@ -223,63 +153,6 @@ const MintPage: NextPage<Props> = ({
       toast.error(`Please connect to network ID : ${project.chainId}`);
       return;
     }
-
-    // if (config.totalMintCount + mintCount > config.maxMintCap) {
-    //   toast.error("Max Mint Cap Reached");
-    //   return;
-    // }
-
-    if (!randomMsgSign) {
-      toast.error("Error getting platform signature");
-      return;
-    }
-
-    // if (
-    //   currentSale.saleType === "private" &&
-    //   currentSale.whitelist.length <= 0
-    // ) {
-    //   toast.error("No one is allowed to mint (Empty Whitelist)");
-    //   return;
-    // }
-
-    // if (
-    //   currentSale.saleType === "private" &&
-    //   !currentSale.whitelist
-    //     .map((v) => v.toLowerCase())
-    //     .includes(account.toLowerCase())
-    // ) {
-    //   toast.error("You are not whitelisted");
-    //   return;
-    // }
-
-    // if (
-    //   // config.maxMintInTotalPerWallet === 0 ||
-    //   currentSale.maxMintInSale === 0
-    // ) {
-    //   toast.error("Minting Disabled");
-    //   return;
-    // }
-
-    // if (
-    //   config.maxMintInTotalPerWallet !== 0 &&
-    //   mintCount + config.userBalance > config.maxMintInTotalPerWallet
-    // ) {
-    //   toast.error("Max mint in total limit for your wallet exceeds");
-    //   return;
-    // }
-
-    // if (
-    //   mintCount + config.mintCountInSaleByUser >
-    //   currentSale.maxMintPerWallet
-    // ) {
-    //   toast.error("Max mint limit for your wallet exceeds");
-    //   return;
-    // }
-
-    // if (mintCount + config.totalMintInSale > currentSale.maxMintInSale) {
-    //   toast.error("Max limit for sale exceeds");
-    //   return;
-    // }
 
     if (totalSupply === null || claimedSupply === null) {
       toast.error("Error getting supply informations");
@@ -309,15 +182,23 @@ const MintPage: NextPage<Props> = ({
 
     try {
       setMintBgProc((v) => v + 1);
-      const { data: whitelistProof } = await service.get(
-        `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
-      );
 
-      // const contract = new Contract(
-      //   project.address,
-      //   project.collectionType === "721" ? ABI721 : ABI1155,
-      //   library.getSigner(account)
-      // );
+      const [{ data: whitelistProof }, randomMsgSign] = await Promise.all([
+        service.get(
+          `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
+        ),
+        service
+          .post(`/platform-signer/signature`, {
+            account,
+            chainId,
+            projectId: project.id,
+            mintCount,
+          })
+          .then((res) => res.data.data)
+          .catch(console.error),
+      ]);
+
+      if (!randomMsgSign) throw "Error getting platform signature";
 
       const contract =
         project.collectionType === "721"
@@ -410,6 +291,7 @@ const MintPage: NextPage<Props> = ({
       const contractError = getParsedEthersError(error as any).context;
       if (!!contractError && typeof contractError === "string")
         toast.error(contractError);
+      else if (typeof error === "string") toast.error(error);
       else toast.error("Error minting");
     }
   };
@@ -547,7 +429,6 @@ const MintPage: NextPage<Props> = ({
                 >
                   -
                 </button>
-                {/* <span className="w-10 text-center text-2xl">{mintCount}</span> */}
                 <input
                   type="number"
                   className="w-20 text-center text-2xl bg-transparent border-2 border-gray-300 rounded"
@@ -568,36 +449,13 @@ const MintPage: NextPage<Props> = ({
                   +
                 </button>
               </div>
-
-              {/* <button
-                className="border-2 border-gray-400 rounded py-1 px-2 hover:bg-gray-400 hover:text-black transition-colors text-xs disabled:cursor-not-allowed"
-                onClick={() => setMintCount(1)}
-                disabled={mintBgProc > 0}
-              >
-                Reset
-              </button> */}
             </div>
             <button
               className="bg-teal-700 font-medium text-4xl text-white rounded hover:bg-teal-600 transition-colors w-full py-4 disabled:bg-teal-400 disabled:text-gray-500 disabled:cursor-not-allowed"
               onClick={handleMintClick}
               disabled={mintBgProc > 0}
-              // disabled={
-              //   mintBgProc > 0 ||
-              //   config.maxMintInTotalPerWallet === -1 ||
-              //   config.mintCountInSaleByUser === -1 ||
-              //   config.totalMintInSale === -1 ||
-              //   config.userBalance === -1
-              // }
             >
               {!account ? "Wallet Not Connected" : "Mint "}
-              {/* {config.maxMintInTotalPerWallet === -1 ||
-              config.mintCountInSaleByUser === -1 ||
-              config.totalMintInSale === -1 ||
-              config.userBalance === -1
-                ? !!account
-                  ? "Loading... "
-                  : "Wallet Not Connected"
-                : "Mint "} */}
               {!!currentSale && !!account && (
                 <span className="text-lg">
                   {mintCount < 1 ? (
