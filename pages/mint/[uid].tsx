@@ -1,7 +1,12 @@
 import { Project, SaleConfig, User } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { BigNumber, providers } from "ethers";
-import { formatEther, parseEther } from "ethers/lib/utils";
+import {
+  arrayify,
+  formatEther,
+  parseEther,
+  solidityKeccak256,
+} from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -33,6 +38,8 @@ import {
 } from "../../utils/String.utils";
 import { walletConnectConnector } from "../../lib/connectors";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
+import { fetchAndStoreEvents } from "../../services/transferEvent.service";
+import { getMessageToSignOnTokenGatedMint } from "../../constants/configuration";
 
 interface Props {
   project: Project & {
@@ -183,20 +190,48 @@ const MintPage: NextPage<Props> = ({
     try {
       setMintBgProc((v) => v + 1);
 
-      const [{ data: whitelistProof }, randomMsgSign] = await Promise.all([
-        service.get(
-          `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
-        ),
-        service
-          .post(`/platform-signer/signature`, {
-            account,
-            chainId,
-            projectId: project.id,
-            mintCount,
-          })
-          .then((res) => res.data.data)
-          .catch(console.error),
-      ]);
+      const tokenGatedMintSignature = await (async () => {
+        if (!currentSale.tokenGatedAddress) return;
+        return await toast.promise(
+          library
+            .getSigner(account)
+            .signMessage(getMessageToSignOnTokenGatedMint(account, mintCount)),
+          {
+            error: "Error getting signature approval",
+            loading: "Awaiting signature approval for token gated mint...",
+            success: "",
+          },
+          {
+            success: { style: { display: "none" } },
+          }
+        );
+      })();
+
+      const [{ data: whitelistProof }, randomMsgSign] = await toast.promise(
+        Promise.all([
+          service.get(
+            `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
+          ),
+          service
+            .post(`/platform-signer/signature`, {
+              account,
+              chainId,
+              projectId: project.id,
+              mintCount,
+              signature: tokenGatedMintSignature,
+            })
+            .then((res) => res.data.data)
+            .catch((err) => {
+              // console.log("Mint Signature Error : ", err);
+              throw err.response.data.error;
+            }),
+        ]),
+        { error: "", loading: "Preparing...", success: "" },
+        {
+          success: { style: { display: "none" } },
+          error: { style: { display: "none" } },
+        }
+      );
 
       if (!randomMsgSign) throw "Error getting platform signature";
 
@@ -529,6 +564,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return null;
       })
     : null;
+
+  if (currentSale?.tokenGatedAddress)
+    fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
   return {
     props: {
       project,

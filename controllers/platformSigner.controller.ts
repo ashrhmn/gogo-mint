@@ -33,28 +33,22 @@ export const getMintSignature = async (
   res: NextApiResponse
 ) => {
   try {
-    const { account, chainId, projectId, mintCount } = req.body;
+    const { account, chainId, projectId, mintCount, signature } = req.body;
     if (isNaN(+projectId)) throw "Invalid Project ID";
     if (isNaN(+chainId)) throw "Invalid Chain ID";
     if (isNaN(+mintCount)) throw "Invalid Mint Count";
-    const currentSale = await getCurrentSale(+projectId).catch(() => null);
-    if (!currentSale) throw "Current Sale Not Found";
-
-    if (
-      currentSale.mintCharge === 0 &&
-      (await is721(currentSale.tokenGatedAddress, +chainId))
-    ) {
-      console.log("Formula");
-    }
 
     const data = await PlatformSignerService.getMintSignature({
       account,
       mintCount: +mintCount,
+      chainId: +chainId,
+      projectId: +projectId,
+      signature,
     });
     return res.json(successResponse(data));
   } catch (error) {
-    console.log("Error getting random message signature : ", error);
-    return res.json(errorResponse(error));
+    console.log("Error getting mint signature : ", error);
+    return res.status(400).json(errorResponse(error));
   }
 };
 

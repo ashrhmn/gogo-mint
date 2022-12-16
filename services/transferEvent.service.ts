@@ -1,4 +1,3 @@
-import { getProjectById } from "./project.service";
 import { prisma } from "../lib/db";
 import { RPC_URLS } from "../constants/RPC_URL";
 import { ethers } from "ethers";
@@ -9,9 +8,10 @@ import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
 export const fetchAndStoreEvents = async (
   projectId: number,
   tokenGatedAddress: string,
-  chainId: number,
-  opts?: { startFromZero?: boolean; waitToComplete?: boolean }
+  overrides?: { startFromZero?: boolean; waitToComplete?: boolean }
 ) => {
+  console.log("fetch", projectId, tokenGatedAddress);
+
   const project = await prisma.project.findFirst({ where: { id: projectId } });
   if (!project) throw "Project Not Found";
   if (!project.chainId) throw "Invalid ChainID";
@@ -28,15 +28,17 @@ export const fetchAndStoreEvents = async (
   const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
 
   const startBlock =
-    !!opts && opts.startFromZero
+    !!overrides && overrides.startFromZero
       ? 0
       : await prisma.tokenGatedTransferEvents
           .aggregate({
             _max: { blockNumber: true },
           })
-          .then((res) => res._max.blockNumber || 0);
+          .then((res) => (res._max.blockNumber ? res._max.blockNumber + 1 : 0));
 
   const endBlock = await provider.getBlockNumber();
+
+  console.log({ startBlock, endBlock });
 
   const task = async () =>
     await _fetchAndStoreEvents({
@@ -48,7 +50,7 @@ export const fetchAndStoreEvents = async (
       chainId: project.chainId!,
     });
 
-  !!opts && opts.waitToComplete ? await task() : task();
+  !!overrides && overrides.waitToComplete ? await task() : task();
 };
 
 const _fetchAndStoreEvents = async ({
@@ -69,9 +71,7 @@ const _fetchAndStoreEvents = async ({
   try {
     const provider = new ethers.providers.StaticJsonRpcProvider(rpcUrl);
     const contract = Collection721__factory.connect(address, provider);
-    const eventFilter = contract.filters["Transfer(address,address,uint256)"](
-      ethers.constants.AddressZero
-    );
+    const eventFilter = contract.filters["Transfer(address,address,uint256)"]();
     const events = await contract.queryFilter(
       eventFilter,
       startBlock,
@@ -80,27 +80,29 @@ const _fetchAndStoreEvents = async ({
     console.log("Success : ", events.length);
 
     await prisma.tokenGatedTransferEvents.createMany({
-      data: events.map(
-        ({
-          blockHash,
-          blockNumber,
-          transactionHash,
-          transactionIndex,
-          logIndex,
-          args,
-        }) => ({
-          blockHash,
-          blockNumber,
-          from: args[0],
-          logIndex,
-          to: args[1],
-          tokenId: args[2].toString(),
-          transactionHash,
-          transactionIndex,
-          address,
-          chainId,
-        })
-      ),
+      data: events
+        .filter((e) => e.args[0] === ethers.constants.AddressZero)
+        .map(
+          ({
+            blockHash,
+            blockNumber,
+            transactionHash,
+            transactionIndex,
+            logIndex,
+            args,
+          }) => ({
+            blockHash,
+            blockNumber,
+            from: args[0],
+            logIndex,
+            to: args[1],
+            tokenId: args[2].toString(),
+            transactionHash,
+            transactionIndex,
+            address,
+            chainId,
+          })
+        ),
       skipDuplicates: true,
     });
   } catch (error) {
@@ -136,6 +138,7 @@ const _fetchAndStoreEvents = async ({
         message: getParsedEthersError(error as any).context,
         error,
       });
+      console.log("Retrying...");
       await _fetchAndStoreEvents({
         address,
         endBlock,

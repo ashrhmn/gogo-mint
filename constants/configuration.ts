@@ -43,6 +43,11 @@ Welcome to HydroMint
 Account : ${address}
 `;
 
+export const getMessageToSignOnTokenGatedMint = (
+  address: string,
+  mintCount: number
+) => `Minting ${mintCount} NFT(s) for ${address}`;
+
 export const EMPTY_WHITELIST_ROOT =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 
