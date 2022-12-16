@@ -62,7 +62,6 @@ export const getMintSignature = async ({
   if (
     currentSale.tokenGatedAddress !== ethers.constants.AddressZero &&
     currentSale.mintCharge === 0 &&
-    currentSale.saleType === "private" &&
     (await is721(currentSale.tokenGatedAddress, chainId))
   ) {
     if (!signature) throw "Signature Not Provided";
