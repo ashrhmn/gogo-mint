@@ -6,8 +6,8 @@ services:
       context: .
       args:
         - PORT=${PORT:-3001}
-    image: gogo-mint-dev-img
-    container_name: gogo-mint-dev
+    image: gogo-mint-dftsw-img
+    container_name: gogo-mint-dftsw
     restart: always
 networks:
   default:
