@@ -1,4 +1,4 @@
-import { Contract, providers } from "ethers";
+import { Contract, ethers, providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -65,7 +65,9 @@ const OverviewSection = ({
         if (nft.tokenId === null) return;
         setBgProcRunning((v) => v + 1);
         try {
-          const owner = await contract.ownerOf(nft.tokenId);
+          const owner = await contract
+            .ownerOf(nft.tokenId)
+            .catch(() => ethers.constants.AddressZero);
           const tokenUri = await contract.tokenURI(nft.tokenId);
           console.log("Token URI ", nft.id, " : ", tokenUri);
           setNftsWithOwner((old) => [
@@ -220,7 +222,7 @@ const OverviewSection = ({
         <table className="w-full">
           <thead>
             <tr className="border-b-2 border-t-2 border-gray-600 bg-gray-800">
-              <th>ID</th>
+              {/* <th>ID</th> */}
               {collectionType === "721" && <th>Token ID</th>}
               <th>Media</th>
               <th>Name</th>
@@ -235,7 +237,7 @@ const OverviewSection = ({
               .sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0))
               .map((nft) => (
                 <tr className="border-b-2 border-gray-500" key={nft.id}>
-                  <td className="p-4 text-center min-w-[100px]">{nft.id}</td>
+                  {/* <td className="p-4 text-center min-w-[100px]">{nft.id}</td> */}
                   {collectionType === "721" && (
                     <td className="p-4 text-center min-w-[100px]">
                       {nft.tokenId}
@@ -301,7 +303,7 @@ const OverviewSection = ({
                         className="cursor-pointer"
                         onClick={() => handleDeleteNft(nft.id)}
                       >
-                        {nft.tokenId === null && (
+                        {nft.owner === ethers.constants.AddressZero && (
                           <button className="bg-red-500 text-white p-1 rounded w-28 hover:bg-red-700 transition-colors">
                             Delete
                           </button>

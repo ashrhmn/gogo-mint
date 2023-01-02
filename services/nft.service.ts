@@ -113,11 +113,21 @@ export const addBatchNftsToProject = async (
   if (project._count.nfts + nftsData.length > maxCapLimit)
     throw "Max Cap Limit exceeds";
 
+  const maxTokenId = await prisma.nFT
+    .aggregate({
+      _max: { tokenId: true },
+      where: { projectId },
+    })
+    .then((res) => res._max.tokenId || 0);
+
+  let tokenIdCounter = maxTokenId;
+
   const promises = nftsData.map((data, index) => {
     return prisma.nFT.create({
       data: {
         projectId,
-        tokenId: data.tokenId,
+        // tokenId: data.tokenId,
+        tokenId: ++tokenIdCounter,
         name: data.name,
         backgroundColor: data.backgroundColor,
         description: data.description,
@@ -293,4 +303,25 @@ export const deleteNftById = async (id: number, cookies: Cookies) => {
   if (cookieWallet !== nft.project.owner.walletAddress)
     throw "Logged in wallet not project owner";
   await prisma.nFT.delete({ where: { id } });
+};
+
+export const fixMissingTokenIds = async (projectId: number) => {
+  const missingIds =
+    await prisma.$queryRaw`SELECT "tokenId" FROM generate_series(1,(SELECT max("tokenId") FROM public.nfts WHERE "projectId"=${projectId})) "tokenId" EXCEPT SELECT "tokenId" FROM public.nfts  WHERE "projectId"=${projectId};`
+      .then((res) => res as { tokenId: number }[])
+      .then((res) => res.map((r) => r.tokenId))
+      .catch(() => [] as number[]);
+
+  const uniqueMissingIds = Array.from(new Set(missingIds));
+
+  // console.log({ missingIds, uniqueMissingIds });
+
+  if (uniqueMissingIds.length === 0) return;
+
+  for (const id of uniqueMissingIds) {
+    await prisma.$executeRaw`update nfts set "tokenId"=${id} where  "projectId"=${projectId} and "tokenId"=(SELECT max("tokenId") FROM public.nfts where "projectId"=${projectId}) AND NOT EXISTS (
+      SELECT 1 FROM nfts WHERE "tokenId" = ${id} AND "projectId" = ${projectId}
+   )`.catch(console.error);
+    // console.log({ id });
+  }
 };

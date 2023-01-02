@@ -40,6 +40,7 @@ import { walletConnectConnector } from "../../lib/connectors";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
 import { fetchAndStoreEvents } from "../../services/transferEvent.service";
 import { getMessageToSignOnTokenGatedMint } from "../../constants/configuration";
+import { fixMissingTokenIds } from "../../services/nft.service";
 
 interface Props {
   project: Project & {
@@ -284,42 +285,49 @@ const MintPage: NextPage<Props> = ({
         success: "Transaction Completed",
       });
 
-      if (project.collectionType === "1155") {
-        await service.post(`discord/refresh-role-integrations`, {
-          walletAddress: account,
-          projectAddress: project.address,
-        });
-        router.reload();
-        return;
-      }
-
-      console.log(
-        get721MintEventArgsMapping(
-          (receipt as any).events.find((e: any) => e.event === "Mint").args
-        )
-      );
-      const eventData = get721MintEventArgsMapping(
-        (receipt as any).events.find((e: any) => e.event === "Mint").args
-      );
-      await toast.promise(
-        Promise.all([
-          service.post(`nft/random-unclaimed/attatch`, {
-            projectId: project.id,
-            fromTokenId: eventData.fromTokenId,
-            toTokenId: eventData.toTokenId,
-          }),
-          service.post(`discord/refresh-role-integrations`, {
-            walletAddress: account,
-            projectAddress: project.address,
-          }),
-        ]),
-        {
-          error: "Error updating NFT",
-          loading: "Updating informations...(Page will refresh automatically)",
-          success: "Mint Successful",
-        }
-      );
+      await service.post(`discord/refresh-role-integrations`, {
+        walletAddress: account,
+        projectAddress: project.address,
+      });
       router.reload();
+      return;
+
+      // if (project.collectionType === "1155") {
+      //   await service.post(`discord/refresh-role-integrations`, {
+      //     walletAddress: account,
+      //     projectAddress: project.address,
+      //   });
+      //   router.reload();
+      //   return;
+      // }
+
+      // console.log(
+      //   get721MintEventArgsMapping(
+      //     (receipt as any).events.find((e: any) => e.event === "Mint").args
+      //   )
+      // );
+      // const eventData = get721MintEventArgsMapping(
+      //   (receipt as any).events.find((e: any) => e.event === "Mint").args
+      // );
+      // await toast.promise(
+      //   Promise.all([
+      //     service.post(`nft/random-unclaimed/attatch`, {
+      //       projectId: project.id,
+      //       fromTokenId: eventData.fromTokenId,
+      //       toTokenId: eventData.toTokenId,
+      //     }),
+      //     service.post(`discord/refresh-role-integrations`, {
+      //       walletAddress: account,
+      //       projectAddress: project.address,
+      //     }),
+      //   ]),
+      //   {
+      //     error: "Error updating NFT",
+      //     loading: "Updating informations...(Page will refresh automatically)",
+      //     success: "Mint Successful",
+      //   }
+      // );
+      // router.reload();
     } catch (error) {
       setMintBgProc((v) => v - 1);
       console.log("Minting error : ", error);
@@ -526,6 +534,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const project = await getProjectByUid(uid).catch((err) => null);
   if (!project || !project.address || !project.chainId)
     return { props: {}, redirect: { destination: "/404" } };
+
+  fixMissingTokenIds(project.id);
+
   const [currentSale, nextSale, totalSupply, claimedSupply, randomMsgSign] =
     await Promise.all([
       getCurrentSale(project.id).catch((err) => {

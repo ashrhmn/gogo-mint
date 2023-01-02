@@ -29,6 +29,7 @@ import { ProjectExtended } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
+import { fixMissingTokenIds } from "../../services/nft.service";
 
 interface Props {
   project: ProjectExtended & { _count: { nfts: number } };
@@ -321,6 +322,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     );
 
     if (!project) return { props: {}, redirect: { destination: `/404` } };
+
+    fixMissingTokenIds(project.id);
+
     if (project.owner.walletAddress !== cookieAddress)
       return {
         props: {},
