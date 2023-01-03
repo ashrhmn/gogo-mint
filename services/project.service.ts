@@ -7,6 +7,9 @@ import { ISaleConfigInput } from "../types";
 import { getCookieWallet } from "./auth.service";
 import { getDiscordClient, getUserByAccessToken } from "./discord.service";
 import { getUserByWalletAddress } from "./user.service";
+import { Collection721__factory } from "../ContractFactory";
+import { BigNumber, ethers } from "ethers";
+import { RPC_URLS } from "../constants/RPC_URL";
 
 export const getAllProjects = async () => await prisma.project.findMany();
 
@@ -61,6 +64,14 @@ export const getClaimedSupplyCountByProjectChainAddress = async (
   address: string,
   chainId: number
 ) => {
+  const rpcUrl = RPC_URLS[chainId];
+  if (!rpcUrl) return 0;
+  const contract = Collection721__factory.connect(
+    address,
+    new ethers.providers.StaticJsonRpcProvider(rpcUrl)
+  );
+  const tokenId = await contract.tokenId().catch(() => BigNumber.from(1));
+  return tokenId.sub(1).toNumber();
   return await prisma.nFT.count({
     where: { project: { address, chainId }, tokenId: { not: null } },
   });
@@ -74,14 +85,14 @@ export const getTotalSupplyCountByProjectChainAddress = async (
   });
 };
 
-export const getUnclaimedSupplyCountByProjectChainAddress = async (
-  address: string,
-  chainId: number
-) => {
-  return await prisma.nFT.count({
-    where: { project: { address, chainId }, tokenId: null },
-  });
-};
+// export const getUnclaimedSupplyCountByProjectChainAddress = async (
+//   address: string,
+//   chainId: number
+// ) => {
+//   return await prisma.nFT.count({
+//     where: { project: { address, chainId }, tokenId: null },
+//   });
+// };
 
 export const addNewProject = async (
   name: string,

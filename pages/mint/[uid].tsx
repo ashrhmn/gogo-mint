@@ -51,7 +51,7 @@ interface Props {
   nextSale: SaleConfig | null;
   configProof: string[] | null;
   totalSupply: number | null;
-  claimedSupply: number | null;
+  claimedSupply: number;
   randomMsgSign: {
     message: string;
     signature: string;
@@ -162,7 +162,7 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
-    if (totalSupply === null || claimedSupply === null) {
+    if (totalSupply === null) {
       toast.error("Error getting supply informations");
       return;
     }
@@ -559,7 +559,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         project.chainId
       ).catch((err) => {
         console.log("Error getting Claimed Supply Count : ", err);
-        return null;
+        return 0;
       }),
       getRandomMessageSignature().catch((err) => {
         console.log("Error getting random msg/sign : ", err);

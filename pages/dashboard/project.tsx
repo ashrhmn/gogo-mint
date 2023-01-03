@@ -22,7 +22,7 @@ import { getCookieWallet } from "../../services/auth.service";
 import {
   getClaimedSupplyCountByProjectChainAddress,
   getProjectByChainAddress,
-  getUnclaimedSupplyCountByProjectChainAddress,
+  getTotalSupplyCountByProjectChainAddress,
 } from "../../services/project.service";
 import { getUserByWalletAddress } from "../../services/user.service";
 import { ProjectExtended } from "../../types";
@@ -337,7 +337,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const [
       claimedSupply,
-      unclaimedSupply,
+      totalSupply,
       // serverList,
       //  discordUser
     ] = await Promise.all([
@@ -345,7 +345,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         ? getClaimedSupplyCountByProjectChainAddress(contract, +network)
         : null,
       tab === "overview" || tab === undefined
-        ? getUnclaimedSupplyCountByProjectChainAddress(contract, +network)
+        ? getTotalSupplyCountByProjectChainAddress(contract, +network)
         : null,
       // tab === "settings"
       //   ? getServerListWithAdminOrManageRole(cookie).catch((e) => {
@@ -365,7 +365,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         project,
         cookieAddress,
         claimedSupply,
-        unclaimedSupply,
+        unclaimedSupply: Math.max(0, (totalSupply || 0) - (claimedSupply || 0)),
         page: pageNo,
         view: take,
         mintStatus,
