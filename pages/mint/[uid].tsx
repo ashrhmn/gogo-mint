@@ -167,6 +167,11 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
+    if (project.collectionType === "1155" && totalSupply === 0) {
+      toast.error("Supply not Provided");
+      return;
+    }
+
     if (
       project.collectionType === "721" &&
       totalSupply - claimedSupply < mintCount
@@ -566,6 +571,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return null;
       }),
     ]);
+
   const configProof = !!currentSale
     ? await getSaleConfigProofByProjectId(
         project.id,

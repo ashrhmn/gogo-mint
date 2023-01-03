@@ -10,6 +10,7 @@ export const fetchAndStoreEvents = async (
   tokenGatedAddress: string,
   overrides?: { startFromZero?: boolean; waitToComplete?: boolean }
 ) => {
+  if (tokenGatedAddress === ethers.constants.AddressZero) return;
   console.log("fetch", projectId, tokenGatedAddress);
 
   const project = await prisma.project.findFirst({ where: { id: projectId } });
