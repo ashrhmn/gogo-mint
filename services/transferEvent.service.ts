@@ -80,31 +80,38 @@ const _fetchAndStoreEvents = async ({
     );
     console.log("Success : ", events.length);
 
-    await prisma.tokenGatedTransferEvents.createMany({
-      data: events
-        .filter((e) => e.args[0] === ethers.constants.AddressZero)
-        .map(
-          ({
-            blockHash,
-            blockNumber,
-            transactionHash,
-            transactionIndex,
-            logIndex,
-            args,
-          }) => ({
-            blockHash,
-            blockNumber,
-            from: args[0],
-            logIndex,
-            to: args[1],
-            tokenId: args[2].toString(),
-            transactionHash,
-            transactionIndex,
-            address,
-            chainId,
-          })
-        ),
-      skipDuplicates: true,
+    const createManyEventRes = await prisma.tokenGatedTransferEvents
+      .createMany({
+        data: events
+          .filter((e) => e.args[0] === ethers.constants.AddressZero)
+          .map(
+            ({
+              blockHash,
+              blockNumber,
+              transactionHash,
+              transactionIndex,
+              logIndex,
+              args,
+            }) => ({
+              blockHash,
+              blockNumber,
+              from: args[0],
+              logIndex,
+              to: args[1],
+              tokenId: args[2].toString(),
+              transactionHash,
+              transactionIndex,
+              address,
+              chainId,
+            })
+          ),
+        skipDuplicates: true,
+      })
+      .catch(console.error);
+
+    console.log("Done Create Many Events", {
+      success: events.length,
+      createManyEventRes,
     });
   } catch (error) {
     if (

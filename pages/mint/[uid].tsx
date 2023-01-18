@@ -582,8 +582,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       })
     : null;
 
-  if (currentSale?.tokenGatedAddress)
-    fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
+  // if (currentSale?.tokenGatedAddress)
+  //   fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
   return {
     props: {
       project,
