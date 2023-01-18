@@ -122,33 +122,42 @@ export const addBatchNftsToProject = async (
 
   let tokenIdCounter = maxTokenId;
 
-  const promises = nftsData.map((data, index) => {
-    return prisma.nFT.create({
-      data: {
-        projectId,
-        // tokenId: data.tokenId,
-        tokenId: ++tokenIdCounter,
-        name: data.name,
-        backgroundColor: data.backgroundColor,
-        description: data.description,
-        externalUrl: data.externalUrl,
-        imageUrl: data.imageUrl,
-        properties: {
-          createMany: {
-            data: data.properties
-              ? data.properties
-                  .filter((p) => !!p.value)
-                  .map((p) => ({
-                    type: p.type,
-                    value: p.value,
-                  }))
-              : [],
-            skipDuplicates: true,
+  const promises = nftsData.map((data) =>
+    prisma.nFT
+      .create({
+        data: {
+          projectId,
+          // tokenId: data.tokenId,
+          tokenId: ++tokenIdCounter,
+          name: data.name,
+          backgroundColor: data.backgroundColor,
+          description: data.description,
+          externalUrl: data.externalUrl,
+          imageUrl: data.imageUrl,
+          properties: {
+            createMany: {
+              data: data.properties
+                ? data.properties
+                    .filter((p) => !!p.value)
+                    .map((p) => ({
+                      type: p.type,
+                      value: p.value,
+                    }))
+                : [],
+              skipDuplicates: true,
+            },
           },
         },
-      },
-    });
-  });
+      })
+      .catch((err) => {
+        console.log({
+          error: "Error inserting NFT",
+          reason: err,
+          data: JSON.stringify(data),
+        });
+        return null;
+      })
+  );
 
   if (promises.length < 10) return await Promise.all(promises);
   else {
