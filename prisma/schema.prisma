@@ -62,19 +62,29 @@ model TokenGatedTransferEvents {
   @@map("token_gated_transfer_events")
 }
 
+model WhitelistLimits {
+  id           Int         @id @default(autoincrement())
+  address      String
+  limit        Int
+  saleConfig   SaleConfig? @relation(fields: [saleConfigId], references: [id])
+  saleConfigId Int?
+
+  @@map("whitelist_limits")
+}
+
 model SaleConfig {
-  id                Int      @id @default(autoincrement())
-  saleIdentifier    String   @unique
+  id                Int               @id @default(autoincrement())
+  saleIdentifier    String            @unique
   enabled           Boolean
   saleType          String
   startTime         Int
   endTime           Int
   mintCharge        Float
-  whitelist         String[]
+  whitelist         WhitelistLimits[]
   maxMintPerWallet  Int
   maxMintInSale     Int
   tokenGatedAddress String
-  Project           Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Project           Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId         Int?
 
   @@map("sale_configs")
