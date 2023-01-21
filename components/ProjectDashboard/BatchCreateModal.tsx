@@ -10,7 +10,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { v4 } from "uuid";
 
-type INFTCreateType = Omit<NFT, "id" | "tokenId" | "message" | "signature"> & {
+type INFTCreateType = Omit<
+  NFT,
+  "id" | "tokenId" | "message" | "signature" | "properties"
+> & {
   properties: { trait_type: string | null; value: string }[];
   uid: string;
 };
@@ -196,7 +199,7 @@ const BatchCreateModal = ({
                     .parse(results.data.map((d: any) => d.name));
                   setNftsAdded((prev) => [
                     ...prev,
-                    ...results.data.map((r: any, index) => ({
+                    ...results.data.map((r: any) => ({
                       name: r.name,
                       description: r.description || null,
                       backgroundColor: r.background_color || null,

@@ -48,19 +48,16 @@ export const addNftToProject = async (
       description,
       externalUrl,
       imageUrl,
-      properties: {
-        createMany: {
-          data: properties
-            ? properties
-                .filter((p) => !!p.value)
-                .map((p) => ({
-                  type: p.type,
-                  value: p.value,
-                }))
-            : [],
-          skipDuplicates: true,
-        },
-      },
+      properties: JSON.stringify(
+        properties
+          ? properties
+              .filter((p) => !!p.value)
+              .map((p) => ({
+                type: p.type,
+                value: p.value,
+              }))
+          : []
+      ),
     },
   });
 };
@@ -122,55 +119,76 @@ export const addBatchNftsToProject = async (
 
   let tokenIdCounter = maxTokenId;
 
-  const promises = nftsData.map((data) =>
-    prisma.nFT
-      .create({
-        data: {
-          projectId,
-          // tokenId: data.tokenId,
-          tokenId: ++tokenIdCounter,
-          name: data.name,
-          backgroundColor: data.backgroundColor,
-          description: data.description,
-          externalUrl: data.externalUrl,
-          imageUrl: data.imageUrl,
-          properties: {
-            createMany: {
-              data: data.properties
-                ? data.properties
-                    .filter((p) => !!p.value)
-                    .map((p) => ({
-                      type: p.type,
-                      value: p.value,
-                    }))
-                : [],
-              skipDuplicates: true,
-            },
-          },
-        },
-      })
-      .catch((err) => {
-        console.log({
-          error: "Error inserting NFT",
-          reason: err,
-          data: JSON.stringify(data),
-        });
-        return null;
-      })
-  );
+  return prisma.nFT.createMany({
+    data: nftsData.map((nft) => ({
+      projectId,
+      // tokenId: nft.tokenId,
+      tokenId: ++tokenIdCounter,
+      name: nft.name,
+      backgroundColor: nft.backgroundColor,
+      description: nft.description,
+      externalUrl: nft.externalUrl,
+      imageUrl: nft.imageUrl,
+      properties: JSON.stringify(
+        nft.properties
+          ? nft.properties
+              .filter((p) => !!p.value)
+              .map((p) => ({
+                type: p.type,
+                value: p.value,
+              }))
+          : []
+      ),
+    })),
+  });
 
-  if (promises.length < 10) return await Promise.all(promises);
-  else {
-    (async () => {
-      let counter = 0;
-      while (promises.length) {
-        await Promise.all(promises.splice(0, 10));
-        console.log(`Batch adding NFTs : ${++counter}`);
-      }
-      console.log("Complete Batch Add");
-    })();
-    return "queue";
-  }
+  // const promises = nftsData.map(
+  //   (data) => () =>
+  //     prisma.nFT
+  //       .create({
+  //         data: {
+  //           projectId,
+  //           // tokenId: data.tokenId,
+  //           tokenId: ++tokenIdCounter,
+  //           name: data.name,
+  //           backgroundColor: data.backgroundColor,
+  //           description: data.description,
+  //           externalUrl: data.externalUrl,
+  //           imageUrl: data.imageUrl,
+  //           properties: JSON.stringify(
+  //             data.properties
+  //               ? data.properties
+  //                   .filter((p) => !!p.value)
+  //                   .map((p) => ({
+  //                     type: p.type,
+  //                     value: p.value,
+  //                   }))
+  //               : []
+  //           ),
+  //         },
+  //       })
+  //       .catch((err) => {
+  //         console.log({
+  //           error: "Error inserting NFT",
+  //           reason: err,
+  //           data: JSON.stringify(data),
+  //         });
+  //         return null;
+  //       })
+  // );
+
+  // if (promises.length < 10) return await Promise.all(promises);
+  // else {
+  //   (async () => {
+  //     let counter = 0;
+  //     while (promises.length) {
+  //       await Promise.all(promises.splice(0, 10));
+  //       console.log(`Batch adding NFTs : ${++counter}`);
+  //     }
+  //     console.log("Complete Batch Add");
+  //   })();
+  //   return "queue";
+  // }
 };
 
 export const getNftsByProjectId = async (
@@ -179,7 +197,6 @@ export const getNftsByProjectId = async (
   take: number
 ) => {
   return await prisma.nFT.findMany({
-    include: { properties: true },
     where: { projectId },
     skip,
     take,
@@ -189,14 +206,22 @@ export const getNftsByProjectId = async (
 export const getMetadata = async (nftId: number) => {
   const nft = await prisma.nFT.findFirstOrThrow({
     where: { id: nftId },
-    include: { properties: true },
   });
+
+  const properties = (() => {
+    try {
+      return JSON.parse(nft.properties) as { type: string; value: string }[];
+    } catch (error) {
+      return [];
+    }
+  })();
+
   return {
     name: nft.name,
     description: nft.description,
     external_link: nft.externalUrl,
-    traits: nft.properties.map((p) => ({ trait_type: p.type, value: p.value })),
-    attributes: nft.properties.map((p) => ({
+    traits: properties.map((p) => ({ trait_type: p.type, value: p.value })),
+    attributes: properties.map((p) => ({
       trait_type: p.type,
       value: p.value,
     })),
@@ -215,14 +240,21 @@ export const getOnChainMetadata = async (
       project: { address: { mode: "insensitive", equals: address }, chainId },
       tokenId,
     },
-    include: { properties: true, project: { select: { uid: true } } },
+    include: { project: { select: { uid: true } } },
   });
+  const properties = (() => {
+    try {
+      return JSON.parse(nft.properties) as { type: string; value: string }[];
+    } catch (error) {
+      return [];
+    }
+  })();
   return {
     name: nft.name,
     description: nft.description,
     external_link: nft.externalUrl || `${PUBLIC_URL}mint/${nft.project.uid}`,
-    traits: nft.properties.map((p) => ({ trait_type: p.type, value: p.value })),
-    attributes: nft.properties.map((p) => ({
+    traits: properties.map((p) => ({ trait_type: p.type, value: p.value })),
+    attributes: properties.map((p) => ({
       trait_type: p.type,
       value: p.value,
     })),

@@ -64,7 +64,7 @@ export const getMintSignature = async ({
     currentSale.mintCharge === 0 &&
     (await is721(currentSale.tokenGatedAddress, chainId))
   ) {
-    if (!signature) throw "Signature Not Provided";
+    if (!signature) throw "Signature not provided";
     const recoveredAddress = recoverAddress(
       hashMessage(getMessageToSignOnTokenGatedMint(account, mintCount)),
       signature

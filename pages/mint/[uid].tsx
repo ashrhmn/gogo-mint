@@ -1,16 +1,11 @@
-import { Project, SaleConfig, User } from "@prisma/client";
+import { Project, SaleConfig, User, WhitelistLimits } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import { BigNumber, providers } from "ethers";
-import {
-  arrayify,
-  formatEther,
-  parseEther,
-  solidityKeccak256,
-} from "ethers/lib/utils";
+import { BigNumber, ethers, providers } from "ethers";
+import { formatEther, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import Layout from "../../components/Layout";
 import { RPC_URLS } from "../../constants/RPC_URL";
@@ -32,10 +27,7 @@ import {
   getSaleConfigProofByProjectId,
 } from "../../services/saleConfig.service";
 import { getSolVersionConfig } from "../../utils/SaleConfig.utils";
-import {
-  get721MintEventArgsMapping,
-  normalizeString,
-} from "../../utils/String.utils";
+import { normalizeString } from "../../utils/String.utils";
 import { walletConnectConnector } from "../../lib/connectors";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
 import { fetchAndStoreEvents } from "../../services/transferEvent.service";
@@ -47,8 +39,16 @@ interface Props {
     owner: User;
     // nfts: NFT[];
   };
-  currentSale: SaleConfig | null;
-  nextSale: SaleConfig | null;
+  currentSale:
+    | (SaleConfig & {
+        whitelist: WhitelistLimits[];
+      })
+    | null;
+  nextSale:
+    | (SaleConfig & {
+        whitelist: WhitelistLimits[];
+      })
+    | null;
   configProof: string[] | null;
   totalSupply: number | null;
   claimedSupply: number;
@@ -197,7 +197,11 @@ const MintPage: NextPage<Props> = ({
       setMintBgProc((v) => v + 1);
 
       const tokenGatedMintSignature = await (async () => {
-        if (!currentSale.tokenGatedAddress) return;
+        if (
+          !currentSale.tokenGatedAddress ||
+          currentSale.tokenGatedAddress === ethers.constants.AddressZero
+        )
+          return;
         return await toast.promise(
           library
             .getSigner(account)
@@ -265,12 +269,17 @@ const MintPage: NextPage<Props> = ({
 
       const tx = await toast.promise(
         contract.mint(
-          configProof,
-          whitelistProof.data,
-          mintCount,
-          randomMsgSign.message,
-          randomMsgSign.signature,
-          saleConfig,
+          {
+            saleConfigProof: configProof,
+            whitelistProof: whitelistProof.data,
+            numberOfMint: mintCount,
+            message: randomMsgSign.message,
+            signature: randomMsgSign.signature,
+            config: saleConfig,
+            whitelistMintLimit:
+              currentSale.whitelist.find((wl) => wl.address === account)
+                ?.limit || 0,
+          },
           {
             value: parseEther(
               (+(currentSale.mintCharge * mintCount).toFixed(18)).toString()
@@ -284,7 +293,7 @@ const MintPage: NextPage<Props> = ({
         }
       );
 
-      const receipt = await toast.promise(tx.wait(), {
+      await toast.promise(tx.wait(), {
         error: "Error completing transaction",
         loading: "Mining... (Do not close this window)",
         success: "Transaction Completed",
@@ -448,6 +457,17 @@ const MintPage: NextPage<Props> = ({
                   )}
                 </h1>
               </div>
+              {!!currentSale && !!account && (
+                <div className="flex justify-between items-center">
+                  <h1>
+                    Mint Limit for {shortenIfAddress(account)} in this sale
+                  </h1>
+                  <h1>
+                    {currentSale.whitelist.find((wl) => wl.address === account)
+                      ?.limit || 0}
+                  </h1>
+                </div>
+              )}
             </div>
             <div className="flex flex-col justify-between items-center border-2 border-gray-600 rounded p-1 m-1">
               <h1>Sale Status</h1>
@@ -536,7 +556,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { uid } = context.query;
   if (!uid || typeof uid !== "string")
     return { props: {}, redirect: { destination: "/404" } };
-  const project = await getProjectByUid(uid).catch((err) => null);
+  const project = await getProjectByUid(uid).catch((_err) => null);
   if (!project || !project.address || !project.chainId)
     return { props: {}, redirect: { destination: "/404" } };
 
@@ -544,11 +564,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const [currentSale, nextSale, totalSupply, claimedSupply, randomMsgSign] =
     await Promise.all([
-      getCurrentSale(project.id).catch((err) => {
+      getCurrentSale(project.id).catch((_err) => {
         // console.log("Error getting current sale", err);
         return null;
       }),
-      getNextSale(project.id).catch((err) => {
+      getNextSale(project.id).catch((_err) => {
         // console.log("Error getting next sale", err);
         return null;
       }),
@@ -582,8 +602,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       })
     : null;
 
-  // if (currentSale?.tokenGatedAddress)
-  //   fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
+  if (currentSale?.tokenGatedAddress)
+    fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
+
   return {
     props: {
       project,

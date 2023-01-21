@@ -3,6 +3,7 @@ import MerkleTree from "merkletreejs";
 import { EMPTY_WHITELIST_ROOT } from "../constants/configuration";
 import { ISaleConfigInput, ISaleConfigSol } from "../types";
 import { bufferTohex } from "./String.utils";
+import * as SolidityUtils from "./Solidity.utils";
 
 export const getSolVersionConfig = (
   config: ISaleConfigInput
@@ -21,8 +22,8 @@ export const getSolVersionConfig = (
       : bufferTohex(
           new MerkleTree(
             config.whitelistAddresses
-              .filter((address) => isAddress(address))
-              .map((address) => keccak256(address)),
+              .filter((wl) => isAddress(wl.address))
+              .map((wl) => keccak256(SolidityUtils.getWhitelistHash(wl))),
             keccak256,
             { sortPairs: true }
           ).getRoot()

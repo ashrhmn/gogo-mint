@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import * as SaleConfigService from "../services/saleConfig.service";
 import { getHttpCookie } from "../utils/Request.utils";
 import { errorResponse, successResponse } from "../utils/Response.utils";
+import { IWhiteList } from "../types";
 
 export const getSaleConfigByProjectId = async (
   req: NextApiRequest,
@@ -33,7 +34,9 @@ export const updateSaleConfigs = async (
     const projectId = req.query.projectId;
     if (!projectId || typeof projectId !== "string" || isNaN(+projectId))
       return res.status(400).json(errorResponse("Invalid Project ID"));
-    const saleConfigs = req.body.saleConfigs as SaleConfig[];
+    const saleConfigs = req.body.saleConfigs as (SaleConfig & {
+      whitelist: IWhiteList[];
+    })[];
     return res.json(
       successResponse(
         await SaleConfigService.updateSaleConfigs(

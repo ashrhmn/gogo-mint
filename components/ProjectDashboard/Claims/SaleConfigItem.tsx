@@ -11,6 +11,7 @@ import Link from "next/link";
 import CopyAddressToClipboard from "../../Common/CopyAddressToClipboard";
 import { useEthers } from "@usedapp/core";
 import { is721 } from "../../../services/ethereum.service";
+import { IWhiteList } from "../../../types";
 
 const SaleConfigItem = ({
   saleWaveConfig,
@@ -18,16 +19,23 @@ const SaleConfigItem = ({
   index,
   collectionType,
 }: {
-  saleWaveConfig: Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean };
+  saleWaveConfig: Omit<SaleConfig, "id" | "projectId"> & {
+    invalid?: boolean;
+    whitelist: IWhiteList[];
+  };
   setSaleConfigs: React.Dispatch<
     React.SetStateAction<
-      (Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean })[]
+      (Omit<SaleConfig, "id" | "projectId"> & {
+        invalid?: boolean;
+        whitelist: IWhiteList[];
+      })[]
     >
   >;
   index: number;
   collectionType: "721" | "1155";
 }) => {
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
+  const [tempWl, setTempWl] = useState({ address: "", limit: 0 });
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const checkboxRef = useRef<HTMLInputElement | null>(null);
 
@@ -440,14 +448,15 @@ const SaleConfigItem = ({
                                   whitelist: [
                                     ...sc.whitelist,
                                     ...results.data
-                                      .map((arr) => arr[0])
+                                      .map((arr) => ({
+                                        address: arr[0],
+                                        limit: +arr[1],
+                                      }))
                                       .filter(
-                                        (address) =>
-                                          typeof address === "string" &&
-                                          isAddress(address) &&
-                                          !saleWaveConfig.whitelist.includes(
-                                            address
-                                          )
+                                        (item) =>
+                                          typeof item.address === "string" &&
+                                          isAddress(item.address) &&
+                                          !isNaN(item.limit)
                                       ),
                                   ],
                                 }
@@ -466,25 +475,33 @@ const SaleConfigItem = ({
                 <div>
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     <input
-                      className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+                      className="w-full sm:w-[85%] rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                       type="text"
-                      value={tempWhitelistAddress}
-                      onChange={(e) => setTempWhitelistAddress(e.target.value)}
+                      placeholder="Address"
+                      value={tempWl.address}
+                      onChange={(e) =>
+                        setTempWl((prev) => ({
+                          ...prev,
+                          address: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      className="w-full sm:w-[15%] rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+                      placeholder="Limit"
+                      type="text"
+                      value={tempWl.limit || ""}
+                      onChange={(e) =>
+                        setTempWl((prev) => ({
+                          ...prev,
+                          limit: +(+e.target.value).toFixed(0),
+                        }))
+                      }
                     />
                     <button
                       onClick={() => {
-                        if (
-                          saleWaveConfig.whitelist.includes(
-                            tempWhitelistAddress
-                          )
-                        ) {
-                          toast.error("Address already added");
-                          setTempWhitelistAddress("");
-                          return;
-                        }
-                        if (!isAddress(tempWhitelistAddress)) {
+                        if (!isAddress(tempWl.address)) {
                           toast.error("Invalid Address");
-                          setTempWhitelistAddress("");
                           return;
                         }
                         setSaleConfigs((prev) =>
@@ -494,13 +511,18 @@ const SaleConfigItem = ({
                               : {
                                   ...sc,
                                   whitelist: [
-                                    ...sc.whitelist,
-                                    tempWhitelistAddress,
+                                    ...sc.whitelist.filter(
+                                      (wl) => wl.address !== tempWl.address
+                                    ),
+                                    {
+                                      address: tempWl.address,
+                                      limit: tempWl.limit,
+                                    },
                                   ],
                                 }
                           )
                         );
-                        setTempWhitelistAddress("");
+                        setTempWl({ address: "", limit: 0 });
                       }}
                       className="bg-blue-600 text-white h-8 sm:h-14 w-full sm:w-28 rounded"
                     >
@@ -557,14 +579,23 @@ const SaleConfigItem = ({
                     Whitelisted Addresses
                   </summary>
                   <div className="max-h-96 overflow-y-scroll">
-                    {saleWaveConfig.whitelist.map((address, index) => (
+                    {saleWaveConfig.whitelist.map((wl, index) => (
                       <div
                         className="flex gap-4 relative my-2"
-                        key={index + address}
+                        key={index + JSON.stringify(wl)}
                       >
                         <div className="w-full overflow-hidden group">
-                          <div className="overflow-hidden w-full">
-                            <CopyAddressToClipboard address={address} />
+                          <div className="overflow-hidden flex gap-2 items-center w-full">
+                            <div className="hidden sm:block">
+                              <CopyAddressToClipboard address={wl.address} />
+                            </div>
+                            <div className="sm:hidden">
+                              <CopyAddressToClipboard
+                                shorten
+                                address={wl.address}
+                              />
+                            </div>
+                            <span>{wl.limit}</span>
                           </div>
                           {/* <div className="absolute -top-6 hidden group-hover:block text-sm rounded shdaow-xl bg-gray-500 p-1 text-white z-10">
                             {address}
@@ -580,7 +611,7 @@ const SaleConfigItem = ({
                                   : {
                                       ...sc,
                                       whitelist: sc.whitelist.filter(
-                                        (a) => a !== address
+                                        (wlm) => wl.address !== wlm.address
                                       ),
                                     }
                               )

@@ -12,7 +12,7 @@ import {
 } from "../../../ContractFactory";
 import { service } from "../../../service";
 import { is721 } from "../../../services/ethereum.service";
-import { ISaleConfigInput } from "../../../types";
+import { ISaleConfigInput, IWhiteList } from "../../../types";
 import SaleConfigItem from "./SaleConfigItem";
 
 const ClaimsSection = ({
@@ -30,7 +30,10 @@ const ClaimsSection = ({
 }) => {
   const { account, library, chainId } = useEthers();
   const [saleConfigs, setSaleConfigs] = useState<
-    (Omit<SaleConfig, "id" | "projectId"> & { invalid?: boolean })[]
+    (Omit<SaleConfig, "id" | "projectId"> & {
+      invalid?: boolean;
+      whitelist: IWhiteList[];
+    })[]
   >([]);
   const [bgProcess, setBgProcess] = useState(0);
   const [refetcher, setRefetcher] = useState(false);
@@ -87,9 +90,7 @@ const ClaimsSection = ({
               ? 0
               : sc.maxMintPerWallet,
           mintCharge: sc.mintCharge,
-          whitelistAddresses: sc.whitelist.includes(account)
-            ? sc.whitelist
-            : [...sc.whitelist, account],
+          whitelistAddresses: sc.whitelist,
           saleType:
             isAddress(sc.tokenGatedAddress) &&
             (await is721(sc.tokenGatedAddress, chainId))
@@ -119,6 +120,22 @@ const ClaimsSection = ({
         toast.error("Error geenerating sale config hash");
         return;
       }
+      const dbPayload = await Promise.all(
+        saleConfigs.map(async (sc) => ({
+          ...sc,
+          id: undefined,
+          projectId: undefined,
+          invalid: undefined,
+          whitelist: sc.whitelist,
+          tokenGatedAddress:
+            isAddress(sc.tokenGatedAddress) &&
+            (await is721(sc.tokenGatedAddress, chainId))
+              ? sc.tokenGatedAddress
+              : ethers.constants.AddressZero,
+        }))
+      );
+
+      console.log(JSON.stringify(dbPayload, null, 2));
 
       const contract =
         collectionType === "721"
@@ -136,23 +153,6 @@ const ClaimsSection = ({
           loading: "Sending transaction",
           success: "Transaction sent successfully",
         }
-      );
-
-      const dbPayload = await Promise.all(
-        saleConfigs.map(async (sc) => ({
-          ...sc,
-          id: undefined,
-          projectId: undefined,
-          invalid: undefined,
-          whitelist: sc.whitelist.includes(account)
-            ? sc.whitelist
-            : [...sc.whitelist, account],
-          tokenGatedAddress:
-            isAddress(sc.tokenGatedAddress) &&
-            (await is721(sc.tokenGatedAddress, chainId))
-              ? sc.tokenGatedAddress
-              : ethers.constants.AddressZero,
-        }))
       );
 
       const [{ data: response }] = await toast.promise(

@@ -6,7 +6,7 @@ import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { is721 } from "../../services/ethereum.service";
-import { useEthers } from "@usedapp/core";
+import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { ethers } from "ethers";
 
 const SaleConfigInput = ({
@@ -21,6 +21,7 @@ const SaleConfigInput = ({
   collectionType: "721" | "1155";
 }) => {
   const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
+  const [tempWl, setTempWl] = useState({ address: "", limit: 0 });
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const { chainId } = useEthers();
   const [isTokenGated, setIsTokenGated] = useState(false);
@@ -418,16 +419,22 @@ const SaleConfigInput = ({
                               : {
                                   ...sw,
                                   whitelistAddresses: [
-                                    ...sw.whitelistAddresses,
+                                    ...sw.whitelistAddresses.filter(
+                                      (wl) =>
+                                        !results.data
+                                          .map((arr) => arr[0])
+                                          .includes(wl.address)
+                                    ),
                                     ...results.data
-                                      .map((arr) => arr[0])
+                                      .map((arr) => ({
+                                        address: arr[0],
+                                        limit: +arr[1],
+                                      }))
                                       .filter(
-                                        (address) =>
-                                          typeof address === "string" &&
-                                          isAddress(address) &&
-                                          !saleWaveConfig.whitelistAddresses.includes(
-                                            address
-                                          )
+                                        (wl) =>
+                                          typeof wl.address === "string" &&
+                                          isAddress(wl.address) &&
+                                          !isNaN(wl.limit)
                                       ),
                                   ],
                                 }
@@ -441,25 +448,33 @@ const SaleConfigInput = ({
                 <label className="font-bold">Add Whitelist addresses</label>
                 <div className="flex items-center gap-3">
                   <input
-                    className="w-full rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+                    className="w-full sm:w-[85%] rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                     type="text"
-                    value={tempWhitelistAddress}
-                    onChange={(e) => setTempWhitelistAddress(e.target.value)}
+                    placeholder="Address"
+                    value={tempWl.address}
+                    onChange={(e) =>
+                      setTempWl((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                  />
+                  <input
+                    className="w-full sm:w-[15%] rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
+                    placeholder="Limit"
+                    type="text"
+                    value={tempWl.limit || ""}
+                    onChange={(e) =>
+                      setTempWl((prev) => ({
+                        ...prev,
+                        limit: +(+e.target.value).toFixed(0),
+                      }))
+                    }
                   />
                   <button
                     onClick={() => {
-                      if (
-                        saleWaveConfig.whitelistAddresses.includes(
-                          tempWhitelistAddress
-                        )
-                      ) {
-                        toast.error("Address already added");
-                        setTempWhitelistAddress("");
-                        return;
-                      }
-                      if (!isAddress(tempWhitelistAddress)) {
+                      if (!isAddress(tempWl.address)) {
                         toast.error("Invalid Address");
-                        setTempWhitelistAddress("");
                         return;
                       }
                       setConfigSet((prev) => ({
@@ -470,13 +485,18 @@ const SaleConfigInput = ({
                             : {
                                 ...sw,
                                 whitelistAddresses: [
-                                  ...sw.whitelistAddresses,
-                                  tempWhitelistAddress,
+                                  ...sw.whitelistAddresses.filter(
+                                    (wl) => wl.address !== tempWl.address
+                                  ),
+                                  {
+                                    address: tempWl.address,
+                                    limit: tempWl.limit,
+                                  },
                                 ],
                               }
                         ),
                       }));
-                      setTempWhitelistAddress("");
+                      setTempWl({ address: "", limit: 0 });
                     }}
                     className="bg-blue-600 text-white h-14 w-36 sm:w-28 rounded"
                   >
@@ -534,15 +554,23 @@ const SaleConfigInput = ({
                     Whitelisted Addresses
                   </summary>
                   <div className="max-h-96 overflow-y-scroll">
-                    {saleWaveConfig.whitelistAddresses.map((address) => (
-                      <div className="flex gap-4 relative my-2" key={address}>
+                    {saleWaveConfig.whitelistAddresses.map((wl) => (
+                      <div
+                        className="flex gap-4 relative my-2"
+                        key={wl.address}
+                      >
                         <div className="w-full overflow-hidden group">
                           <div className="overflow-hidden w-full">
-                            {address}
+                            <div className="flex gap-3">
+                              <span className="hidden md:block">
+                                {wl.address}
+                              </span>
+                              <span className="md:hidden">
+                                {shortenIfAddress(wl.address)}
+                              </span>
+                              <span>{wl.limit}</span>
+                            </div>
                           </div>
-                          {/* <div className="absolute -top-6 hidden group-hover:block text-sm rounded shdaow-xl bg-gray-500 p-1 text-white z-10">
-                            {address}
-                          </div> */}
                         </div>
                         <button
                           onClick={() =>
@@ -555,7 +583,7 @@ const SaleConfigInput = ({
                                       ...sw,
                                       whitelistAddresses:
                                         sw.whitelistAddresses.filter(
-                                          (a) => a !== address
+                                          (wlm) => wlm.address !== wl.address
                                         ),
                                     }
                               ),

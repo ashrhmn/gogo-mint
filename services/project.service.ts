@@ -2,7 +2,6 @@ import assert from "assert";
 import axios from "axios";
 import Cookies from "cookies";
 import { prisma } from "../lib/db";
-import roleIntegrations from "../pages/api/v1/projects/role-integrations";
 import { ISaleConfigInput } from "../types";
 import { getCookieWallet } from "./auth.service";
 import { getDiscordClient, getUserByAccessToken } from "./discord.service";
@@ -43,7 +42,6 @@ export const getProjectByChainAddress = async (
     where: { address, chainId },
     include: {
       nfts: {
-        include: { properties: true },
         skip,
         take,
         where:
@@ -108,37 +106,64 @@ export const addNewProject = async (
   royaltyReceiver: string,
   royaltyPercentage: number
 ) => {
-  return await prisma.project.create({
-    data: {
-      name,
-      userId,
-      address,
-      description,
-      imageUrl,
-      unrevealedImageUrl,
-      chainId,
-      collectionType,
-      uid,
-      royaltyPercentage,
-      royaltyReceiver,
-      saleConfigs: {
-        createMany: {
-          skipDuplicates: true,
-          data: saleConfigs.map((c) => ({
-            enabled: c.enabled,
-            startTime: c.startTime,
-            endTime: c.endTime,
-            maxMintInSale: c.maxMintInSale,
-            maxMintPerWallet: c.maxMintPerWallet,
-            mintCharge: c.mintCharge,
-            whitelist: c.whitelistAddresses,
-            saleIdentifier: c.uuid,
-            saleType: c.saleType,
-            tokenGatedAddress: c.tokenGatedAddress,
-          })),
+  return await prisma.$transaction(async (tx) => {
+    const newProject = await tx.project.create({
+      data: {
+        name,
+        userId,
+        address,
+        description,
+        imageUrl,
+        unrevealedImageUrl,
+        chainId,
+        collectionType,
+        uid,
+        royaltyPercentage,
+        royaltyReceiver,
+        saleConfigs: {
+          createMany: {
+            skipDuplicates: true,
+            data: saleConfigs.map((c) => ({
+              enabled: c.enabled,
+              startTime: c.startTime,
+              endTime: c.endTime,
+              maxMintInSale: c.maxMintInSale,
+              maxMintPerWallet: c.maxMintPerWallet,
+              mintCharge: c.mintCharge,
+              saleIdentifier: c.uuid,
+              saleType: c.saleType,
+              tokenGatedAddress: c.tokenGatedAddress,
+            })),
+          },
         },
       },
-    },
+    });
+
+    const createManyWhitelistData = await tx.saleConfig
+      .findMany({
+        where: { projectId: newProject.id },
+        select: { id: true, saleIdentifier: true },
+      })
+      .then((scs) =>
+        scs
+          .map((asc) => ({
+            saleConfigId: asc.id,
+            wl:
+              saleConfigs.find((sc) => sc.uuid === asc.saleIdentifier)
+                ?.whitelistAddresses || [],
+          }))
+          .map(({ saleConfigId, wl }) => [
+            ...wl.map((w) => ({ ...w, saleConfigId })),
+          ])
+          .reduce((prev, curr) => [...prev, ...curr], [])
+      );
+
+    await tx.whitelistLimits.createMany({
+      data: createManyWhitelistData,
+      skipDuplicates: true,
+    });
+
+    return newProject;
   });
 };
 

@@ -1,6 +1,6 @@
-import { isAddress, keccak256 } from "ethers/lib/utils";
+import { keccak256 } from "ethers/lib/utils";
 import MerkleTree from "merkletreejs";
-import { ISaleConfigInput } from "../types";
+import { ISaleConfigInput, IWhiteList } from "../types";
 import {
   getSaleConfigHash,
   getSolVersionConfig,
@@ -10,7 +10,6 @@ import { prisma } from "../lib/db";
 import Cookies from "cookies";
 import { getCookieWallet } from "./auth.service";
 import { SaleConfig } from "@prisma/client";
-import { EMPTY_WHITELIST_ROOT } from "../constants/configuration";
 import * as MerkleTreeService from "./merkletree.service";
 
 export const getSaleConfigTree = (saleConfigs: ISaleConfigInput[]) => {
@@ -45,6 +44,7 @@ export const getSaleConfigProofByProjectId = async (
     orderBy: { startTime: "asc" },
     include: {
       Project: { include: { owner: true } },
+      whitelist: { select: { address: true, limit: true } },
     },
   });
   const config = configs.find((c) => c.saleIdentifier === saleIdentifier);
@@ -83,6 +83,7 @@ export const getSaleConfigsByProjectId = async (projectId: number) => {
   const configs = await prisma.saleConfig.findMany({
     where: { projectId },
     orderBy: { startTime: "asc" },
+    include: { whitelist: true },
   });
   const checkedConfigs: (SaleConfig & { invalid?: boolean })[] = configs.map(
     (c, i) => ({
@@ -102,7 +103,9 @@ export const getSaleConfigsByProjectId = async (projectId: number) => {
 
 export const updateSaleConfigs = async (
   projectId: number,
-  saleConfigs: SaleConfig[],
+  saleConfigs: (SaleConfig & {
+    whitelist: IWhiteList[];
+  })[],
   cookies: Cookies
 ) => {
   const cookieAddress = getCookieWallet(cookies);
@@ -112,23 +115,62 @@ export const updateSaleConfigs = async (
   });
   if (project.owner.walletAddress !== cookieAddress)
     throw new Error("Project owner is not signed user");
-  await prisma.saleConfig.deleteMany({ where: { projectId } });
-  const result = await prisma.project.update({
-    where: { id: projectId },
-    data: {
-      saleConfigs: {
-        createMany: {
-          skipDuplicates: true,
-          data: saleConfigs.map((sc) => ({
-            ...sc,
-            startTime: +sc.startTime.toFixed(0),
-            endTime: +sc.endTime.toFixed(0),
-          })),
-        },
-      },
-    },
+
+  return await prisma.$transaction(async (tx) => {
+    await tx.saleConfig.deleteMany({ where: { projectId } });
+    const result = await tx.saleConfig.createMany({
+      data: saleConfigs.map(
+        ({
+          enabled,
+          endTime,
+          maxMintInSale,
+          maxMintPerWallet,
+          mintCharge,
+          saleIdentifier,
+          saleType,
+          startTime,
+          tokenGatedAddress,
+        }) => ({
+          startTime: +startTime.toFixed(0),
+          endTime: +endTime.toFixed(0),
+          enabled,
+          maxMintInSale,
+          projectId,
+          tokenGatedAddress,
+          maxMintPerWallet,
+          mintCharge,
+          saleIdentifier,
+          saleType,
+        })
+      ),
+    });
+
+    const createManyWhitelistData = await tx.saleConfig
+      .findMany({
+        where: { projectId },
+        select: { id: true, saleIdentifier: true },
+      })
+      .then((res) =>
+        res
+          .map((asc) => ({
+            saleConfigId: asc.id,
+            wl:
+              saleConfigs.find((sc) => sc.saleIdentifier === asc.saleIdentifier)
+                ?.whitelist || [],
+          }))
+          .map(({ saleConfigId, wl }) => [
+            ...wl.map((w) => ({ ...w, saleConfigId })),
+          ])
+          .reduce((prev, curr) => [...prev, ...curr], [])
+      );
+
+    await tx.whitelistLimits.createMany({
+      data: createManyWhitelistData,
+      skipDuplicates: true,
+    });
+
+    return result;
   });
-  return result;
 };
 
 export const getCurrentSale = async (projectId: number) => {
@@ -141,13 +183,14 @@ export const getCurrentSale = async (projectId: number) => {
       enabled: true,
     },
     orderBy: { startTime: "asc" },
+    include: { whitelist: true },
   });
   return scs;
 };
 
 export const getNextSale = async (projectId: number) => {
   const now = +(Date.now() / 1000).toFixed(0);
-  const currentSale = await getCurrentSale(projectId).catch((err) => {
+  const currentSale = await getCurrentSale(projectId).catch((_err) => {
     return null;
   });
   if (!!currentSale && currentSale.endTime === 0)
@@ -169,6 +212,7 @@ export const getNextSale = async (projectId: number) => {
           NOT: [{ saleIdentifier: { equals: currentSale.saleIdentifier } }],
         },
         orderBy: { startTime: "asc" },
+        include: { whitelist: true },
       })
     : await prisma.saleConfig.findFirstOrThrow({
         where: {
@@ -183,6 +227,7 @@ export const getNextSale = async (projectId: number) => {
           enabled: true,
         },
         orderBy: { startTime: "asc" },
+        include: { whitelist: true },
       });
 };
 
@@ -192,9 +237,16 @@ export const getWhitelistProofBySaleConfig = async (
 ) => {
   const config = await prisma.saleConfig.findFirstOrThrow({
     where: { saleIdentifier: identifier },
+    include: { whitelist: { select: { address: true, limit: true } } },
   });
   if (config.saleType === "public") return [];
   if (config.whitelist.length === 0)
     throw new Error("Empty whitelist in private sale");
-  return MerkleTreeService.getWhitelistProof(config.whitelist, address);
+  return MerkleTreeService.getWhitelistProof(
+    config.whitelist,
+    config.whitelist.find((wl) => wl.address === address) || {
+      address,
+      limit: 0,
+    }
+  );
 };

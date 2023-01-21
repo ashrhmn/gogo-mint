@@ -13,7 +13,8 @@
     "get-abi": "cp -R ~/clones/gogo-mint/hardhat/artifacts/contracts/ ./ABIs && rm -f ./ABIs/**/*.dbg.json",
     "tc": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json",
     "tc-dev": "cp -R ~/clones/gogo-mint/hardhat/artifacts/contracts/ ./ABIs && rm -f ./ABIs/**/*.dbg.json && typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json",
-    "prebuild": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json"
+    "prebuild": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json",
+    "predev": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json"
   },
   "dependencies": {
     "@enzoferey/ethers-error-parser": "^0.2.2",
@@ -26,6 +27,7 @@
     "discord.js": "^13.8.1",
     "ethers": "^5.6.9",
     "firebase": "^9.8.4",
+    "ioredis": "^5.2.5",
     "merkletreejs": "^0.2.32",
     "next": "^12.2.0",
     "next-connect": "^0.12.2",

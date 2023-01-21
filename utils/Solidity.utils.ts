@@ -3,6 +3,7 @@ import {
   CompileError,
   ISaleConfigSol,
   ISaleConfigInput,
+  IWhiteList,
 } from "../types";
 import tsolc from "types-solc";
 import {
@@ -14,39 +15,42 @@ import {
 import { EMPTY_WHITELIST_ROOT } from "../constants/configuration";
 import { bufferTohex } from "./String.utils";
 import MerkleTree from "merkletreejs";
-const solc: any = require("solc");
+// const solc: any = require("solc");
 
-export function getContractFile(
-  name: string,
-  source: string
-): undefined | ContractFile {
-  const input = {
-    language: "Solidity",
-    sources: {
-      [name + ".sol"]: {
-        content: source,
-      },
-    },
-    settings: {
-      outputSelection: {
-        "*": {
-          "*": ["*"],
-        },
-      },
-    },
-  };
+// export function getContractFile(
+//   name: string,
+//   source: string
+// ): undefined | ContractFile {
+//   const input = {
+//     language: "Solidity",
+//     sources: {
+//       [name + ".sol"]: {
+//         content: source,
+//       },
+//     },
+//     settings: {
+//       outputSelection: {
+//         "*": {
+//           "*": ["*"],
+//         },
+//       },
+//     },
+//   };
 
-  const tempFile = JSON.parse((solc as tsolc).compile(JSON.stringify(input)));
-  //   console.log(tempFile);
+//   const tempFile = JSON.parse((solc as tsolc).compile(JSON.stringify(input)));
+//   //   console.log(tempFile);
 
-  const contractFile = tempFile?.contracts?.[name + ".sol"]?.[name];
-  const errorsAndWarnings: CompileError[] = tempFile?.errors
-    ? tempFile.errors
-    : [];
-  const errors = errorsAndWarnings.filter((e) => e.severity === "error");
-  if (!contractFile || errors.length > 0) throw tempFile.errors;
-  return contractFile;
-}
+//   const contractFile = tempFile?.contracts?.[name + ".sol"]?.[name];
+//   const errorsAndWarnings: CompileError[] = tempFile?.errors
+//     ? tempFile.errors
+//     : [];
+//   const errors = errorsAndWarnings.filter((e) => e.severity === "error");
+//   if (!contractFile || errors.length > 0) throw tempFile.errors;
+//   return contractFile;
+// }
+
+export const getWhitelistHash = (wl: IWhiteList) =>
+  solidityKeccak256(["address", "uint256"], [wl.address, wl.limit]);
 
 export const getSaleConfigHash = (conf: ISaleConfigSol) =>
   solidityKeccak256(
@@ -90,8 +94,8 @@ export const getSolVersionConfig = (
       : bufferTohex(
           new MerkleTree(
             config.whitelistAddresses
-              .filter((address) => isAddress(address))
-              .map((address) => keccak256(address)),
+              .filter((wl) => isAddress(wl.address))
+              .map((wl) => keccak256(getWhitelistHash(wl))),
             keccak256,
             { sortPairs: true }
           ).getRoot()

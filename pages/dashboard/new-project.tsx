@@ -276,11 +276,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             saleConfigs: salewaves.map((sw) => ({
               ...sw,
               whitelistAddresses:
-                sw.saleType === "public"
-                  ? []
-                  : sw.whitelistAddresses.includes(account)
-                  ? sw.whitelistAddresses
-                  : [...sw.whitelistAddresses, account],
+                sw.saleType === "public" ? [] : sw.whitelistAddresses,
             })),
           }),
           // service.get(`contract/collection721?name=${configSet.name}`),
@@ -373,11 +369,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             saleConfigs: salewaves.map((sw) => ({
               ...sw,
               whitelistAddresses:
-                sw.saleType === "public"
-                  ? []
-                  : sw.whitelistAddresses.includes(account)
-                  ? sw.whitelistAddresses
-                  : [...sw.whitelistAddresses, account],
+                sw.saleType === "public" ? [] : sw.whitelistAddresses,
               startTime: +sw.startTime.toFixed(0),
               endTime: +sw.endTime.toFixed(0),
             })),

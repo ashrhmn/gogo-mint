@@ -1,14 +1,17 @@
 import { isAddress, keccak256 } from "ethers/lib/utils";
 import MerkleTree from "merkletreejs";
 import { bufferTohex } from "../utils/String.utils";
+import { IWhiteList } from "../types";
+import * as SolidityUtils from "../utils/Solidity.utils";
 
-export const getWhitelistTree = (addresses: string[]) => {
+export const getWhitelistTree = (wls: IWhiteList[]) => {
   try {
-    const validAddresses = addresses.filter((address) => isAddress(address));
-    if (addresses.length !== validAddresses.length)
-      throw "Some addresse(s) are invalid";
+    const validWls = wls.filter((wl) => isAddress(wl.address));
+    if (wls.length !== validWls.length) throw "Some addresse(s) are invalid";
 
-    const leaves = validAddresses.map((address) => keccak256(address));
+    const leaves = validWls.map((wl) =>
+      keccak256(SolidityUtils.getWhitelistHash(wl))
+    );
     return new MerkleTree(leaves, keccak256, { sortPairs: true });
   } catch (error) {
     console.log("Error generating whitelist tree : ", error);
@@ -16,9 +19,9 @@ export const getWhitelistTree = (addresses: string[]) => {
   }
 };
 
-export const getWhitelistRoot = (addresses: string[]) => {
+export const getWhitelistRoot = (wls: IWhiteList[]) => {
   try {
-    const tree = getWhitelistTree(addresses);
+    const tree = getWhitelistTree(wls);
     return bufferTohex(tree.getRoot());
   } catch (error) {
     console.log("Error generating whitelist root : ", error);
@@ -26,10 +29,12 @@ export const getWhitelistRoot = (addresses: string[]) => {
   }
 };
 
-export const getWhitelistProof = (addresses: string[], address: string) => {
+export const getWhitelistProof = (wls: IWhiteList[], wl: IWhiteList) => {
   try {
-    const tree = getWhitelistTree(addresses);
-    return tree.getProof(keccak256(address)).map((p) => bufferTohex(p.data));
+    const tree = getWhitelistTree(wls);
+    return tree
+      .getProof(keccak256(SolidityUtils.getWhitelistHash(wl)))
+      .map((p) => bufferTohex(p.data));
   } catch (error) {
     console.log("Error generating proof : ", error);
     throw error;

@@ -103,7 +103,7 @@ const ProjectPage: NextPage<Props> = ({
   const setTab = (tab: string) =>
     router.push({ ...router, query: { ...router.query, tab } });
   const currentTab =
-    typeof router.query.tab == "string" &&
+    typeof router.query.tab === "string" &&
     ["permissions", "claims", "settings"].includes(router.query.tab)
       ? router.query.tab
       : "overview";
@@ -165,7 +165,7 @@ const ProjectPage: NextPage<Props> = ({
         <div className="flex justify-start gap-10 px-8 overflow-x-auto border-b-2 border-gray-600">
           <button
             className={`${
-              currentTab == "overview"
+              currentTab === "overview"
                 ? "text-indigo-600 border-b-2 border-indigo-600 font-medium"
                 : ""
             }`}
@@ -175,7 +175,7 @@ const ProjectPage: NextPage<Props> = ({
           </button>
           <button
             className={`${
-              currentTab == "claims"
+              currentTab === "claims"
                 ? "text-indigo-600 border-b-2 border-indigo-600 font-medium"
                 : ""
             }`}
@@ -185,7 +185,7 @@ const ProjectPage: NextPage<Props> = ({
           </button>
           <button
             className={`${
-              currentTab == "settings"
+              currentTab === "settings"
                 ? "text-indigo-600 border-b-2 border-indigo-600 font-medium"
                 : ""
             }`}
@@ -195,7 +195,7 @@ const ProjectPage: NextPage<Props> = ({
           </button>
         </div>
         <div>
-          {currentTab == "overview" && (
+          {currentTab === "overview" && (
             <OverviewSection
               address={project.address}
               projectChainId={project.chainId}
@@ -211,7 +211,7 @@ const ProjectPage: NextPage<Props> = ({
           )}
         </div>
         <div>
-          {currentTab == "claims" && (
+          {currentTab === "claims" && (
             <ClaimsSection
               projectId={project.id}
               projectAddress={project.address}
@@ -222,7 +222,7 @@ const ProjectPage: NextPage<Props> = ({
           )}
         </div>
         <div>
-          {currentTab == "settings" && (
+          {currentTab === "settings" && (
             <SettingsSection
               projectId={project.id}
               projectAddress={project.address}
@@ -275,8 +275,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (
       !contract ||
       !network ||
-      typeof contract != "string" ||
-      typeof network != "string" ||
+      typeof contract !== "string" ||
+      typeof network !== "string" ||
       !isAddress(contract) ||
       isNaN(+network)
     )

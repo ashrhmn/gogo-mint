@@ -2,17 +2,18 @@ import { Contract, ethers, providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import dynamic from "next/dynamic";
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 import { ABI1155, ABI721 } from "../../constants/abis";
 import { RPC_URLS } from "../../constants/RPC_URL";
 import { service } from "../../service";
-import { NftExtended } from "../../types";
+
 import { resolveIPFS } from "../../utils/Request.utils";
 import { getUrlFileExtension } from "../../utils/String.utils";
 import CopyAddressToClipboard from "../Common/CopyAddressToClipboard";
+import { NFT } from "@prisma/client";
 
 const OverviewSection = ({
   nfts,
@@ -26,7 +27,7 @@ const OverviewSection = ({
   view,
   filterStatus,
 }: {
-  nfts: NftExtended[];
+  nfts: NFT[];
   address: string | null;
   projectChainId: number | null;
   collectionType: string | null;
@@ -46,7 +47,7 @@ const OverviewSection = ({
   // const { account, library } = useEthers();
   const router = useRouter();
   const [nftsWithOwner, setNftsWithOwner] =
-    useState<(NftExtended & { owner?: string })[]>(nfts);
+    useState<(NFT & { owner?: string })[]>(nfts);
   const [bgProcRunning, setBgProcRunning] = useState(0);
   useEffect(() => {
     if (
@@ -120,7 +121,7 @@ const OverviewSection = ({
       )}
       {collectionType === "721" && (
         <div className="flex flex-wrap items-center justify-center sm:justify-end my-3 gap-4">
-          <select
+          {/* <select
             className="bg-gray-800 rounded p-2"
             value={filterStatus}
             onChange={(e) => {
@@ -137,7 +138,7 @@ const OverviewSection = ({
                 {v}
               </option>
             ))}
-          </select>
+          </select> */}
           <div className="flex gap-2">
             <button
               disabled={page === 1 || Math.ceil(nftCount / view) === 0}
@@ -275,16 +276,7 @@ const OverviewSection = ({
                     {nft.description}
                   </td>
                   <td className="p-4 min-w-[100px]">
-                    <pre className="bg-gray-700 p-2 rounded">
-                      {JSON.stringify(
-                        nft.properties.map((p) => ({
-                          trait_type: p.type,
-                          value: p.value,
-                        })),
-                        null,
-                        2
-                      )}
-                    </pre>
+                    <TraitPropertiesView propStr={nft.properties} />
                   </td>
                   {collectionType === "721" && (
                     <td className="p-4 text-center min-w-[100px]">
@@ -317,6 +309,26 @@ const OverviewSection = ({
         </table>
       </div>
     </div>
+  );
+};
+
+const TraitPropertiesView = ({ propStr }: { propStr?: string }) => {
+  const properties = useMemo(() => {
+    try {
+      return JSON.parse(propStr || "[]") as { type: string; value: string }[];
+    } catch (error) {
+      return [];
+    }
+  }, [propStr]);
+
+  return (
+    <pre className="bg-gray-700 p-2 rounded">
+      {JSON.stringify(
+        properties.map((p) => ({ trait_type: p.type, value: p.value })),
+        null,
+        2
+      )}
+    </pre>
   );
 };
 

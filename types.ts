@@ -1,10 +1,4 @@
-import {
-  NFT,
-  NFTMetadataProperties,
-  Project,
-  RoleIntegration,
-  User,
-} from "@prisma/client";
+import { NFT, Project, RoleIntegration, User } from "@prisma/client";
 import { IncomingMessage, ServerResponse } from "http";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -114,11 +108,8 @@ export interface INftMetadata {
   openSeaExternalUrl: string;
 }
 
-export interface NftExtended extends NFT {
-  properties: NFTMetadataProperties[];
-}
 export interface ProjectExtended extends Project {
-  nfts: NftExtended[];
+  nfts: NFT[];
   owner: User;
   roleIntegrations: RoleIntegration[];
 }
@@ -151,6 +142,11 @@ export interface ISaleConfigSol {
   tokenGatedAddress: string;
 }
 
+export interface IWhiteList {
+  address: string;
+  limit: number;
+}
+
 export interface ISaleConfigInput {
   uuid: string;
   enabled: boolean;
@@ -158,7 +154,7 @@ export interface ISaleConfigInput {
   startTime: number;
   endTime: number;
   mintCharge: number;
-  whitelistAddresses: string[];
+  whitelistAddresses: IWhiteList[];
   maxMintPerWallet: number;
   maxMintInSale: number;
   tokenGatedAddress: string;

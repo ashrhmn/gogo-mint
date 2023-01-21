@@ -63,12 +63,13 @@ model TokenGatedTransferEvents {
 }
 
 model WhitelistLimits {
-  id           Int         @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   address      String
   limit        Int
-  saleConfig   SaleConfig? @relation(fields: [saleConfigId], references: [id])
-  saleConfigId Int?
+  saleConfig   SaleConfig @relation(fields: [saleConfigId], references: [id], onDelete: Cascade)
+  saleConfigId Int
 
+  @@unique([address, limit, saleConfigId])
   @@map("whitelist_limits")
 }
 
@@ -91,30 +92,30 @@ model SaleConfig {
 }
 
 model NFT {
-  id              Int                     @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   projectId       Int
-  project         Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tokenId         Int?
   name            String
   description     String?
   imageUrl        String?
   backgroundColor String?
   externalUrl     String?
-  properties      NFTMetadataProperties[]
+  properties      String  @default("[]")
 
   @@unique([projectId, tokenId])
   @@map("nfts")
 }
 
-model NFTMetadataProperties {
-  id    Int    @id @default(autoincrement())
-  type  String
-  value String
-  NFT   NFT?   @relation(fields: [nFTId], references: [id], onDelete: Cascade)
-  nFTId Int?
+// model NFTMetadataProperties {
+//   id    Int    @id @default(autoincrement())
+//   type  String
+//   value String
+//   NFT   NFT?   @relation(fields: [nFTId], references: [id], onDelete: Cascade)
+//   nFTId Int?
 
-  @@map("nft_metadata_properties")
-}
+//   @@map("nft_metadata_properties")
+// }
 
 model RoleIntegration {
   id           Int      @id @default(autoincrement())

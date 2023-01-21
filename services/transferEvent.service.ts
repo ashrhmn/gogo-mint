@@ -4,11 +4,16 @@ import { ethers } from "ethers";
 import { Collection721__factory } from "../ContractFactory";
 import { isAddress } from "ethers/lib/utils";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
+import { getRedis } from "../lib/redis";
 
 export const fetchAndStoreEvents = async (
   projectId: number,
   tokenGatedAddress: string,
-  overrides?: { startFromZero?: boolean; waitToComplete?: boolean }
+  overrides?: {
+    startFromZero?: boolean;
+    waitToComplete?: boolean;
+    ignoreCache?: boolean;
+  }
 ) => {
   if (tokenGatedAddress === ethers.constants.AddressZero) return;
   console.log("fetch", projectId, tokenGatedAddress);
@@ -38,6 +43,16 @@ export const fetchAndStoreEvents = async (
           .then((res) => (res._max.blockNumber ? res._max.blockNumber + 1 : 0));
 
   const endBlock = await provider.getBlockNumber();
+
+  const cacheKey = `${project.chainId}:${tokenGatedAddress}:${startBlock}:${endBlock}`;
+
+  const redis = getRedis();
+
+  const cached = await redis.get(cacheKey);
+
+  if (!!cached && !overrides?.ignoreCache) return;
+
+  redis.set(cacheKey, "CACHED", "PX", 86400000);
 
   console.log({ startBlock, endBlock });
 

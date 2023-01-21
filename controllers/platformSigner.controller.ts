@@ -7,8 +7,8 @@ import { errorResponse, successResponse } from "../utils/Response.utils";
 import { getCookieWallet } from "../services/auth.service";
 import { getHttpCookie } from "../utils/Request.utils";
 import { getCurrentSale } from "../services/saleConfig.service";
-import { is721 } from "../services/ethereum.service";
 import { getProjectById } from "../services/project.service";
+import { ZodError, z } from "zod";
 
 export const getPlatformSignerPublicKey = async (
   req: NextApiRequest,
@@ -33,21 +33,35 @@ export const getMintSignature = async (
   res: NextApiResponse
 ) => {
   try {
-    const { account, chainId, projectId, mintCount, signature } = req.body;
-    if (isNaN(+projectId)) throw "Invalid Project ID";
-    if (isNaN(+chainId)) throw "Invalid Chain ID";
-    if (isNaN(+mintCount)) throw "Invalid Mint Count";
+    // const { account, chainId, projectId, mintCount, signature } = req.body;
+    // if (isNaN(+projectId)) throw "Invalid Project ID";
+    // if (isNaN(+chainId)) throw "Invalid Chain ID";
+    // if (isNaN(+mintCount)) throw "Invalid Mint Count";
 
-    const data = await PlatformSignerService.getMintSignature({
-      account,
-      mintCount: +mintCount,
-      chainId: +chainId,
-      projectId: +projectId,
-      signature,
-    });
+    const mintSignParams = z
+      .object({
+        account: z.string(),
+        chainId: z.number(),
+        projectId: z.number(),
+        mintCount: z.number(),
+        signature: z.string().optional(),
+      })
+      .parse(req.body);
+
+    // const cacheKey = `mint-sign:${mintSignParams.account}:${mintSignParams.chainId}`;
+    // const redis = getRedis();
+
+    // const cached = await redis.get(cacheKey).catch(() => null);
+
+    // if (!!cached) throw "Please try again in a minute";
+
+    const data = await PlatformSignerService.getMintSignature(mintSignParams);
+    // await redis.set(cacheKey, "LOCKED", "PX", 60000);
     return res.json(successResponse(data));
   } catch (error) {
     console.log("Error getting mint signature : ", error);
+    if (error instanceof ZodError)
+      return res.status(400).json(errorResponse(error.format()));
     return res.status(400).json(errorResponse(error));
   }
 };
