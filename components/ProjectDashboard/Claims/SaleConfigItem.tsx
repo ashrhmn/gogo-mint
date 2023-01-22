@@ -34,7 +34,6 @@ const SaleConfigItem = ({
   index: number;
   collectionType: "721" | "1155";
 }) => {
-  const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   const [tempWl, setTempWl] = useState({ address: "", limit: 0 });
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const checkboxRef = useRef<HTMLInputElement | null>(null);
@@ -167,7 +166,7 @@ const SaleConfigItem = ({
             <div>
               <button
                 className="bg-gray-700 p-1 rounded text-blue-400 hover:text-blue-500 transition-colors"
-                onClick={(e) =>
+                onClick={() =>
                   setSaleConfigs((prev) =>
                     prev.map((sc) =>
                       sc.saleIdentifier !== saleWaveConfig.saleIdentifier

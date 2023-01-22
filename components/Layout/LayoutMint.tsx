@@ -1,6 +1,6 @@
 import { useEthers, shortenIfAddress } from "@usedapp/core";
 import Image from "next/image";
-import Link from "next/link";
+
 import React from "react";
 import { walletConnectConnector } from "../../lib/connectors";
 

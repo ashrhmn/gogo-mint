@@ -10,7 +10,7 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
     const client = new Client({
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
     });
-    const result = await client.login(
+    await client.login(
       "OTkwNzA1NTk3OTUzNDc0NTkw.G3Afl3.IfJlPlvey5ft_gS2i98PGksJeybRJeinhvvwvw"
     );
 
@@ -18,7 +18,7 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
 
     const guilds = await client.guilds.fetch();
 
-    const ug = await Promise.all(guilds.map((g) => g.fetch()));
+    await Promise.all(guilds.map((g) => g.fetch()));
 
     const uug = await Promise.all(
       (

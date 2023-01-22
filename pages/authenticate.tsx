@@ -1,8 +1,7 @@
-import { User } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { service } from "../service";
 import { DiscordUserResponse } from "../types";
 import { randomIntFromInterval } from "../utils/Number.utils";
@@ -32,10 +31,10 @@ interface Props {
 const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
   const { account, deactivate, activateBrowserWallet, library, activate } =
     useEthers();
-  const [connectedUser, setConnectedUser] = useState<User | null>();
-  const [connectedWallet, setConnectedWallet] = useState<string | null>("");
-  const [bgProcesses, setBgProcesses] = useState(0);
-  const [refetcher, setRefetcher] = useState(false);
+  // const [connectedUser, setConnectedUser] = useState<User | null>();
+  // const [connectedWallet, setConnectedWallet] = useState<string | null>("");
+  // const [bgProcesses, setBgProcesses] = useState(0);
+  // const [refetcher, setRefetcher] = useState(false);
   const router = useRouter();
   useEffect(() => {
     let id: string | number | NodeJS.Timeout | undefined;
@@ -47,100 +46,99 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
     if (id) return () => clearTimeout(id);
   }, [msg, router.query.msg]);
 
-  useEffect(() => {
-    if (user) {
-      setBgProcesses((v) => v + 1);
-      service
-        .get(
-          `/users?username=${user.username}&discriminator=${user.discriminator}`
-        )
-        .then(
-          ({
-            data: { data: user, error },
-          }: {
-            data: { data: User; error: any };
-          }) => {
-            setBgProcesses((v) => v - 1);
-            setConnectedWallet(!!user ? user.walletAddress : null);
-          }
-        )
-        .catch((err) => {
-          console.log(err);
-          setConnectedWallet("");
-          setBgProcesses((v) => v - 1);
-        });
-    }
-  }, [user, refetcher]);
+  // useEffect(() => {
+  //   if (user) {
+  //     // setBgProcesses((v) => v + 1);
+  //     service.get(
+  //       `/users?username=${user.username}&discriminator=${user.discriminator}`
+  //     );
+  //     // .then(
+  //     //   ({
+  //     //     data: { data: user, error },
+  //     //   }: {
+  //     //     data: { data: User; error: any };
+  //     //   }) => {
+  //     //     // setBgProcesses((v) => v - 1);
+  //     //     // setConnectedWallet(!!user ? user.walletAddress : null);
+  //     //   }
+  //     // )
+  //     // .catch((err) => {
+  //     //   console.log(err);
+  //     //   // setConnectedWallet("");
+  //     //   // setBgProcesses((v) => v - 1);
+  //     // });
+  //   }
+  // }, [user, refetcher]);
   const handleLogoutClick = async () => {
     await service.get("/auth/discord/logout");
     router.reload();
   };
 
-  useEffect(() => {
-    if (account) {
-      setBgProcesses((v) => v + 1);
-      service
-        .get(`/users?address=${account}`)
-        .then(
-          ({
-            data: { data: user, error },
-          }: {
-            data: { data: User; error: any };
-          }) => {
-            console.log(error);
-            // console.log("Fetched user : ", user);
-            setBgProcesses((v) => v - 1);
-            setConnectedUser(error ? null : user);
-          }
-        )
-        .catch((err) => {
-          console.log(err);
-          setBgProcesses((v) => v - 1);
-          setConnectedUser(null);
-        });
-    }
-  }, [account, refetcher]);
-  const handleLinkAccountClick = async () => {
-    if (!user || !account) {
-      return;
-    }
-    if (!connectedUser) {
-      toast.error("Sign is Required");
-      return;
-    }
+  // useEffect(() => {
+  //   if (account) {
+  //     // setBgProcesses((v) => v + 1);
+  //     service
+  //       .get(`/users?address=${account}`)
+  //       .then(
+  //         ({
+  //           data: { data: user, error },
+  //         }: {
+  //           data: { data: User; error: any };
+  //         }) => {
+  //           console.log(error);
+  //           console.log("Fetched user : ", user);
+  //           setBgProcesses((v) => v - 1);
+  //           setConnectedUser(error ? null : user);
+  //         }
+  //       )
+  //       .catch((err) => {
+  //         console.log(err);
+  //         setBgProcesses((v) => v - 1);
+  //         setConnectedUser(null);
+  //       });
+  //   }
+  // }, [account, refetcher]);
+  // const handleLinkAccountClick = async () => {
+  //   if (!user || !account) {
+  //     return;
+  //   }
+  //   if (!connectedUser) {
+  //     toast.error("Sign is Required");
+  //     return;
+  //   }
 
-    if (cookieAddress !== account) {
-      toast.error(
-        `Signed in wallet is ${shortenIfAddress(
-          cookieAddress
-        )}, but connected wallet is ${shortenIfAddress(account)}`
-      );
-      return;
-    }
+  //   if (cookieAddress !== account) {
+  //     toast.error(
+  //       `Signed in wallet is ${shortenIfAddress(
+  //         cookieAddress
+  //       )}, but connected wallet is ${shortenIfAddress(account)}`
+  //     );
+  //     return;
+  //   }
 
-    setBgProcesses((v) => v + 1);
-    const { data: response } = await toast.promise(
-      service.post("/auth/discord/link", {
-        username: user.username,
-        discriminator: +user.discriminator,
-        address: account,
-      }),
-      {
-        loading: "Linking account...",
-        success: "Account linked successfully!",
-        error: "Error linking account!",
-      }
-    );
-    service.post(`discord/refresh-role-integrations`, {
-      walletAddress: account,
-    }),
-      setRefetcher((v) => !v);
-    setBgProcesses((v) => v - 1);
-    if (!response.error) {
-    } else {
-      console.log(response.error);
-    }
-  };
+  //   // setBgProcesses((v) => v + 1);
+  //   const { data: response } = await toast.promise(
+  //     service.post("/auth/discord/link", {
+  //       username: user.username,
+  //       discriminator: +user.discriminator,
+  //       address: account,
+  //     }),
+  //     {
+  //       loading: "Linking account...",
+  //       success: "Account linked successfully!",
+  //       error: "Error linking account!",
+  //     }
+  //   );
+  //   service.post(`discord/refresh-role-integrations`, {
+  //     walletAddress: account,
+  //   }),
+  //     setRefetcher((v) => !v);
+  //   setBgProcesses((v) => v - 1);
+  //   if (!response.error) {
+  //   } else {
+  //     console.log(response.error);
+  //   }
+  // };
 
   const handleSignClick = async () => {
     try {
@@ -154,7 +152,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
         }
       );
       // console.log("Sig : ", signature);
-      const res = await toast.promise(
+      await toast.promise(
         service.post(`/auth/wallet/login`, {
           address: account,
           signature,
@@ -311,7 +309,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const msg = cookie.get("auth_page_message");
     cookie.set("auth_page_message", "", { expires: new Date(0) });
-    const user = await getLoggedInDiscordUser(context.req).catch((err) => null);
+    const user = await getLoggedInDiscordUser(context.req).catch(() => null);
     let cookieAddress: string | null;
     try {
       cookieAddress = getCookieWallet(cookie);

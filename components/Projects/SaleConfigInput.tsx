@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IDeployConfigSet, ISaleConfigInput } from "../../types";
 import { formatHtmlDateTime, normalizeString } from "../../utils/String.utils";
 import { parse as parseCsv } from "papaparse";
@@ -20,7 +20,6 @@ const SaleConfigInput = ({
   index: number;
   collectionType: "721" | "1155";
 }) => {
-  const [tempWhitelistAddress, setTempWhitelistAddress] = useState("");
   const [tempWl, setTempWl] = useState({ address: "", limit: 0 });
   const whitelistCsvInputRef = useRef<HTMLInputElement | null>(null);
   const { chainId } = useEthers();

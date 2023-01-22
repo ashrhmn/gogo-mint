@@ -1,11 +1,10 @@
 import { SaleConfig } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
-import { Contract, ethers } from "ethers";
-import { deepCopy, isAddress } from "ethers/lib/utils";
+import { ethers } from "ethers";
+import { isAddress } from "ethers/lib/utils";
 import React, { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { v4 } from "uuid";
-import { ABI1155, ABI721 } from "../../../constants/abis";
 import {
   Collection1155__factory,
   Collection721__factory,
@@ -155,7 +154,7 @@ const ClaimsSection = ({
         }
       );
 
-      const [{ data: response }] = await toast.promise(
+      await toast.promise(
         Promise.all([
           service.put(`sale-config/${projectId}`, {
             saleConfigs: dbPayload,

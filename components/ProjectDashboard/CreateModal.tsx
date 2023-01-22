@@ -77,7 +77,7 @@ const CreateModal = ({
       if (!nft.error) router.reload();
       // if (typeof nft.error == "string") toast.error(nft.error);
     } catch (error) {
-      if (typeof error == "string") toast.error(error);
+      if (typeof error === "string") toast.error(error);
       // if (typeof (error as any).message == "string")
       //   toast.error((error as any).message);
       console.log(error);
@@ -144,7 +144,7 @@ const CreateModal = ({
       <div className="mt-4 space-y-2">
         <label className="font-bold">Properties</label>
         <div>
-          {configSet.traits.map((trait, index) => (
+          {configSet.traits.map((trait) => (
             <div key={trait.uuid} className="flex gap-1 items-center">
               <input
                 placeholder="type"

@@ -119,7 +119,7 @@ const Dashboard: NextPage<Props> = ({
           </div>
         </div>
       )}
-      {projects && projects.length == 0 && (
+      {projects && projects.length === 0 && (
         <div className="text-center text-3xl mt-20">
           <span>No project to show. </span>
           <Link href={`/dashboard/new-project`} passHref>

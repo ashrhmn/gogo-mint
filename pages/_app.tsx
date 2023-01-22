@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import "../styles/globals.scss";
 import type { AppProps } from "next/app";
 import { DAppProvider, DAppProviderProps } from "@usedapp/core";
-import { RPC_URLS } from "../constants/RPC_URL";
+// import { RPC_URLS } from "../constants/RPC_URL";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 

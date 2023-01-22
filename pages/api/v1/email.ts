@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createTransport } from "nodemailer";
-import { isDevelopment } from "../../../constants/configuration";
 
 type Data = {
   msg: string;

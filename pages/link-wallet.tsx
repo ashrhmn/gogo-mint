@@ -55,11 +55,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           `/users?username=${user.username}&discriminator=${user.discriminator}`
         )
         .then(
-          ({
-            data: { data: user, error },
-          }: {
-            data: { data: User; error: any };
-          }) => {
+          ({ data: { data: user } }: { data: { data: User; error: any } }) => {
             setBgProcesses((v) => v - 1);
             setConnectedWallet(!!user ? user.walletAddress : null);
           }
@@ -133,7 +129,7 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
           }
         );
         // console.log("Sig : ", signature);
-        const res = await toast.promise(
+        await toast.promise(
           service.post(`/auth/wallet/login`, {
             address: account,
             signature,
@@ -178,28 +174,28 @@ const AuthenticatePage: NextPage<Props> = ({ user, msg, cookieAddress }) => {
     }
   };
 
-  const handleSignClick = async () => {
-    try {
-      assert(account && library, "Please connect Wallet");
-      const signature = await library
-        .getSigner(account)
-        .signMessage(getMessageToSignOnAuth(account));
-      // console.log("Sig : ", signature);
-      const res = await service.post(`/auth/wallet/login`, {
-        address: account,
-        signature,
-      });
-      // console.log(res.data);
-      service.post(`discord/refresh-role-integrations`, {
-        walletAddress: account,
-      }),
-        router.reload();
-    } catch (error: any) {
-      console.error(error);
-      if (error.message && typeof error.message === "string")
-        toast.error(error.message);
-    }
-  };
+  // const handleSignClick = async () => {
+  //   try {
+  //     assert(account && library, "Please connect Wallet");
+  //     const signature = await library
+  //       .getSigner(account)
+  //       .signMessage(getMessageToSignOnAuth(account));
+  //     // console.log("Sig : ", signature);
+  //     const res = await service.post(`/auth/wallet/login`, {
+  //       address: account,
+  //       signature,
+  //     });
+  //     // console.log(res.data);
+  //     service.post(`discord/refresh-role-integrations`, {
+  //       walletAddress: account,
+  //     }),
+  //       router.reload();
+  //   } catch (error: any) {
+  //     console.error(error);
+  //     if (error.message && typeof error.message === "string")
+  //       toast.error(error.message);
+  //   }
+  // };
 
   return (
     <Layout mint>
@@ -373,7 +369,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const msg = cookie.get("auth_page_message");
     cookie.set("auth_page_message", "", { expires: new Date(0) });
-    const user = await getLoggedInDiscordUser(context.req).catch((err) => null);
+    const user = await getLoggedInDiscordUser(context.req).catch(() => null);
     let cookieAddress: string | null;
     try {
       cookieAddress = getCookieWallet(cookie);

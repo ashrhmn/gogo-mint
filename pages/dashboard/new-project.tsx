@@ -1,11 +1,5 @@
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import {
-  BigNumber,
-  Contract,
-  ContractFactory,
-  ethers,
-  providers,
-} from "ethers";
+import { BigNumber, Contract, ethers, providers } from "ethers";
 import { isAddress, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
@@ -401,7 +395,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     } catch (error) {
       console.log(error);
       if ((error as any).message) toast.error((error as any).message);
-      if (typeof error == "string") toast.error(error);
+      if (typeof error === "string") toast.error(error);
       setBgProcessRunning((v) => v - 1);
     }
   };
@@ -651,7 +645,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             </div>
           </div>
 
-          {configSet.saleWaves.length == 0 && (
+          {configSet.saleWaves.length === 0 && (
             <div className="bg-gray-700 rounded-xl text-center font-bold p-4 mt-6">
               No Sale Wave is set. Without a Sale Wave no one will be able to
               mint
@@ -800,17 +794,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default NewProject;
 
-const CloseIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-  >
-    <path
-      fillRule="evenodd"
-      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
+// const CloseIcon = () => (
+//   <svg
+//     xmlns="http://www.w3.org/2000/svg"
+//     className="h-5 w-5"
+//     viewBox="0 0 20 20"
+//     fill="currentColor"
+//   >
+//     <path
+//       fillRule="evenodd"
+//       d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+//       clipRule="evenodd"
+//     />
+//   </svg>
+// );

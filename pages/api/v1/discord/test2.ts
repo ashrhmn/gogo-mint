@@ -1,4 +1,4 @@
-import { Client, GuildMember, Intents, Role } from "discord.js";
+import { Client, Intents } from "discord.js";
 import { NextApiRequest, NextApiResponse } from "next";
 import nextConnect from "next-connect";
 import { getUserByAccessToken } from "../../../../services/discord.service";
@@ -10,7 +10,7 @@ export default nextConnect<NextApiRequest, NextApiResponse>().get(
     const client = new Client({
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
     });
-    const result = await client.login(
+    await client.login(
       "OTkwNzA1NTk3OTUzNDc0NTkw.G3Afl3.IfJlPlvey5ft_gS2i98PGksJeybRJeinhvvwvw"
     );
 

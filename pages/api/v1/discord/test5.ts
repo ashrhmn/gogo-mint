@@ -6,7 +6,7 @@ import {
   Collection1155__factory,
   Collection721__factory,
 } from "../../../../ContractFactory";
-import { refreshDiscordRolesOnTransferEvent } from "../../../../services/discord.service";
+
 import { getAllProjects } from "../../../../services/project.service";
 
 export default nextConnect<NextApiRequest, NextApiResponse>().get(

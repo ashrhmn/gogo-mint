@@ -1,7 +1,7 @@
 import ReactPlayer from "react-player";
 import { RoleIntegration } from "@prisma/client";
 import { useEthers } from "@usedapp/core";
-import { BigNumber, providers } from "ethers";
+import { providers } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -81,7 +81,7 @@ const SettingsSection = ({
       .then((res) => res.data)
       .then((r) => r.data)
       .then(setDiscordUser)
-      .catch((error) => {
+      .catch(() => {
         // console.error("Error getting discord user : ", error);
         setDiscordUser(null);
       });
@@ -94,7 +94,7 @@ const SettingsSection = ({
       .then((res) => res.data)
       .then((r) => r.data)
       .then(setServerList)
-      .catch((error) => {
+      .catch(() => {
         // console.error("Error getting server list", error);
         setServerList(null);
       });
@@ -102,8 +102,10 @@ const SettingsSection = ({
 
   const getGuildNameById = useCallback(
     (id: string) => {
-      if (serverList == null) return undefined;
-      const guild = serverList.map((s) => s.guild).find((g) => g.id === id);
+      if (serverList === null) return undefined;
+      const guild = !serverList
+        ? undefined
+        : serverList.map((s) => s.guild).find((g) => g.id === id);
       return !!guild ? guild.name : undefined;
     },
     [serverList]
@@ -338,7 +340,7 @@ const SettingsSection = ({
       );
       if (!url) return;
 
-      const { data: project } = await toast.promise(
+      await toast.promise(
         service.put(`/projects/${projectId}`, {
           unrevealedImageUrl: url,
         }),
@@ -664,10 +666,10 @@ const SettingsSection = ({
 
   const handleSaveRoleIntegration = async () => {
     try {
-      if (selectedGuild == null) throw "No server selected";
-      if (selectedGuildRole == null) throw "No role selected";
+      if (selectedGuild === null) throw "No server selected";
+      if (selectedGuildRole === null) throw "No role selected";
       if (minValidNfts < 1) throw "Min number of NFTs must be at least 1";
-      if (selectedServerGuildMember == null)
+      if (selectedServerGuildMember === null)
         throw "Logged in user not found in selected server";
       if (
         !(
