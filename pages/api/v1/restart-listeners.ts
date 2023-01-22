@@ -5,7 +5,7 @@ import nextConnect from "next-connect";
 export default nextConnect<NextApiRequest, NextApiResponse>().get(
   async (req, res) => {
     await axios
-      .get(`https://dev.listener.hydromint.xyz/restart`)
+      .get(`https://mint.listener.hydromint.xyz/restart`)
       .then((res) => res.data)
       .then((data) => {
         return res.json(data);
