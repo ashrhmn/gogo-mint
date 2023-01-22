@@ -21,7 +21,7 @@ export const discordRedirectGet = async (
   res: NextApiResponse
 ) => {
   try {
-    if (req.query.code && typeof req.query.code == "string") {
+    if (req.query.code && typeof req.query.code === "string") {
       const { user, creds } = await getDiscordUsersCreds(
         req.query.code,
         "creator"
@@ -32,7 +32,7 @@ export const discordRedirectGet = async (
         httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
       });
-      const upsert = await updateUserOnDiscordAuth(user, creds);
+      await updateUserOnDiscordAuth(user, creds);
       return res.redirect(`/authenticate`);
     }
     return res.redirect(DISCORD_AUTH_URL);
@@ -47,7 +47,7 @@ export const discordRedirectGetLinkWallet = async (
   res: NextApiResponse
 ) => {
   try {
-    if (req.query.code && typeof req.query.code == "string") {
+    if (req.query.code && typeof req.query.code === "string") {
       const { user, creds } = await getDiscordUsersCreds(
         req.query.code,
         "buyer"
@@ -58,7 +58,7 @@ export const discordRedirectGetLinkWallet = async (
         httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
       });
-      const upsert = await updateUserOnDiscordAuth(user, creds);
+      await updateUserOnDiscordAuth(user, creds);
       return res.redirect(`/link-wallet`);
     }
     return res.redirect(DISCORD_AUTH_URL);
