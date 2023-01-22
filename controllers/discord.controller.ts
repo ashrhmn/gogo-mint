@@ -110,7 +110,7 @@ export const getServerListWithAdminOrManageRole = async (
     );
     return res.json(successResponse(data));
   } catch (error) {
-    console.log("Error getting server list : ", error);
+    // console.log("Error getting server list : ", error);
     return res.status(500).json(errorResponse("Error getting server list"));
   }
 };

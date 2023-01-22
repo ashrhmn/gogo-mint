@@ -3,7 +3,7 @@ import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as ProjectService from "../services/project.service";
 import { getHttpCookie } from "../utils/Request.utils";
 import { isAddress } from "ethers/lib/utils";
-import * as MerkleService from "../services/merkletree.service";
+
 import { z } from "zod";
 
 export const getAllProjectsByDiscordId = async (
@@ -82,11 +82,11 @@ export const updateProjectOwner = async (
   const { projectAddress, projectChainId, ownerAddress } = req.body;
   if (
     !projectAddress ||
-    typeof projectAddress != "string" ||
+    typeof projectAddress !== "string" ||
     !isAddress(projectAddress)
   )
     return res.status(400).json(errorResponse("Invalid project address"));
-  if (!projectChainId || typeof projectChainId != "number")
+  if (!projectChainId || typeof projectChainId !== "number")
     return res.status(400).json(errorResponse("Invalid project chain ID"));
   if (
     !ownerAddress ||
@@ -234,12 +234,6 @@ export const getContractUri = async (
       return res.status(400).json(errorResponse("Invalid address"));
     if (!network || typeof network !== "string" || isNaN(+network))
       return res.status(400).json(errorResponse("Invalid address"));
-    console.log({
-      address,
-      network,
-      from: req.headers.host,
-      message: "Query for contract",
-    });
 
     const royaltyBasis =
       !royalty || typeof royalty !== "string" || isNaN(+royalty)
