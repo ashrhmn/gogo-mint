@@ -5,8 +5,8 @@ export function middleware(request: NextRequest) {
   if (!request.url.match("_next"))
     console.log(request.nextUrl.pathname + request.nextUrl.search);
 
-  if (!!request.geo) console.log(JSON.stringify(request.geo));
-  if (!!request.ip) console.log(JSON.stringify(request.ip));
+  console.log("cf-connecting-ip : ", request.headers.get("cf-connecting-ip"));
+  console.log("cf-ipcountry : ", request.headers.get("cf-ipcountry"));
 
   return NextResponse.next();
 }
