@@ -698,13 +698,13 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             </button>
           </div>
 
-          <div className="mt-4 space-y-2">
+          {/* <div className="mt-4 space-y-2">
             <label className="font-bold">Royalty Receiver Address</label>
             <p className="text-sm text-gray-300">
               On every resale of an NFT from this collection a RoyaltyPercentage
               (Max 10%) will be sent to this address
             </p>
-            {/* <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-4">
               <input
                 className="flex-grow rounded bg-gray-700 h-14 p-3 focus:bg-gray-800 transition-colors"
                 type="text"
@@ -739,8 +739,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
                 />
                 <span className="p-2 bg-gray-700">%</span>
               </div>
-            </div> */}
-          </div>
+            </div>
+          </div> */}
           <div>
             <button
               disabled={!!bgProcessRunning}
