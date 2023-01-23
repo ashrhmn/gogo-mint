@@ -112,31 +112,30 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     deployCharge: BigNumber,
     royaltyBasis: number,
     maxMintCap: number,
-    factory: Collection721__factory
+    factory: Collection721__factory,
+    debugParams?: boolean
   ) => {
+    const param = {
+      _baseURI: baseURI,
+      _feeDestination: feeToAddress,
+      _maxMintCap: maxMintCap,
+      _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
+      _msgSigner: platformSignerAddress,
+      _name: name,
+      _platformOwner:
+        process.env.NEXT_PUBLIC_PLATFORM_OWNER ||
+        "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
+      _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
+      _revealTime: revealTime,
+      _royaltyBasis: royaltyBasis,
+      _saleConfigRoot: saleConfigRoot,
+      _symbol: symbol,
+    };
+    if (debugParams) alert(JSON.stringify(param));
     const contract = await toast.promise(
-      factory.deploy(
-        {
-          _baseURI: baseURI,
-          _feeDestination: feeToAddress,
-          _maxMintCap: maxMintCap,
-          _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
-          _msgSigner: platformSignerAddress,
-          _name: name,
-          _platformOwner:
-            process.env.NEXT_PUBLIC_PLATFORM_OWNER ||
-            "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
-          // _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
-          _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
-          _revealTime: revealTime,
-          _royaltyBasis: royaltyBasis,
-          _saleConfigRoot: saleConfigRoot,
-          _symbol: symbol,
-        },
-        {
-          value: deployCharge.mul(maxMintCap),
-        }
-      ),
+      factory.deploy(param, {
+        value: deployCharge.mul(maxMintCap),
+      }),
       {
         success: "Transaction sent",
         error: "Error sending transaction",
@@ -157,30 +156,29 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     deployCharge: BigNumber,
     royaltyBasis: number,
     maxMintCap: number,
-    factory: Collection1155__factory
+    factory: Collection1155__factory,
+    debugParams?: boolean
   ) => {
+    const param = {
+      _baseURI: baseURI,
+      _feeDestination: feeToAddress,
+      _maxMintCap: maxMintCap,
+      _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
+      _msgSigner: platformSignerAddress,
+      _name: name,
+      _platformOwner:
+        process.env.NEXT_PUBLIC_PLATFORM_OWNER ||
+        "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
+      _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
+      _revealTime: revealTime,
+      _royaltyBasis: royaltyBasis,
+      _saleConfigRoot: saleConfigRoot,
+    };
+    if (debugParams) alert(JSON.stringify(param));
     const contract = await toast.promise(
-      factory.deploy(
-        {
-          _baseURI: baseURI,
-          _feeDestination: feeToAddress,
-          _maxMintCap: maxMintCap,
-          _maxMintInTotalPerWallet: maxMintInTotalPerWallet,
-          _msgSigner: platformSignerAddress,
-          _name: name,
-          _platformOwner:
-            process.env.NEXT_PUBLIC_PLATFORM_OWNER ||
-            "0x4A7D933678676fa5F1d8dE3B6A0bBa9460fC1BdE",
-          // _platformOwner: "0xBf630fE53e5CCA8D86750C70a1942d21ACF834fd",
-          _priceFeedAddress: PRICE_FEED_ADDRESSES[chainId || 0] || ZERO_ADDRESS,
-          _revealTime: revealTime,
-          _royaltyBasis: royaltyBasis,
-          _saleConfigRoot: saleConfigRoot,
-        },
-        {
-          value: deployCharge.mul(maxMintCap),
-        }
-      ),
+      factory.deploy(param, {
+        value: deployCharge.mul(maxMintCap),
+      }),
       {
         success: "Transaction sent",
         error: "Error sending transaction",
@@ -190,7 +188,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     return contract;
   };
 
-  const onDeployClick = async () => {
+  const onDeployClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     console.log({ configSet });
 
     if (!library || !chainId) {
@@ -330,7 +328,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               deployCharge,
               configSet.roayltyPercentage * 100,
               +configSet.maxLimitCap.toFixed(0),
-              new Collection721__factory(library.getSigner(account))
+              new Collection721__factory(library.getSigner(account)),
+              !!e.altKey
             )
           : await deploy1155(
               normalizeString(configSet.name),
@@ -343,7 +342,8 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               deployCharge,
               configSet.roayltyPercentage * 100,
               +configSet.maxLimitCap.toFixed(0),
-              new Collection1155__factory(library.getSigner(account))
+              new Collection1155__factory(library.getSigner(account)),
+              !!e.altKey
             );
 
       const [newProject] = await toast.promise(
