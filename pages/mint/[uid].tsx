@@ -460,7 +460,7 @@ const MintPage: NextPage<Props> = ({
                   )}
                 </h1>
               </div>
-              {!!currentSale && !!account && (
+              {!!currentSale && !!account && currentSale.saleType !== "public" && (
                 <div className="flex justify-between items-center">
                   <h1>
                     Mint Limit for {shortenIfAddress(account)} in this sale
