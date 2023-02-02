@@ -33,6 +33,7 @@ import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
 import { fetchAndStoreEvents } from "../../services/transferEvent.service";
 import { getMessageToSignOnTokenGatedMint } from "../../constants/configuration";
 import { fixMissingTokenIds } from "../../services/nft.service";
+import { multiply } from "../../utils/Number.utils";
 
 interface Props {
   project: Project & {
@@ -282,7 +283,9 @@ const MintPage: NextPage<Props> = ({
           },
           {
             value: parseEther(
-              (+(currentSale.mintCharge * mintCount).toFixed(18)).toString()
+              (+multiply(currentSale.mintCharge, mintCount).toFixed(
+                18
+              )).toString()
             ).toString(),
           }
         ),
@@ -535,7 +538,13 @@ const MintPage: NextPage<Props> = ({
                         "(Free)"
                       ) : (
                         <>
-                          ({+(currentSale.mintCharge * mintCount).toFixed(8)}{" "}
+                          (
+                          {
+                            +multiply(
+                              currentSale.mintCharge,
+                              mintCount
+                            ).toFixed(8)
+                          }{" "}
                           ETH)
                         </>
                       )}
