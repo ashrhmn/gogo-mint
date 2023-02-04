@@ -15,7 +15,6 @@ import {
 } from "../../ContractFactory";
 import type { Collection1155, Collection721 } from "../../ContractFactory";
 import { service } from "../../service";
-import { getRandomMessageSignature } from "../../services/platformSigner.service";
 import {
   getClaimedSupplyCountByProjectChainAddress,
   getProjectByUid,
@@ -30,9 +29,7 @@ import { getSolVersionConfig } from "../../utils/SaleConfig.utils";
 import { normalizeString } from "../../utils/String.utils";
 import { walletConnectConnector } from "../../lib/connectors";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
-import { fetchAndStoreEvents } from "../../services/transferEvent.service";
 import { getMessageToSignOnTokenGatedMint } from "../../constants/configuration";
-import { fixMissingTokenIds } from "../../services/nft.service";
 import { multiply } from "../../utils/Number.utils";
 
 interface Props {
