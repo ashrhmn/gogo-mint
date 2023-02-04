@@ -593,8 +593,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         console.log("Error getting Claimed Supply Count : ", err);
         return 0;
       }),
-      getCurrentAndNextSale(project.id).catch((_err) => {
-        // console.log("Error getting next sale", err);
+      getCurrentAndNextSale(project.id).catch((err) => {
+        console.log("Error getting sales", err);
         return { currentSale: null, nextSale: null };
       }),
       // getRandomMessageSignature().catch((err) => {
