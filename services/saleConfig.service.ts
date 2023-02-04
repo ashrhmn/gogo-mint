@@ -11,6 +11,7 @@ import Cookies from "cookies";
 import { getCookieWallet } from "./auth.service";
 import { SaleConfig } from "@prisma/client";
 import * as MerkleTreeService from "./merkletree.service";
+import { getIfCached, getRedis } from "../lib/redis";
 
 export const getSaleConfigTree = (saleConfigs: ISaleConfigInput[]) => {
   return new MerkleTree(
@@ -175,15 +176,20 @@ export const updateSaleConfigs = async (
 
 export const getCurrentSale = async (projectId: number) => {
   const now = +(Date.now() / 1000).toFixed(0);
-  const scs = await prisma.saleConfig.findFirstOrThrow({
-    where: {
-      projectId,
-      startTime: { lte: now },
-      OR: [{ endTime: { equals: 0 } }, { endTime: { gte: now } }],
-      enabled: true,
-    },
-    orderBy: { startTime: "asc" },
-    include: { whitelist: true },
+  const scs = await getIfCached({
+    key: `current-sale:${projectId}:${now}`,
+    ttl: 60,
+    realtimeDataCb: () =>
+      prisma.saleConfig.findFirstOrThrow({
+        where: {
+          projectId,
+          startTime: { lte: now },
+          OR: [{ endTime: { equals: 0 } }, { endTime: { gte: now } }],
+          enabled: true,
+        },
+        orderBy: { startTime: "asc" },
+        include: { whitelist: true },
+      }),
   });
   return scs;
 };
