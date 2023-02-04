@@ -7,9 +7,7 @@ services:
       args:
         - PORT=${PORT:-3001}
     image: gogo-mint-dftsw-2-img
+    ports:
+      - "80:${PORT:-3001}"
     container_name: gogo-mint-dftsw-2
     restart: always
-networks:
-  default:
-    external: true
-    name: nginx

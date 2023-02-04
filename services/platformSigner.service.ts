@@ -42,6 +42,22 @@ export const getMultipleRandomMessageSignature = async (n: number) => {
   );
 };
 
+export const _getMintSignature = async (account: string, mintCount: number) => {
+  const privateKey = PLATFORM_SIGNER_PRIVATE_KEY;
+  const wallet = new Wallet(privateKey);
+  const message = v4();
+
+  const mintSignature = await wallet.signMessage(
+    arrayify(
+      solidityKeccak256(
+        ["address", "string", "uint256"],
+        [account, message, mintCount]
+      )
+    )
+  );
+  return { message, signature: mintSignature };
+};
+
 export const getMintSignature = async ({
   account,
   mintCount,

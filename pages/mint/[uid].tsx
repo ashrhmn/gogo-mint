@@ -1,6 +1,6 @@
 import { Project, SaleConfig, User, WhitelistLimits } from "@prisma/client";
 import { shortenIfAddress, useEthers } from "@usedapp/core";
-import { BigNumber, ethers, providers } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { formatEther, parseEther } from "ethers/lib/utils";
 import { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
@@ -16,38 +16,33 @@ import {
 import type { Collection1155, Collection721 } from "../../ContractFactory";
 import { service } from "../../service";
 import {
-  getClaimedSupplyCountByProjectChainAddress,
   getProjectByUid,
   getTotalSupplyCountByProjectChainAddress,
 } from "../../services/project.service";
-import {
-  getCurrentAndNextSale,
-  getCurrentSale,
-  getSaleConfigProofByProjectId,
-} from "../../services/saleConfig.service";
-import { getSolVersionConfig } from "../../utils/SaleConfig.utils";
+import { getBasicCurrentSale } from "../../services/saleConfig.service";
 import { normalizeString } from "../../utils/String.utils";
 import { walletConnectConnector } from "../../lib/connectors";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
-import { getMessageToSignOnTokenGatedMint } from "../../constants/configuration";
 import { multiply } from "../../utils/Number.utils";
+import { ISaleConfigSol } from "../../types";
+import { getIfCached } from "../../lib/redis";
 
 interface Props {
   project: Project & {
     owner: User;
     // nfts: NFT[];
   };
-  currentSale:
-    | (SaleConfig & {
-        whitelist: WhitelistLimits[];
-      })
-    | null;
+  currentSale: {
+    saleIdentifier: string;
+    saleType: string;
+    mintCharge: number;
+  } | null;
   nextSale:
     | (SaleConfig & {
         whitelist: WhitelistLimits[];
       })
     | null;
-  configProof: string[] | null;
+  // configProof: string[] | null;
   totalSupply: number | null;
   claimedSupply: number;
   randomMsgSign: {
@@ -60,8 +55,7 @@ const MintPage: NextPage<Props> = ({
   project,
   currentSale,
   nextSale,
-  configProof,
-  claimedSupply,
+  // claimedSupply,
   totalSupply,
   // randomMsgSign,
 }) => {
@@ -75,6 +69,7 @@ const MintPage: NextPage<Props> = ({
     maxMintInTotalPerWallet: -1,
     maxMintCap: -1,
     totalMintCount: -1,
+    claimedSupply: 0,
   });
   const router = useRouter();
   const [mintCount, setMintCount] = useState(1);
@@ -89,7 +84,7 @@ const MintPage: NextPage<Props> = ({
       const balance = await signer.getBalance();
       setUserEtherBalance(balance);
     })();
-  }, [account, library]);
+  }, [account, library, chainId]);
 
   useEffect(() => {
     (async () => {
@@ -112,16 +107,21 @@ const MintPage: NextPage<Props> = ({
               project.address,
               new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             );
-      const [userBalance] = (
+      const [userBalance, claimedSupply] = (
         await Promise.all([
           project.collectionType === "721"
             ? (contract as Collection721).balanceOf(account)
             : (contract as Collection1155).balanceOf(account, 0),
+          (contract as Collection721)
+            .tokenId()
+            .then((v) => v.toNumber() - 1)
+            .catch(() => 0),
         ])
       ).map((v) => +v.toString());
       setConfig((c) => ({
         ...c,
         userBalance,
+        claimedSupply,
       }));
     })();
   }, [
@@ -146,10 +146,10 @@ const MintPage: NextPage<Props> = ({
       return;
     }
 
-    if (configProof === null) {
-      toast.error("Error config proof");
-      return;
-    }
+    // if (configProof === null) {
+    //   toast.error("Error config proof");
+    //   return;
+    // }
     if (!account || !chainId || !library) {
       toast.error("Please Connect Wallet");
       return;
@@ -172,7 +172,7 @@ const MintPage: NextPage<Props> = ({
 
     if (
       project.collectionType === "721" &&
-      totalSupply - claimedSupply < mintCount
+      totalSupply - config.claimedSupply < mintCount
     ) {
       toast.error("Not enough supply");
       return;
@@ -194,54 +194,54 @@ const MintPage: NextPage<Props> = ({
     try {
       setMintBgProc((v) => v + 1);
 
-      const tokenGatedMintSignature = await (async () => {
-        if (
-          !currentSale.tokenGatedAddress ||
-          currentSale.tokenGatedAddress === ethers.constants.AddressZero
-        )
-          return;
-        return await toast.promise(
-          library
-            .getSigner(account)
-            .signMessage(getMessageToSignOnTokenGatedMint(account, mintCount)),
-          {
-            error: "Error getting signature approval",
-            loading: "Awaiting signature approval for token gated mint...",
-            success: "",
-          },
-          {
-            success: { style: { display: "none" } },
-          }
-        );
-      })();
+      // const tokenGatedMintSignature = await (async () => {
+      //   if (
+      //     !currentSale.tokenGatedAddress ||
+      //     currentSale.tokenGatedAddress === ethers.constants.AddressZero
+      //   )
+      //     return;
+      //   return await toast.promise(
+      //     library
+      //       .getSigner(account)
+      //       .signMessage(getMessageToSignOnTokenGatedMint(account, mintCount)),
+      //     {
+      //       error: "Error getting signature approval",
+      //       loading: "Awaiting signature approval for token gated mint...",
+      //       success: "",
+      //     },
+      //     {
+      //       success: { style: { display: "none" } },
+      //     }
+      //   );
+      // })();
 
-      const [{ data: whitelistProof }, randomMsgSign] = await toast.promise(
-        Promise.all([
-          service.get(
-            `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
-          ),
-          service
-            .post(`/platform-signer/signature`, {
-              account,
-              chainId,
-              projectId: project.id,
-              mintCount,
-              signature: tokenGatedMintSignature,
-            })
-            .then((res) => res.data.data)
-            .catch((err) => {
-              // console.log("Mint Signature Error : ", err);
-              throw err.response.data.error;
-            }),
-        ]),
-        { error: "", loading: "Preparing...", success: "" },
-        {
-          success: { style: { display: "none" } },
-          error: { style: { display: "none" } },
-        }
-      );
+      // const [{ data: whitelistProof }, randomMsgSign] = await toast.promise(
+      //   Promise.all([
+      //     service.get(
+      //       `/sale-config/proof/whitelist-proof?identifier=${currentSale.saleIdentifier}&address=${account}`
+      //     ),
+      //     service
+      //       .post(`/platform-signer/signature`, {
+      //         account,
+      //         chainId,
+      //         projectId: project.id,
+      //         mintCount,
+      //         signature: tokenGatedMintSignature,
+      //       })
+      //       .then((res) => res.data.data)
+      //       .catch((err) => {
+      //         // console.log("Mint Signature Error : ", err);
+      //         throw err.response.data.error;
+      //       }),
+      //   ]),
+      //   { error: "", loading: "Preparing...", success: "" },
+      //   {
+      //     success: { style: { display: "none" } },
+      //     error: { style: { display: "none" } },
+      //   }
+      // );
 
-      if (!randomMsgSign) throw "Error getting platform signature";
+      // if (!randomMsgSign) throw "Error getting platform signature";
 
       const contract =
         project.collectionType === "721"
@@ -252,38 +252,75 @@ const MintPage: NextPage<Props> = ({
               project.address
             );
 
-      const saleConfig = getSolVersionConfig({
-        enabled: currentSale.enabled,
-        endTime: currentSale.endTime,
-        maxMintInSale: currentSale.maxMintInSale,
-        maxMintPerWallet: currentSale.maxMintPerWallet,
-        mintCharge: currentSale.mintCharge,
-        saleType: currentSale.saleType as "public" | "private",
-        startTime: currentSale.startTime,
-        uuid: currentSale.saleIdentifier,
-        whitelistAddresses: currentSale.whitelist,
-        tokenGatedAddress: currentSale.tokenGatedAddress,
-      });
+      // const saleConfig = getSolVersionConfig({
+      //   enabled: currentSale.enabled,
+      //   endTime: currentSale.endTime,
+      //   maxMintInSale: currentSale.maxMintInSale,
+      //   maxMintPerWallet: currentSale.maxMintPerWallet,
+      //   mintCharge: currentSale.mintCharge,
+      //   saleType: currentSale.saleType as "public" | "private",
+      //   startTime: currentSale.startTime,
+      //   uuid: currentSale.saleIdentifier,
+      //   whitelistAddresses: currentSale.whitelist,
+      //   tokenGatedAddress: currentSale.tokenGatedAddress,
+      // });
+
+      const mintData = await toast.promise(
+        service
+          .post("/prepare-mint", {
+            projectId: project.id,
+            walletAddress: account,
+            mintCount,
+          })
+          .then(
+            (res) =>
+              res.data.data as {
+                config: ISaleConfigSol;
+                message: string;
+                signature: string;
+                whitelistProof: string[];
+                mintChargeInWei: string;
+                whitelistMintLimit: number;
+                saleConfigProof: string[];
+              }
+          )
+          .catch(() => null),
+        {
+          error: null,
+          loading: "Preparing Mint...",
+          success: null,
+        },
+        {
+          success: { style: { display: "none" } },
+          error: { style: { display: "none" } },
+        }
+      );
+
+      if (!mintData) throw "Error preparing mint";
+
+      const {
+        config,
+        message,
+        mintChargeInWei,
+        signature,
+        whitelistProof,
+        whitelistMintLimit,
+        saleConfigProof,
+      } = mintData;
 
       const tx = await toast.promise(
         contract.mint(
           {
-            saleConfigProof: configProof,
-            whitelistProof: whitelistProof.data,
+            saleConfigProof,
+            whitelistProof,
             numberOfMint: mintCount,
-            message: randomMsgSign.message,
-            signature: randomMsgSign.signature,
-            config: saleConfig,
-            whitelistMintLimit:
-              currentSale.whitelist.find((wl) => wl.address === account)
-                ?.limit || 0,
+            message,
+            signature,
+            config,
+            whitelistMintLimit,
           },
           {
-            value: parseEther(
-              (+multiply(currentSale.mintCharge, mintCount).toFixed(
-                18
-              )).toString()
-            ).toString(),
+            value: mintChargeInWei,
           }
         ),
         {
@@ -435,12 +472,12 @@ const MintPage: NextPage<Props> = ({
                   </div>
                   <div className="flex justify-between items-center">
                     <h1>Already Claimed</h1>
-                    <h1>{claimedSupply}</h1>
+                    <h1>{config.claimedSupply}</h1>
                   </div>
-                  {totalSupply !== null && claimedSupply !== null && (
+                  {totalSupply !== null && config.claimedSupply !== null && (
                     <div className="flex justify-between items-center">
                       <h1>Unclaimed</h1>
-                      <h1>{totalSupply - claimedSupply}</h1>
+                      <h1>{totalSupply - config.claimedSupply}</h1>
                     </div>
                   )}
                 </>
@@ -457,7 +494,7 @@ const MintPage: NextPage<Props> = ({
                   )}
                 </h1>
               </div>
-              {!!currentSale && !!account && currentSale.saleType !== "public" && (
+              {/* {!!currentSale && !!account && currentSale.saleType !== "public" && (
                 <div className="flex justify-between items-center">
                   <h1>
                     Mint Limit for {shortenIfAddress(account)} in this sale
@@ -467,7 +504,7 @@ const MintPage: NextPage<Props> = ({
                       ?.limit || 0}
                   </h1>
                 </div>
-              )}
+              )} */}
             </div>
             <div className="flex flex-col justify-between items-center border-2 border-gray-600 rounded p-1 m-1">
               <h1>Sale Status</h1>
@@ -564,35 +601,49 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { uid } = context.query;
   if (!uid || typeof uid !== "string")
     return { props: {}, redirect: { destination: "/404" } };
-  const project = await getProjectByUid(uid).catch((_err) => null);
+  const project = await getIfCached({
+    key: `project-by-uid:${uid}`,
+    ttl: 300,
+    realtimeDataCb: () => getProjectByUid(uid).catch((_err) => null),
+  });
   if (!project || !project.address || !project.chainId)
     return { props: {}, redirect: { destination: "/404" } };
   console.log(2);
   // fixMissingTokenIds(project.id);
 
-  const [currentSale, totalSupply, claimedSupply] = await Promise.all([
-    getCurrentSale(project.id).catch((_err) => {
-      // console.log("Error getting current sale", err);
-      return null;
+  const [currentSale, totalSupply] = await Promise.all([
+    getIfCached({
+      key: `basic-current-sale:${project.id}`,
+      ttl: 30,
+      realtimeDataCb: () =>
+        getBasicCurrentSale(project.id).catch((err) => {
+          console.log("Error getting current sale", err);
+          return null;
+        }),
+    }),
+    getIfCached({
+      key: `totalSupplyCount:${project.chainId}:${project.address}`,
+      ttl: 30,
+      realtimeDataCb: () =>
+        getTotalSupplyCountByProjectChainAddress(
+          project.address!,
+          project.chainId!
+        ).catch((err) => {
+          console.log("Error getting Total Supply Count : ", err);
+          return null;
+        }),
     }),
     // getNextSale(project.id).catch((_err) => {
     //   // console.log("Error getting next sale", err);
     //   return null;
     // }),
-    getTotalSupplyCountByProjectChainAddress(
-      project.address,
-      project.chainId
-    ).catch((err) => {
-      console.log("Error getting Total Supply Count : ", err);
-      return null;
-    }),
-    getClaimedSupplyCountByProjectChainAddress(
-      project.address,
-      project.chainId
-    ).catch((err) => {
-      console.log("Error getting Claimed Supply Count : ", err);
-      return 0;
-    }),
+    // getClaimedSupplyCountByProjectChainAddress(
+    //   project.address,
+    //   project.chainId
+    // ).catch((err) => {
+    //   console.log("Error getting Claimed Supply Count : ", err);
+    //   return 0;
+    // }),
     // getCurrentAndNextSale(project.id).catch((err) => {
     //   console.log("Error getting sales", err);
     //   return { currentSale: null, nextSale: null };
@@ -601,18 +652,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     //   console.log("Error getting random msg/sign : ", err);
     //   return null;
     // }),
+    ,
   ]);
   console.log(3);
-  const configProof = !!currentSale
-    ? await getSaleConfigProofByProjectId(
-        project.id,
-        currentSale.saleIdentifier
-      ).catch((err) => {
-        console.log("Error getting config proof", err);
-        return null;
-      })
-    : null;
-  console.log(4);
+  // const configProof = !!currentSale
+  //   ? await getSaleConfigProofByProjectId(
+  //       project.id,
+  //       currentSale.saleIdentifier
+  //     ).catch((err) => {
+  //       console.log("Error getting config proof", err);
+  //       return null;
+  //     })
+  //   : null;
+  // console.log(4);
   // if (currentSale?.tokenGatedAddress)
   //   fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
 
@@ -621,9 +673,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       project,
       currentSale,
       nextSale: null,
-      configProof,
+      // configProof,
       totalSupply,
-      claimedSupply,
+      // claimedSupply,
       // randomMsgSign,
     },
   };

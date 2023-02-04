@@ -174,6 +174,26 @@ export const updateSaleConfigs = async (
   });
 };
 
+export const getBasicCurrentSale = async (projectId: number) => {
+  const now = +(Date.now() / 1000).toFixed(0);
+  const scs = await getIfCached({
+    key: `current-sale-basic:${projectId}:${now}`,
+    ttl: 60,
+    realtimeDataCb: () =>
+      prisma.saleConfig.findFirstOrThrow({
+        where: {
+          projectId,
+          startTime: { lte: now },
+          OR: [{ endTime: { equals: 0 } }, { endTime: { gte: now } }],
+          enabled: true,
+        },
+        orderBy: { startTime: "asc" },
+        select: { saleIdentifier: true, mintCharge: true, saleType: true },
+      }),
+  });
+  return scs;
+};
+
 export const getCurrentSale = async (projectId: number) => {
   const now = +(Date.now() / 1000).toFixed(0);
   const scs = await getIfCached({
@@ -294,14 +314,26 @@ export const getWhitelistProofBySaleConfig = async (
     where: { saleIdentifier: identifier },
     include: { whitelist: { select: { address: true, limit: true } } },
   });
+
   if (config.saleType === "public") return [];
   if (config.whitelist.length === 0)
     throw new Error("Empty whitelist in private sale");
-  return MerkleTreeService.getWhitelistProof(
-    config.whitelist,
-    config.whitelist.find((wl) => wl.address === address) || {
-      address,
-      limit: 0,
-    }
-  );
+  const userLimit = await prisma.whitelistLimits.findFirst({
+    where: { address, saleConfigId: config.id },
+    select: { address: true, limit: true },
+  });
+  if (!userLimit) throw new Error("User not whitelisted");
+  return MerkleTreeService.getWhitelistProof(config.whitelist, userLimit);
+};
+
+export const getWhitelistProof = (
+  saleType: string,
+  whitelist: IWhiteList[],
+  userLimit: IWhiteList
+) => {
+  if (saleType === "public") return [];
+  if (whitelist.length === 0)
+    throw new Error("Empty whitelist in private sale");
+  if (userLimit.limit === 0) throw new Error("User not whitelisted");
+  return MerkleTreeService.getWhitelistProof(whitelist, userLimit);
 };
