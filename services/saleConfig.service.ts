@@ -11,7 +11,7 @@ import Cookies from "cookies";
 import { getCookieWallet } from "./auth.service";
 import { SaleConfig } from "@prisma/client";
 import * as MerkleTreeService from "./merkletree.service";
-import { getIfCached, getRedis } from "../lib/redis";
+import { getIfCached } from "../lib/redis";
 
 export const getSaleConfigTree = (saleConfigs: ISaleConfigInput[]) => {
   return new MerkleTree(
