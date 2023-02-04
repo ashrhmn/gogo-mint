@@ -559,13 +559,15 @@ const MintPage: NextPage<Props> = ({
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  console.log(1);
+
   const { uid } = context.query;
   if (!uid || typeof uid !== "string")
     return { props: {}, redirect: { destination: "/404" } };
   const project = await getProjectByUid(uid).catch((_err) => null);
   if (!project || !project.address || !project.chainId)
     return { props: {}, redirect: { destination: "/404" } };
-
+  console.log(2);
   // fixMissingTokenIds(project.id);
 
   const [currentSale, nextSale, totalSupply, claimedSupply] = await Promise.all(
@@ -598,7 +600,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       // }),
     ]
   );
-
+  console.log(3);
   const configProof = !!currentSale
     ? await getSaleConfigProofByProjectId(
         project.id,
@@ -608,7 +610,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return null;
       })
     : null;
-
+  console.log(4);
   // if (currentSale?.tokenGatedAddress)
   //   fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
 
