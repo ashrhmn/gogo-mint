@@ -569,10 +569,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!project || !project.address || !project.chainId)
     return { props: {}, redirect: { destination: "/404" } };
 
-  fixMissingTokenIds(project.id);
+  // fixMissingTokenIds(project.id);
 
-  const [currentSale, nextSale, totalSupply, claimedSupply, randomMsgSign] =
-    await Promise.all([
+  const [currentSale, nextSale, totalSupply, claimedSupply] = await Promise.all(
+    [
       getCurrentSale(project.id).catch((_err) => {
         // console.log("Error getting current sale", err);
         return null;
@@ -595,11 +595,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         console.log("Error getting Claimed Supply Count : ", err);
         return 0;
       }),
-      getRandomMessageSignature().catch((err) => {
-        console.log("Error getting random msg/sign : ", err);
-        return null;
-      }),
-    ]);
+      // getRandomMessageSignature().catch((err) => {
+      //   console.log("Error getting random msg/sign : ", err);
+      //   return null;
+      // }),
+    ]
+  );
 
   const configProof = !!currentSale
     ? await getSaleConfigProofByProjectId(
@@ -611,8 +612,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       })
     : null;
 
-  if (currentSale?.tokenGatedAddress)
-    fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
+  // if (currentSale?.tokenGatedAddress)
+  //   fetchAndStoreEvents(project.id, currentSale?.tokenGatedAddress!);
 
   return {
     props: {
@@ -622,7 +623,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       configProof,
       totalSupply,
       claimedSupply,
-      randomMsgSign,
+      // randomMsgSign,
     },
   };
 };
