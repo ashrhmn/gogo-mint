@@ -21,8 +21,7 @@ import {
   getTotalSupplyCountByProjectChainAddress,
 } from "../../services/project.service";
 import {
-  getCurrentSale,
-  getNextSale,
+  getCurrentAndNextSale,
   getSaleConfigProofByProjectId,
 } from "../../services/saleConfig.service";
 import { getSolVersionConfig } from "../../utils/SaleConfig.utils";
@@ -570,16 +569,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   console.log(2);
   // fixMissingTokenIds(project.id);
 
-  const [currentSale, nextSale, totalSupply, claimedSupply] = await Promise.all(
-    [
-      getCurrentSale(project.id).catch((_err) => {
-        // console.log("Error getting current sale", err);
-        return null;
-      }),
-      getNextSale(project.id).catch((_err) => {
-        // console.log("Error getting next sale", err);
-        return null;
-      }),
+  const [totalSupply, claimedSupply, { currentSale, nextSale }] =
+    await Promise.all([
+      // getCurrentSale(project.id).catch((_err) => {
+      //   // console.log("Error getting current sale", err);
+      //   return null;
+      // }),
+      // getNextSale(project.id).catch((_err) => {
+      //   // console.log("Error getting next sale", err);
+      //   return null;
+      // }),
       getTotalSupplyCountByProjectChainAddress(
         project.address,
         project.chainId
@@ -594,12 +593,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         console.log("Error getting Claimed Supply Count : ", err);
         return 0;
       }),
+      getCurrentAndNextSale(project.id).catch((_err) => {
+        // console.log("Error getting next sale", err);
+        return { currentSale: null, nextSale: null };
+      }),
       // getRandomMessageSignature().catch((err) => {
       //   console.log("Error getting random msg/sign : ", err);
       //   return null;
       // }),
-    ]
-  );
+    ]);
   console.log(3);
   const configProof = !!currentSale
     ? await getSaleConfigProofByProjectId(

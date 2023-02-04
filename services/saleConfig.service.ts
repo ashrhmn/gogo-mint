@@ -231,6 +231,51 @@ export const getNextSale = async (projectId: number) => {
       });
 };
 
+export const getCurrentAndNextSale = async (projectId: number) => {
+  const now = +(Date.now() / 1000).toFixed(0);
+  const currentSale = await getCurrentSale(projectId).catch((_err) => {
+    return null;
+  });
+  if (!!currentSale && currentSale.endTime === 0)
+    throw new Error("Current sale is never ending");
+  const nextSale = !!currentSale
+    ? await prisma.saleConfig.findFirstOrThrow({
+        where: {
+          projectId,
+          OR: [
+            { endTime: { equals: 0 } },
+            {
+              AND: [
+                { endTime: { gte: now } },
+                { endTime: { gt: currentSale.endTime } },
+              ],
+            },
+          ],
+          enabled: true,
+          NOT: [{ saleIdentifier: { equals: currentSale.saleIdentifier } }],
+        },
+        orderBy: { startTime: "asc" },
+        include: { whitelist: true },
+      })
+    : await prisma.saleConfig.findFirstOrThrow({
+        where: {
+          projectId,
+          startTime: { gte: now },
+          OR: [
+            { endTime: { equals: 0 } },
+            {
+              AND: [{ endTime: { gte: now } }],
+            },
+          ],
+          enabled: true,
+        },
+        orderBy: { startTime: "asc" },
+        include: { whitelist: true },
+      });
+
+  return { currentSale, nextSale };
+};
+
 export const getWhitelistProofBySaleConfig = async (
   identifier: string,
   address: string

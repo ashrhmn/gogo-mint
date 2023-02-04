@@ -70,9 +70,9 @@ export const getClaimedSupplyCountByProjectChainAddress = async (
   );
   const tokenId = await contract.tokenId().catch(() => BigNumber.from(1));
   return tokenId.sub(1).toNumber();
-  return await prisma.nFT.count({
-    where: { project: { address, chainId }, tokenId: { not: null } },
-  });
+  // return await prisma.nFT.count({
+  //   where: { project: { address, chainId }, tokenId: { not: null } },
+  // });
 };
 export const getTotalSupplyCountByProjectChainAddress = async (
   address: string,
