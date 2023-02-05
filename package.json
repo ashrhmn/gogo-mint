@@ -13,7 +13,7 @@
     "get-abi": "cp -R ~/clones/gogo-mint/hardhat/artifacts/contracts/ ./ABIs && rm -f ./ABIs/**/*.dbg.json",
     "tc": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json",
     "tc-dev": "cp -R ~/clones/gogo-mint/hardhat/artifacts/contracts/ ./ABIs && rm -f ./ABIs/**/*.dbg.json && typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json",
-    "prebuild": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json",
+    "prebuild": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json && prisma generate",
     "predev": "typechain --target ethers-v5 --out-dir ./ContractFactory ./ABIs/**/*.json"
   },
   "dependencies": {
