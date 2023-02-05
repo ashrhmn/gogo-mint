@@ -1,5 +1,11 @@
 import Redis, { RedisOptions } from "ioredis";
 
+declare global {
+  // allow global `var` declarations
+  // eslint-disable-next-line no-var, no-unused-vars
+  var redis: Redis | undefined;
+}
+
 function getRedisConfiguration() {
   return {
     host: process.env.REDIS_HOST || "localhost",
@@ -8,7 +14,7 @@ function getRedisConfiguration() {
   };
 }
 
-export function getRedis(config = getRedisConfiguration()) {
+function getRedis(config = getRedisConfiguration()) {
   try {
     const options: RedisOptions = {
       host: config.host,
@@ -45,6 +51,10 @@ export function getRedis(config = getRedisConfiguration()) {
   }
 }
 
+export const redis = global.redis || getRedis();
+
+if (process.env.NODE_ENV !== "production") global.redis = redis;
+
 export async function getIfCached<T>({
   key,
   realtimeDataCb,
@@ -54,7 +64,7 @@ export async function getIfCached<T>({
   key: string;
   ttl: number;
 }) {
-  const redis = getRedis();
+  // const redis = getRedis();
   const fetchAndStoreNewData = async () => {
     const data = (await realtimeDataCb()) as T;
     redis.set(key, JSON.stringify(data), "PX", ttl * 1000);

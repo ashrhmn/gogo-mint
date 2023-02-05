@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import { Collection721__factory } from "../ContractFactory";
 import { isAddress } from "ethers/lib/utils";
 import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
-import { getRedis } from "../lib/redis";
+import { redis } from "../lib/redis";
 
 export const fetchAndStoreEvents = async (
   projectId: number,
@@ -45,8 +45,6 @@ export const fetchAndStoreEvents = async (
   const endBlock = await provider.getBlockNumber();
 
   const cacheKey = `${project.chainId}:${tokenGatedAddress}:${startBlock}:${endBlock}`;
-
-  const redis = getRedis();
 
   const cached = await redis.get(cacheKey);
 
