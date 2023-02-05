@@ -107,11 +107,43 @@ const MintPage: NextPage<Props> = ({
               project.address,
               new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
             );
-      const [userBalance, claimedSupply] = (
+      const [userBalance] = (
         await Promise.all([
           project.collectionType === "721"
             ? (contract as Collection721).balanceOf(account)
             : (contract as Collection1155).balanceOf(account, 0),
+        ])
+      ).map((v) => +v.toString());
+      setConfig((c) => ({
+        ...c,
+        userBalance,
+      }));
+    })();
+  }, [
+    account,
+    chainId,
+    currentSale,
+    project.address,
+    project.chainId,
+    project.collectionType,
+  ]);
+
+  useEffect(() => {
+    (async () => {
+      if (
+        !project.address ||
+        !project.chainId ||
+        !RPC_URLS[project.chainId] ||
+        !chainId
+      )
+        return;
+      setConfig((c) => ({ ...c, userBalance: -1 }));
+      const contract = Collection721__factory.connect(
+        project.address,
+        new providers.StaticJsonRpcProvider(RPC_URLS[project.chainId])
+      );
+      const [claimedSupply] = (
+        await Promise.all([
           (contract as Collection721)
             .tokenId()
             .then((v) => v.toNumber() - 1)
@@ -120,7 +152,6 @@ const MintPage: NextPage<Props> = ({
       ).map((v) => +v.toString());
       setConfig((c) => ({
         ...c,
-        userBalance,
         claimedSupply,
       }));
     })();
@@ -132,6 +163,7 @@ const MintPage: NextPage<Props> = ({
     project.chainId,
     project.collectionType,
   ]);
+
   const handleMintClick = async () => {
     if (!project.address || !project.chainId || !RPC_URLS[project.chainId]) {
       toast.error("Error loading project data");
