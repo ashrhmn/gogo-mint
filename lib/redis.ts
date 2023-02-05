@@ -47,7 +47,8 @@ function getRedis(config = getRedisConfiguration()) {
 
     return redis;
   } catch (e) {
-    throw new Error(`[Redis] Could not create a Redis instance`);
+    // throw new Error(`[Redis] Could not create a Redis instance`);
+    console.error("[Redis] Could not create a Redis instance : ", e);
   }
 }
 
@@ -63,8 +64,8 @@ export async function getIfCached<T>({
   realtimeDataCb: () => Promise<T>;
   key: string;
   ttl: number;
-}) {
-  // const redis = getRedis();
+}): Promise<T> {
+  if (!redis) return realtimeDataCb();
   const fetchAndStoreNewData = async () => {
     const data = (await realtimeDataCb()) as T;
     redis.set(key, JSON.stringify(data), "PX", ttl * 1000);

@@ -46,11 +46,11 @@ export const fetchAndStoreEvents = async (
 
   const cacheKey = `${project.chainId}:${tokenGatedAddress}:${startBlock}:${endBlock}`;
 
-  const cached = await redis.get(cacheKey);
+  const cached = !!redis ? await redis.get(cacheKey) : null;
 
   if (!!cached && !overrides?.ignoreCache) return;
 
-  redis.set(cacheKey, "CACHED", "PX", 86400000);
+  if (redis) redis.set(cacheKey, "CACHED", "PX", 86400000);
 
   console.log({ startBlock, endBlock });
 
