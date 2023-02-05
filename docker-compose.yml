@@ -11,3 +11,7 @@ services:
       - "80:${PORT:-3001}"
     container_name: gogo-mint-dftsw-2
     restart: always
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
