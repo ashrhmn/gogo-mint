@@ -65,7 +65,7 @@ export async function getIfCached<T>({
   key: string;
   ttl: number;
 }): Promise<T> {
-  if (!redis) return realtimeDataCb();
+  if (!redis) return await realtimeDataCb();
   const fetchAndStoreNewData = async () => {
     const data = (await realtimeDataCb()) as T;
     redis.set(key, JSON.stringify(data), "PX", ttl * 1000);
