@@ -7,8 +7,8 @@ services:
       args:
         - PORT=${PORT:-3001}
     image: gogo-mint-img
-    # ports:
-    #   - "80:${PORT:-3001}"
+    ports:
+      - "80:${PORT:-3001}"
     container_name: gogo-mint
     restart: always
   redis:
