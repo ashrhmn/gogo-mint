@@ -22,6 +22,7 @@ export const walletSignLogin = async (
     );
     return res.json(successResponse(user));
   } catch (error) {
+    console.log("walletSignLogin Error : ", error);
     return res.status(500).json(errorResponse(error));
   }
 };
