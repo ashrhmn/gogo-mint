@@ -8,7 +8,6 @@ import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { v4 } from "uuid";
 import Layout from "../../components/Layout";
-import SaleConfigInput from "../../components/Projects/SaleConfigInput";
 import { aggregatorV3InterfaceABI } from "../../constants/abis";
 import { PRICE_FEED_ADDRESSES } from "../../constants/chainlink.map";
 import { BASE_URI, ZERO_ADDRESS } from "../../constants/configuration";
@@ -20,9 +19,8 @@ import {
 import { uploadFileToFirebase } from "../../lib/firebase";
 import { service } from "../../service";
 import { getCookieWallet } from "../../services/auth.service";
-import { is721 } from "../../services/ethereum.service";
 import { getUserByWalletAddress } from "../../services/user.service";
-import { IDeployConfigSet, ISaleConfigInput } from "../../types";
+import { IDeployConfigSet } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
@@ -234,14 +232,14 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
     }
     setBgProcessRunning((v) => v + 1);
     try {
-      const salewaves: ISaleConfigInput[] = await Promise.all(
-        configSet.saleWaves.map(async (sw) =>
-          sw.tokenGatedAddress !== ethers.constants.AddressZero &&
-          (await is721(sw.tokenGatedAddress, chainId))
-            ? { ...sw, maxMintPerWallet: 0, saleType: "private" }
-            : { ...sw, tokenGatedAddress: ethers.constants.AddressZero }
-        )
-      );
+      // const salewaves: ISaleConfigInput[] = await Promise.all(
+      //   configSet.saleWaves.map(async (sw) =>
+      //     sw.tokenGatedAddress !== ethers.constants.AddressZero &&
+      //     (await is721(sw.tokenGatedAddress, chainId))
+      //       ? { ...sw, maxMintPerWallet: 0, saleType: "private" }
+      //       : { ...sw, tokenGatedAddress: ethers.constants.AddressZero }
+      //   )
+      // );
       // const config: ISaleConfigInput[] = await Promise.all(
       //   configSet.saleWaves.map(async (sw) => {
       //     if (
@@ -253,25 +251,31 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
       //     return { ...sw, tokenGatedAddress: ethers.constants.AddressZero };
       //   })
       // );
+      // const salewaves: ISaleConfigInput[] = configSet.saleWaves.map((sc) => ({
+      //   enabled: sc.enabled,
+      //   startTime: sc.startTime,
+      //   endTime: sc.endTime,
+      //   maxMintInSale: sc.maxMintInSale,
+      //   maxMintPerWallet: sc.maxMintPerWallet,
+      //   mintCharge: sc.mintCharge,
+      //   whitelistAddresses: sc.whitelistAddresses,
+      //   saleType: sc.saleType as "private" | "public",
+      //   uuid: sc.uuid,
+      //   tokenGatedAddress: ethers.constants.AddressZero,
+      // }));
       const [
         imageUrl,
         unrevealedImageUrl,
-        { data: saleConfigRoot },
-        // { data: initCode },
+        // { data: saleConfigRoot },
         { data: platformSignerAddress },
         deployCharge,
       ] = await toast.promise(
         Promise.all([
           uploadFileToFirebase(configSet.logo),
           uploadFileToFirebase(configSet.unrevealedImage),
-          service.post(`sale-config/root`, {
-            saleConfigs: salewaves.map((sw) => ({
-              ...sw,
-              whitelistAddresses:
-                sw.saleType === "public" ? [] : sw.whitelistAddresses,
-            })),
-          }),
-          // service.get(`contract/collection721?name=${configSet.name}`),
+          // service.post(`sale-config/root`, {
+          //   saleConfigs: salewaves,
+          // }),
           service.get(`platform-signer/public-address`),
           (async () => {
             const priceFeedAddress = PRICE_FEED_ADDRESSES[chainId || 0];
@@ -309,11 +313,13 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
         return;
       }
 
-      if (saleConfigRoot.error) {
-        toast.error("Error getting saleconfig root");
-        setBgProcessRunning((v) => v - 1);
-        return;
-      }
+      // if (saleConfigRoot.error) {
+      //   toast.error("Error getting saleconfig root");
+      //   setBgProcessRunning((v) => v - 1);
+      //   return;
+      // }
+      // console.log(saleConfigRoot.data);
+
       const contract =
         configSet.collectionType === "721"
           ? await deploy721(
@@ -321,7 +327,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               normalizeString(configSet.symbol),
               configSet.feeToAddress,
               configSet.maxMintInTotalPerWallet,
-              saleConfigRoot.data,
+              ethers.constants.HashZero,
               platformSignerAddress.data,
               baseUri,
               configSet.revealTime,
@@ -335,7 +341,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               normalizeString(configSet.name),
               configSet.feeToAddress,
               configSet.maxMintInTotalPerWallet,
-              saleConfigRoot.data,
+              ethers.constants.HashZero,
               platformSignerAddress.data,
               baseUri,
               configSet.revealTime,
@@ -360,13 +366,14 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             uid: v4(),
             royaltyReceiver: configSet.roayltyReceiver,
             royaltyPercentage: configSet.roayltyPercentage,
-            saleConfigs: salewaves.map((sw) => ({
-              ...sw,
-              whitelistAddresses:
-                sw.saleType === "public" ? [] : sw.whitelistAddresses,
-              startTime: +sw.startTime.toFixed(0),
-              endTime: +sw.endTime.toFixed(0),
-            })),
+            // saleConfigs: salewaves.map((sw) => ({
+            //   ...sw,
+            //   whitelistAddresses:
+            //     sw.saleType === "public" ? [] : sw.whitelistAddresses,
+            //   startTime: +sw.startTime.toFixed(0),
+            //   endTime: +sw.endTime.toFixed(0),
+            // })),
+            saleConfigs: [],
           }),
           contract.deployed(),
         ]),
@@ -644,7 +651,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
               </div>
             </div>
           </div>
-
+          {/* 
           {configSet.saleWaves.length === 0 && (
             <div className="bg-gray-700 rounded-xl text-center font-bold p-4 mt-6">
               No Sale Wave is set. Without a Sale Wave no one will be able to
@@ -696,7 +703,7 @@ const NewProject: NextPage<Props> = ({ cookieAddress, baseUri }) => {
             >
               Add Sale Wave
             </button>
-          </div>
+          </div> */}
 
           {/* <div className="mt-4 space-y-2">
             <label className="font-bold">Royalty Receiver Address</label>

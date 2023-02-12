@@ -11,7 +11,7 @@ import {
 } from "../../../ContractFactory";
 import { service } from "../../../service";
 import { is721 } from "../../../services/ethereum.service";
-import { ISaleConfigInput, IWhiteList } from "../../../types";
+import { IWhiteList } from "../../../types";
 import SaleConfigItem from "./SaleConfigItem";
 import { RPC_URLS } from "../../../constants/RPC_URL";
 
@@ -32,8 +32,10 @@ const ClaimsSection = ({
   const [configHistory, setConfigHistory] = useState({
     contract: "",
     db: "",
-    editor: "",
   });
+
+  const [historyRefetcher, setHistoryRefetcher] = useState(false);
+
   const [saleConfigs, setSaleConfigs] = useState<
     (Omit<SaleConfig, "id" | "projectId"> & {
       invalid?: boolean;
@@ -73,7 +75,14 @@ const ClaimsSection = ({
 
       setConfigHistory((v) => ({ ...v, contract: saleConfigRoot }));
     })();
-  }, [chainId, collectionType, projectAddress, projectChainId, projectId]);
+  }, [
+    chainId,
+    collectionType,
+    projectAddress,
+    projectChainId,
+    projectId,
+    historyRefetcher,
+  ]);
 
   useEffect(() => {
     (async () => {
@@ -92,6 +101,62 @@ const ClaimsSection = ({
       }
     })();
   }, [projectId, refetcher]);
+
+  const handleUpdateContract = async () => {
+    if (!account || !library || !chainId) {
+      toast.error("No wallet connected");
+      return;
+    }
+
+    if (account !== projectOwner) {
+      toast.error("You are not project owner");
+      return;
+    }
+
+    if (!projectAddress || !projectChainId || !isAddress(projectAddress)) {
+      toast.error("Error loading projet contract");
+      return;
+    }
+
+    if (chainId !== projectChainId) {
+      toast.error(
+        `Error network, please switch to network id : ${projectChainId}`
+      );
+      return;
+    }
+
+    try {
+      const contract =
+        collectionType === "721"
+          ? new Collection721__factory(library.getSigner(account)).attach(
+              projectAddress
+            )
+          : new Collection1155__factory(library.getSigner(account)).attach(
+              projectAddress
+            );
+
+      const updateSaleConfigRootTx = await toast.promise(
+        contract.updateSaleConfigRoot(configHistory.db),
+        {
+          error: "Error sending transaction",
+          loading: "Sending transaction",
+          success: "Transaction sent successfully",
+        }
+      );
+
+      await toast.promise(Promise.all([updateSaleConfigRootTx.wait()]), {
+        error: "Error completing transaction",
+        loading: "Mining transaction...",
+        success: "Transaction Completed",
+      });
+      setHistoryRefetcher((v) => !v);
+    } catch (error) {
+      setHistoryRefetcher((v) => !v);
+      toast.error("Error saving SaleConfigs");
+      console.log(error);
+    }
+  };
+
   const handleUpdateClick = async () => {
     if (!account || !library || !chainId) {
       toast.error("No wallet connected");
@@ -116,48 +181,48 @@ const ClaimsSection = ({
     }
 
     try {
-      const rootPayload: ISaleConfigInput[] = await Promise.all(
-        saleConfigs.map(async (sc) => ({
-          enabled: sc.enabled,
-          startTime: sc.startTime,
-          endTime: sc.endTime,
-          maxMintInSale: sc.maxMintInSale,
-          maxMintPerWallet:
-            isAddress(sc.tokenGatedAddress) &&
-            (await is721(sc.tokenGatedAddress, chainId))
-              ? 0
-              : sc.maxMintPerWallet,
-          mintCharge: sc.mintCharge,
-          whitelistAddresses: sc.whitelist,
-          saleType:
-            isAddress(sc.tokenGatedAddress) &&
-            (await is721(sc.tokenGatedAddress, chainId))
-              ? "private"
-              : (sc.saleType as "private" | "public"),
-          uuid: sc.saleIdentifier,
-          tokenGatedAddress:
-            isAddress(sc.tokenGatedAddress) &&
-            (await is721(sc.tokenGatedAddress, chainId))
-              ? sc.tokenGatedAddress
-              : ethers.constants.AddressZero,
-        }))
-      );
+      // const rootPayload: ISaleConfigInput[] = await Promise.all(
+      //   saleConfigs.map(async (sc) => ({
+      //     enabled: sc.enabled,
+      //     startTime: sc.startTime,
+      //     endTime: sc.endTime,
+      //     maxMintInSale: sc.maxMintInSale,
+      //     maxMintPerWallet:
+      //       isAddress(sc.tokenGatedAddress) &&
+      //       (await is721(sc.tokenGatedAddress, chainId))
+      //         ? 0
+      //         : sc.maxMintPerWallet,
+      //     mintCharge: sc.mintCharge,
+      //     whitelistAddresses: sc.whitelist,
+      //     saleType:
+      //       isAddress(sc.tokenGatedAddress) &&
+      //       (await is721(sc.tokenGatedAddress, chainId))
+      //         ? "private"
+      //         : (sc.saleType as "private" | "public"),
+      //     uuid: sc.saleIdentifier,
+      //     tokenGatedAddress:
+      //       isAddress(sc.tokenGatedAddress) &&
+      //       (await is721(sc.tokenGatedAddress, chainId))
+      //         ? sc.tokenGatedAddress
+      //         : ethers.constants.AddressZero,
+      //   }))
+      // );
 
-      const { data: saleConfigRoot } = await toast.promise(
-        service.post(`/sale-config/root`, {
-          saleConfigs: rootPayload,
-        }),
-        {
-          error: "Error generating sale config hash",
-          loading: "Generating sale config hash",
-          success: "Sale configs hash generated...",
-        }
-      );
+      // const { data: saleConfigRoot } = await toast.promise(
+      //   service.post(`/sale-config/root`, {
+      //     saleConfigs: rootPayload,
+      //   }),
+      //   {
+      //     error: "Error generating sale config hash",
+      //     loading: "Generating sale config hash",
+      //     success: "Sale configs hash generated...",
+      //   }
+      // );
 
-      if (saleConfigRoot.error) {
-        toast.error("Error geenerating sale config hash");
-        return;
-      }
+      // if (saleConfigRoot.error) {
+      //   toast.error("Error geenerating sale config hash");
+      //   return;
+      // }
       const dbPayload = await Promise.all(
         saleConfigs.map(async (sc) => ({
           ...sc,
@@ -173,41 +238,43 @@ const ClaimsSection = ({
         }))
       );
 
-      console.log(JSON.stringify(dbPayload, null, 2));
+      // console.log(JSON.stringify(dbPayload, null, 2));
 
-      const contract =
-        collectionType === "721"
-          ? new Collection721__factory(library.getSigner(account)).attach(
-              projectAddress
-            )
-          : new Collection1155__factory(library.getSigner(account)).attach(
-              projectAddress
-            );
+      // const contract =
+      //   collectionType === "721"
+      //     ? new Collection721__factory(library.getSigner(account)).attach(
+      //         projectAddress
+      //       )
+      //     : new Collection1155__factory(library.getSigner(account)).attach(
+      //         projectAddress
+      //       );
 
-      const updateSaleConfigRootTx = await toast.promise(
-        contract.updateSaleConfigRoot(saleConfigRoot.data),
-        {
-          error: "Error sending transaction",
-          loading: "Sending transaction",
-          success: "Transaction sent successfully",
-        }
-      );
+      // const updateSaleConfigRootTx = await toast.promise(
+      //   contract.updateSaleConfigRoot(saleConfigRoot.data),
+      //   {
+      //     error: "Error sending transaction",
+      //     loading: "Sending transaction",
+      //     success: "Transaction sent successfully",
+      //   }
+      // );
 
       await toast.promise(
         Promise.all([
           service.put(`sale-config/${projectId}`, {
             saleConfigs: dbPayload,
           }),
-          updateSaleConfigRootTx.wait(),
+          // updateSaleConfigRootTx.wait(),
         ]),
         {
-          error: "Error completing transaction",
-          loading: "Mining transaction...",
-          success: "Transaction Completed",
+          error: "Error saving",
+          loading: "Saving...",
+          success: "Saved",
         }
       );
+      setHistoryRefetcher((v) => !v);
       // console.log(response);
     } catch (error) {
+      setHistoryRefetcher((v) => !v);
       toast.error("Error saving SaleConfigs");
       console.log(error);
     }
@@ -257,9 +324,24 @@ const ClaimsSection = ({
           Save Sale Waves
         </button>
       </div>
-      <p className="text-sm text-gray-500 text-center">
-        Requires Transaction on update
-      </p>
+      {configHistory.contract !== "" &&
+        configHistory.contract !== "" &&
+        configHistory.contract !== configHistory.db && (
+          <div className="flex justify-end items-center gap-4">
+            <p className="text-sm text-gray-500 text-center">
+              Config mismatch found between database and contract (Requires
+              Transaction on update)
+            </p>
+            <button
+              disabled={bgProcess > 0}
+              className="bg-red-500 text-white rounded p-2 hover:bg-red-700 transition-colors w-full sm:w-auto"
+              onClick={handleUpdateContract}
+            >
+              Update Contract
+            </button>
+          </div>
+        )}
+
       {saleConfigs.map((sc, index) => (
         <SaleConfigItem
           index={index}
