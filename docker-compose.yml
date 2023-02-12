@@ -8,10 +8,14 @@ services:
         - PORT=${PORT:-3001}
     image: gogo-mint-img
     ports:
-      - "80:${PORT:-3001}"
+      - "${PORT:-3001}:${PORT:-3001}"
     container_name: gogo-mint
     restart: always
   redis:
     image: redis
     container_name: redis
     restart: always
+networks:
+  default:
+    external: true
+    name: nginx

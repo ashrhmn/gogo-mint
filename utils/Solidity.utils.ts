@@ -1,11 +1,4 @@
-import {
-  ContractFile,
-  CompileError,
-  ISaleConfigSol,
-  ISaleConfigInput,
-  IWhiteList,
-} from "../types";
-import tsolc from "types-solc";
+import { ISaleConfigSol, ISaleConfigInput, IWhiteList } from "../types";
 import {
   isAddress,
   keccak256,

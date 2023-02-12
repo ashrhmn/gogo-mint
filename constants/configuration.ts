@@ -23,7 +23,7 @@ export const DISCORD_OAUTH_CLIENT_ID =
 export const DISCORD_OAUTH_CLIENT_SECRET =
   process.env.DISCORD_OAUTH_CLIENT_SECRET || "zKxjMkC-GmD8J0gvrZm3yKSEqnBS8LhE";
 
-export const isDevelopment = process.env.NODE_ENV != "production";
+export const isDevelopment = process.env.NODE_ENV !== "production";
 
 export const DISCORD_AUTH_URL = isDevelopment
   ? `https://discord.com/oauth2/authorize?client_id=992820231242268723&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fv1%2Fauth%2Fdiscord%2Fredirect&response_type=code&scope=identify`
