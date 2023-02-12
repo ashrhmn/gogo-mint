@@ -13,6 +13,7 @@ import { service } from "../../../service";
 import { is721 } from "../../../services/ethereum.service";
 import { ISaleConfigInput, IWhiteList } from "../../../types";
 import SaleConfigItem from "./SaleConfigItem";
+import { RPC_URLS } from "../../../constants/RPC_URL";
 
 const ClaimsSection = ({
   collectionType,
@@ -28,6 +29,11 @@ const ClaimsSection = ({
   projectOwner: string | null;
 }) => {
   const { account, library, chainId } = useEthers();
+  const [configHistory, setConfigHistory] = useState({
+    contract: "",
+    db: "",
+    editor: "",
+  });
   const [saleConfigs, setSaleConfigs] = useState<
     (Omit<SaleConfig, "id" | "projectId"> & {
       invalid?: boolean;
@@ -36,6 +42,39 @@ const ClaimsSection = ({
   >([]);
   const [bgProcess, setBgProcess] = useState(0);
   const [refetcher, setRefetcher] = useState(false);
+
+  useEffect(() => {
+    console.log(JSON.stringify(configHistory, null, 2));
+  }, [configHistory]);
+
+  useEffect(() => {
+    (async () => {
+      if (!projectId) return;
+      const db = await service
+        .get(`sale-config/root/${projectId}`)
+        .then((res) => res.data.data);
+
+      setConfigHistory((v) => ({ ...v, db }));
+    })();
+    (async () => {
+      if (!projectAddress || !projectChainId || !RPC_URLS[chainId || 0]) return;
+      const provider = new ethers.providers.JsonRpcProvider(
+        RPC_URLS[chainId || 0]
+      );
+      const contract =
+        collectionType === "721"
+          ? Collection721__factory.connect(projectAddress, provider)
+          : Collection1155__factory.connect(projectAddress, provider);
+
+      const saleConfigRoot = await contract
+        .state()
+        .then((res) => res.saleConfigRoot)
+        .catch(() => "");
+
+      setConfigHistory((v) => ({ ...v, contract: saleConfigRoot }));
+    })();
+  }, [chainId, collectionType, projectAddress, projectChainId, projectId]);
+
   useEffect(() => {
     (async () => {
       try {

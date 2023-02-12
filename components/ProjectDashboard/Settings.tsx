@@ -27,7 +27,6 @@ import {
   formatHtmlDateTime,
   getUrlFileExtension,
 } from "../../utils/String.utils";
-import { PUBLIC_HOST_ROOT } from "../../constants/configuration";
 
 const SettingsSection = ({
   projectId,
@@ -229,39 +228,6 @@ const SettingsSection = ({
         setFeeAddressBgProc((v) => v + 1);
         setMaxMintInTotalPerWalletBgProc((v) => v + 1);
         setBaseURIBgProc((v) => v + 1);
-        // const [
-        //   feeToAddress,
-        //   curi,
-        //   baseURI,
-        //   maxMintInTotalPerWallet,
-        //   // token0uri,
-        //   revealTime,
-        // ] = await Promise.all([
-        //   contract.feeDestination().catch((e) => {
-        //     console.log("Error getting feeDestination  : ", e);
-        //     return "";
-        //   }),
-        //   contract.contractURI().catch((e) => {
-        //     console.log("Error getting contractURI  : ", e);
-        //     return "";
-        //   }),
-        //   contract.baseURI().catch((e) => {
-        //     console.log("Error getting baseURI  : ", e);
-        //     return "";
-        //   }),
-        //   contract.maxMintInTotalPerWallet().catch((e) => {
-        //     console.log("Error getting maxMintInTotalPerWallet : ", e);
-        //     return 0;
-        //   }),
-        //   // contract.tokenURI(0).catch((e) => {
-        //   //   console.log("Error getting token0 uri : ", e);
-        //   //   return null;
-        //   // }),
-        //   contract.revealTime().catch((e) => {
-        //     console.log("Error getting revealTime  : ", e);
-        //     return BigNumber.from(0);
-        //   }),
-        // ]);
 
         const {
           feeDestination: feeToAddress,
@@ -752,8 +718,12 @@ const SettingsSection = ({
         )}
         <div className="absolute top-0 right-0 left-0 text-white0 bg-gray-800 text-3xl font-medium text-center py-1 shadow-2xl z-10">
           <h1>Mint Page Preview</h1>
-          <a href={`/mint/${configSet.uid}`} target="_blank" rel="noreferrer">
-            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://${PUBLIC_HOST_ROOT}/mint/${
+          <a
+            href={`https://mint.hydromint.xyz/${configSet.uid}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <div className="text-lg mt-7 border-2 border-gray-300 rounded text-left px-4 cursor-pointer hover:text-blue-500 transition-colors break-all">{`🌐 https://mint.hydromint.xyz/${
               configSet.uid.trim().replaceAll(" ", "%20") || "<random-string>"
             }`}</div>
           </a>

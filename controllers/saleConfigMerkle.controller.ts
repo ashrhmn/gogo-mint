@@ -10,7 +10,7 @@ export const getSaleConfigRoot = async (
 ) => {
   try {
     const saleConfigs = req.body.saleConfigs as ISaleConfigInput[];
-    if (saleConfigs.length == 0)
+    if (saleConfigs.length === 0)
       return res.json(successResponse(EMPTY_WHITELIST_ROOT));
     return res.json(
       successResponse(SaleConfigService.getSaleConfigRoot(saleConfigs))
