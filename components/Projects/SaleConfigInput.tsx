@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { IDeployConfigSet, ISaleConfigInput } from "../../types";
-import { formatHtmlDateTime, normalizeString } from "../../utils/String.utils";
+import { IDeployConfigSet, ISaleConfigInput, IWhiteList } from "../../types";
+import {
+  formatHtmlDateTime,
+  getIfAddress,
+  normalizeString,
+} from "../../utils/String.utils";
 import { parse as parseCsv } from "papaparse";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
@@ -424,9 +428,9 @@ const SaleConfigInput = ({
                                           .map((arr) => arr[0])
                                           .includes(wl.address)
                                     ),
-                                    ...results.data
+                                    ...(results.data
                                       .map((arr) => ({
-                                        address: arr[0],
+                                        address: getIfAddress(arr[0]),
                                         limit: +arr[1],
                                       }))
                                       .filter(
@@ -434,7 +438,7 @@ const SaleConfigInput = ({
                                           typeof wl.address === "string" &&
                                           isAddress(wl.address) &&
                                           !isNaN(wl.limit)
-                                      ),
+                                      ) as IWhiteList[]),
                                   ],
                                 }
                           ),

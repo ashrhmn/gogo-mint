@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   formatHtmlDateTime,
+  getIfAddress,
   normalizeString,
 } from "../../../utils/String.utils";
 import { SaleConfig } from "@prisma/client";
 import { parse as parseCsv } from "papaparse";
-import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import CopyAddressToClipboard from "../../Common/CopyAddressToClipboard";
@@ -438,26 +438,36 @@ const SaleConfigItem = ({
                     if (!e.target.files || !e.target.files[0]) return;
                     parseCsv<string[]>(e.target.files[0], {
                       complete: (results) => {
+                        const newAdded = results.data
+                          .map((arr) => ({
+                            address: getIfAddress(arr[0]),
+                            limit: +arr[1],
+                          }))
+                          .filter(
+                            (item) =>
+                              typeof item.address === "string" &&
+                              !!item.address &&
+                              !isNaN(item.limit)
+                          ) as {
+                          address: string;
+                          limit: number;
+                        }[];
+
+                        const invalid = results.data.length - newAdded.length;
+
+                        if (invalid > 0) {
+                          toast.error(
+                            `${invalid} invalid address(es) were skipped`
+                          );
+                        }
+
                         setSaleConfigs((prev) =>
                           prev.map((sc) =>
                             sc.saleIdentifier !== saleWaveConfig.saleIdentifier
                               ? sc
                               : {
                                   ...sc,
-                                  whitelist: [
-                                    ...sc.whitelist,
-                                    ...results.data
-                                      .map((arr) => ({
-                                        address: arr[0],
-                                        limit: +arr[1],
-                                      }))
-                                      .filter(
-                                        (item) =>
-                                          typeof item.address === "string" &&
-                                          isAddress(item.address) &&
-                                          !isNaN(item.limit)
-                                      ),
-                                  ],
+                                  whitelist: [...sc.whitelist, ...newAdded],
                                 }
                           )
                         );
@@ -499,7 +509,8 @@ const SaleConfigItem = ({
                     />
                     <button
                       onClick={() => {
-                        if (!isAddress(tempWl.address)) {
+                        const address = getIfAddress(tempWl.address);
+                        if (!address) {
                           toast.error("Invalid Address");
                           return;
                         }
@@ -511,10 +522,12 @@ const SaleConfigItem = ({
                                   ...sc,
                                   whitelist: [
                                     ...sc.whitelist.filter(
-                                      (wl) => wl.address !== tempWl.address
+                                      (wl) =>
+                                        wl.address.toLowerCase() !==
+                                        tempWl.address.toLowerCase()
                                     ),
                                     {
-                                      address: tempWl.address,
+                                      address: address,
                                       limit: tempWl.limit,
                                     },
                                   ],

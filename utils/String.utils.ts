@@ -1,5 +1,7 @@
 import CryptoJS from "crypto-js";
 import { CRYPTO_SECRET } from "../constants/configuration";
+import { ethers } from "ethers";
+import { isAddress } from "ethers/lib/utils";
 
 export const isValidQueryParam = (
   ...data: (string | string[] | undefined)[]
@@ -73,4 +75,14 @@ export const getUrlFileExtension = (url: string) => {
   return new URL(url).pathname.substring(
     new URL(url).pathname.lastIndexOf(".") + 1
   );
+};
+
+export const getIfAddress = (address: string) => {
+  try {
+    const addr = ethers.utils.getAddress(address.toLowerCase());
+    if (isAddress(addr)) return addr;
+    return null;
+  } catch (error) {
+    return null;
+  }
 };
