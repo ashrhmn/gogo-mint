@@ -30,6 +30,8 @@ import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
 import { fixMissingTokenIds } from "../../services/nft.service";
+import { service } from "../../service";
+import toast from "react-hot-toast";
 
 interface Props {
   project: ProjectExtended & { _count: { nfts: number } };
@@ -107,6 +109,16 @@ const ProjectPage: NextPage<Props> = ({
     ["permissions", "claims", "settings"].includes(router.query.tab)
       ? router.query.tab
       : "overview";
+
+  const handleRandomize = async () =>
+    await toast
+      .promise(service.get(`projects/randomize-token-ids/${project.id}`), {
+        error: "Error Randomizing NFTs",
+        loading: "Randomizing NFTs",
+        success: "Randomized NFTs",
+      })
+      .then(() => router.reload());
+
   return (
     <Layout dashboard>
       <div className="flex flex-col sm:flex-row gap-2 justify-between my-4">
@@ -126,24 +138,6 @@ const ProjectPage: NextPage<Props> = ({
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          {/* {(project.collectionType === "721" ||
-            (project.collectionType === "1155" && project._count.nfts < 1)) && (
-            <button
-              className="bg-sky-600 text-white px-3 py-2 w-24 rounded hover:bg-sky-700 transition-colors"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              + Create
-            </button>
-          )}
-          {project.collectionType === "721" && (
-            <button
-              className="bg-sky-600 text-white px-3 py-2 w-36 rounded hover:bg-sky-700 transition-colors whitespace-nowrap"
-              onClick={() => setIsBatchCreateModalOpen(true)}
-            >
-              + Create Batch
-            </button>
-          )} */}
-
           {project.collectionType === "721" ? (
             <button
               className="bg-sky-600 text-white px-3 py-2 w-36 rounded hover:bg-sky-700 transition-colors whitespace-nowrap"
@@ -159,6 +153,14 @@ const ProjectPage: NextPage<Props> = ({
               + Create
             </button>
           ) : null}
+          {project.collectionType === "721" && (
+            <button
+              className="bg-red-600 text-white px-3 py-2 w-30 rounded hover:bg-red-700 transition-colors"
+              onClick={handleRandomize}
+            >
+              Randomize NFTs
+            </button>
+          )}
         </div>
       </div>
       <div>

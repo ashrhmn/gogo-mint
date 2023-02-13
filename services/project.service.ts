@@ -50,6 +50,7 @@ export const getProjectByChainAddress = async (
             : status === "unminted"
             ? { tokenId: { equals: null } }
             : {},
+        orderBy: { tokenId: "asc" },
       },
       owner: true,
       _count: { select: { nfts: true } },
@@ -415,4 +416,65 @@ export const deleteProject = async (id: number) => {
     .then((res) => res.data)
     .then(console.log)
     .catch(console.error);
+};
+
+export const randomizeTokenIdsByProjectId = async (
+  projectId: number,
+  cookie: Cookies
+) => {
+  const cookieWallet = getCookieWallet(cookie);
+  const project = await prisma.project.findFirst({
+    where: { id: projectId },
+    include: { owner: true },
+  });
+  if (!project) throw "Project not found";
+  if (project.owner.walletAddress !== cookieWallet) throw "Not project owner";
+
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      UPDATE
+        public.nfts
+      SET
+        "tokenId" = "tokenId" +(
+          SELECT
+            COUNT(*)
+          FROM
+            nfts
+          WHERE
+            "projectId" = ${projectId}
+        )
+      WHERE
+        "projectId" = ${projectId};
+    `;
+
+    await tx.$executeRaw`
+      UPDATE
+        public.nfts
+      SET
+        "tokenId" = sub.token_id
+      FROM
+        (
+          SELECT
+            *,
+            (
+              ROW_NUMBER() OVER ()
+            )::INT AS token_id
+          FROM
+            (
+              SELECT
+                id
+              FROM
+                public.nfts
+              WHERE
+                "projectId" = ${projectId}
+              ORDER BY
+                RANDOM()
+            ) AS foo
+        ) AS sub
+      WHERE
+        nfts.id = sub.id;
+    `;
+
+    return "Updated";
+  });
 };

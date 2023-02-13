@@ -235,7 +235,7 @@ const OverviewSection = ({
           </thead>
           <tbody>
             {nftsWithOwner
-              .sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0))
+              .sort((a, b) => (a.tokenId || 0) - (b.tokenId || 0))
               .map((nft) => (
                 <tr className="border-b-2 border-gray-500" key={nft.id}>
                   {/* <td className="p-4 text-center min-w-[100px]">{nft.id}</td> */}

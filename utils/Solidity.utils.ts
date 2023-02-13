@@ -84,6 +84,8 @@ export const getSolVersionConfig = (
   whitelistRoot:
     config.saleType === "public"
       ? EMPTY_WHITELIST_ROOT
+      : config.whitelistAddresses.length === 0
+      ? EMPTY_WHITELIST_ROOT
       : bufferTohex(
           new MerkleTree(
             config.whitelistAddresses

@@ -356,3 +356,25 @@ export const deleteProject = async (
     return res.status(500).json(errorResponse("Error deleting project"));
   }
 };
+
+export const randomizeTokenIdsByProjectId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const projectId = req.query.projectId;
+    if (typeof projectId !== "string" || isNaN(+projectId))
+      return res.status(400).json(errorResponse("Invalid Project ID"));
+    return res.json(
+      successResponse(
+        await ProjectService.randomizeTokenIdsByProjectId(
+          +projectId,
+          getHttpCookie(req, res)
+        )
+      )
+    );
+  } catch (error) {
+    console.log("Error randomizing token ids : ", error);
+    return res.status(500).json(errorResponse("Error randomizing token ids"));
+  }
+};
