@@ -44,20 +44,23 @@ const SaleConfigItem = ({
   useEffect(() => {
     (async () => {
       try {
-        setIsTokenGated(
-          await is721(saleWaveConfig.tokenGatedAddress, chainId!)
+        const _isTokenGated = await is721(
+          saleWaveConfig.tokenGatedAddress,
+          chainId!
         );
-        setSaleConfigs((prev) =>
-          prev.map((sc) =>
-            sc.saleIdentifier !== saleWaveConfig.saleIdentifier
-              ? sc
-              : {
-                  ...sc,
-                  saleType: "private",
-                  maxMintPerWallet: 0,
-                }
-          )
-        );
+        setIsTokenGated(_isTokenGated);
+        if (_isTokenGated)
+          setSaleConfigs((prev) =>
+            prev.map((sc) =>
+              sc.saleIdentifier !== saleWaveConfig.saleIdentifier
+                ? sc
+                : {
+                    ...sc,
+                    saleType: "private",
+                    maxMintPerWallet: 0,
+                  }
+            )
+          );
       } catch (error) {
         setIsTokenGated(false);
       }
