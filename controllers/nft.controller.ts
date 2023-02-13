@@ -1,13 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  getAccessTokenFromCookie,
-  getHttpCookie,
-} from "../utils/Request.utils";
+import { getHttpCookie } from "../utils/Request.utils";
 import { errorResponse, successResponse } from "../utils/Response.utils";
 import * as NftService from "../services/nft.service";
-import { getUserByAccessToken } from "../services/discord.service";
 import { z } from "zod";
 import { isAddress } from "ethers/lib/utils";
+import { getIfCached } from "../lib/redis";
 
 export const addNftAsCookieWallet = async (
   req: NextApiRequest,
@@ -141,7 +138,12 @@ export const getNftMetadata = async (
     // });
 
     return res.json(
-      await NftService.getOnChainMetadata(address, chainId, tokenId)
+      await getIfCached({
+        key: `token-uri:${chainId}:${address}:${tokenId}`,
+        ttl: 60,
+        realtimeDataCb: () =>
+          NftService.getOnChainMetadata(address, chainId, tokenId),
+      })
     );
   } catch (error) {
     console.log("Get metadata error : ", error);
@@ -172,7 +174,12 @@ export const getHiddenNftMetadata = async (
     // });
 
     return res.json(
-      await NftService.getOnChainHiddenMetadata(address, chainId)
+      await getIfCached({
+        key: `hidden-token-uri:${chainId}:${address}`,
+        ttl: 60,
+        realtimeDataCb: () =>
+          NftService.getOnChainHiddenMetadata(address, chainId),
+      })
     );
   } catch (error) {
     console.log("Get metadata error : ", error);

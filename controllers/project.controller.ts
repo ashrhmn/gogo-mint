@@ -5,6 +5,7 @@ import { getHttpCookie } from "../utils/Request.utils";
 import { isAddress } from "ethers/lib/utils";
 
 import { z } from "zod";
+import { getIfCached } from "../lib/redis";
 
 export const getAllProjectsByDiscordId = async (
   req: NextApiRequest,
@@ -241,7 +242,12 @@ export const getContractUri = async (
         : +royalty;
 
     return res.json(
-      await ProjectService.getProjectMetadata(address, +network, royaltyBasis)
+      await getIfCached({
+        key: `contract-uri-${network}-${address}-${royaltyBasis}`,
+        ttl: 120,
+        realtimeDataCb: () =>
+          ProjectService.getProjectMetadata(address, +network, royaltyBasis),
+      })
     );
   } catch (error) {
     console.log("Error getting contract URI : ", error);

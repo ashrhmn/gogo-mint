@@ -29,9 +29,9 @@ import { ProjectExtended } from "../../types";
 import { errorHasMessage } from "../../utils/Error.utils";
 import { getHttpCookie } from "../../utils/Request.utils";
 import { authPageUrlWithMessage } from "../../utils/Response.utils";
-import { fixMissingTokenIds } from "../../services/nft.service";
 import { service } from "../../service";
 import toast from "react-hot-toast";
+import { getIfCached } from "../../lib/redis";
 
 interface Props {
   project: ProjectExtended & { _count: { nfts: number } };
@@ -315,17 +315,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         : 10;
     const skip = (pageNo - 1) * take;
 
-    const project = await getProjectByChainAddress(
-      contract,
-      +network,
-      skip,
-      take,
-      mintStatus as "all" | "minted" | "unminted"
-    );
+    const project = await getIfCached({
+      key: `project-details-with-nfts-${contract}-${network}-${skip}-${take}-${mintStatus}`,
+      ttl: 30,
+      realtimeDataCb: () =>
+        getProjectByChainAddress(
+          contract,
+          +network,
+          skip,
+          take,
+          mintStatus as "all" | "minted" | "unminted"
+        ),
+    });
 
     if (!project) return { props: {}, redirect: { destination: `/404` } };
 
-    fixMissingTokenIds(project.id);
+    // fixMissingTokenIds(project.id);
 
     if (project.owner.walletAddress !== cookieAddress)
       return {
@@ -344,10 +349,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       //  discordUser
     ] = await Promise.all([
       tab === "overview" || tab === undefined
-        ? getClaimedSupplyCountByProjectChainAddress(contract, +network)
+        ? getIfCached({
+            key: `getClaimedSupplyCountByProjectChainAddress:${contract}:${network}`,
+            ttl: 60,
+            realtimeDataCb: () =>
+              getClaimedSupplyCountByProjectChainAddress(contract, +network),
+          })
         : null,
       tab === "overview" || tab === undefined
-        ? getTotalSupplyCountByProjectChainAddress(contract, +network)
+        ? getIfCached({
+            key: `getTotalSupplyCountByProjectChainAddress:${contract}:${network}`,
+            ttl: 60,
+            realtimeDataCb: () =>
+              getTotalSupplyCountByProjectChainAddress(contract, +network),
+          })
         : null,
       // tab === "settings"
       //   ? getServerListWithAdminOrManageRole(cookie).catch((e) => {
