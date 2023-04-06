@@ -18,4 +18,4 @@ WORKDIR /app
 ARG PORT
 ENV PORT "${PORT}"
 EXPOSE "${PORT}"
-CMD ["pm2-runtime -i max server.js --name gogo-mint"]
+CMD ["pm2-runtime","/app/server.js","-i max"]
